@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Business {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  name         String
+  vertical     String
+  clerkUserId  String?  @unique
+  twilioNumber String?  @unique
+  phone        String?
+  address      String?
+  welcomeMessage   String?
+  vacationMode     Boolean @default(false)
+  vacationMessage  String?
+  openingHours     Json?
+  allergensInfo    String?
+  currentPromos    String?
+  deliveryEnabled  Boolean @default(true)
+  deliveryFee      Float?  @default(0)
+  deliveryMinimum  Float?  @default(0)
+  estimatedPrepTime Int?   @default(20)
+  paymentMethods   String? @default("CB, espèces")
+  menuItems    MenuItem[]
+  supplements  Supplement[]
+  events       Event[]
+  conversations Conversation[]
+}
+
+model MenuItem {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id])
+  category     String
+  name         String
+  description  String?
+  price        Float
+  available    Boolean  @default(true)
+
+  @@index([businessId])
+}
+
+model Supplement {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id])
+  name         String
+  price        Float    @default(0)
+  available    Boolean  @default(true)
+
+  @@index([businessId])
+}
+
+model Event {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id])
+  type          String
+  status        String   @default("new")
+  customerName  String?
+  customerPhone String?
+  customerEmail String?
+  summary       String?
+  data          Json?
+  externalRef   String?  @unique
+
+  @@index([businessId])
+  @@index([type])
+}
+
+model Conversation {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  externalId String?  @unique
+  businessId String?
+  business   Business? @relation(fields: [businessId], references: [id])
+  messages   Json?
+
+  @@index([businessId])
+}
