@@ -11,10 +11,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!user) redirect("/sign-in");
 
   const role = String((user.publicMetadata as any)?.role ?? "").toUpperCase();
-  if (role !== "BUSINESS" && role !== "ADMIN") redirect("/");
+  // Accepte tous les utilisateurs connectés pour staro.app
 
   let business = null;
-  if (role === "BUSINESS") {
+  if (true) {
     business = await ensureBusinessForCurrentUser();
     const menuCount = business ? await prisma.menuItem.count({ where: { businessId: business.id } }) : 0;
     const needsOnboarding = !business?.name || (business.name.startsWith("Business ") && (business.name.includes("@") || business.name.length < 20));
