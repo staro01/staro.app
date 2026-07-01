@@ -19,22 +19,32 @@ export function say(text: string) {
   return `<Say language="fr-FR" voice="Polly.Lea">${escapeXml(text)}</Say>`;
 }
 
+export function ttsUrl(baseUrl: string, text: string) {
+  return `${baseUrl}/api/tts?text=${encodeURIComponent(text)}`;
+}
+
 export function gatherSay(baseUrl: string, text: string, actionPath: string) {
   const action = `${baseUrl}${actionPath}`;
+  const hasElevenLabs = !!(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID);
+  const audioElement = hasElevenLabs
+    ? `<Play>${ttsUrl(baseUrl, text)}</Play>`
+    : `${say(text)}`;
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Gather input="speech" language="fr-FR" speechTimeout="auto" actionOnEmptyResult="true" action="${action}" method="POST">
-    ${say(text)}
+    ${audioElement}
   </Gather>
-  ${say("Je n'ai pas entendu. Répétez s'il vous plaît.")}
+  ${hasElevenLabs ? `<Play>${ttsUrl(baseUrl, "Je n'ai pas entendu. Répétez s'il vous plaît.")}</Play>` : say("Je n'ai pas entendu. Répétez s'il vous plaît.")}
   <Redirect method="POST">${action}</Redirect>
 </Response>`;
 }
 
-export function hangupTwiml(text: string) {
+export function hangupTwiml(baseUrl: string, text: string) {
+  const hasElevenLabs = !!(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say(text)}
+  ${hasElevenLabs ? `<Play>${ttsUrl(baseUrl, text)}</Play>` : say(text)}
   <Hangup/>
 </Response>`;
 }

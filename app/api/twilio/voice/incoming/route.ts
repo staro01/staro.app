@@ -27,11 +27,11 @@ export async function POST(req: Request) {
   const business = await findBusiness(to);
 
   if (!business) {
-    return xml(hangupTwiml("Ce numéro n'est pas encore configuré. Merci de contacter l'établissement."));
+    return xml(hangupTwiml(baseUrl, "Ce numéro n'est pas encore configuré. Merci de contacter l'établissement."));
   }
 
   if (business.vacationMode) {
-    return xml(hangupTwiml(business.vacationMessage ?? "L'établissement est actuellement fermé. Merci de rappeler."));
+    return xml(hangupTwiml(baseUrl, business.vacationMessage ?? "L'établissement est actuellement fermé. Merci de rappeler."));
   }
 
   const greet = business.welcomeMessage?.trim()

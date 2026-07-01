@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     const to = ((form.get("To") ?? "") as string).toString();
 
     const business = await findBusiness(to);
-    if (!business) return xml(hangupTwiml("Ce numéro n'est pas configuré."));
+    if (!business) return xml(hangupTwiml(baseUrl, "Ce numéro n'est pas configuré."));
 
     // Charger menu + suppléments
     const menuItems = await prisma.menuItem.findMany({
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     // Menu vide
     if (menuItems.length === 0) {
-      return xml(hangupTwiml("Notre système de commande n'est pas encore configuré. Merci de nous appeler directement."));
+      return xml(hangupTwiml(baseUrl, "Notre système de commande n'est pas encore configuré. Merci de nous appeler directement."));
     }
 
     // Choisir le prompt selon le vertical
@@ -70,12 +70,12 @@ export async function POST(req: NextRequest) {
     if (orderData) {
       await saveOrder(callSid, business.id, orderData);
       const confirmText = stripOrderBlock(claudeText) || "Votre commande est bien enregistrée. Merci et à bientôt !";
-      return xml(hangupTwiml(confirmText));
+      return xml(hangupTwiml(baseUrl, confirmText));
     }
 
     return xml(gatherSay(baseUrl, claudeText, "/api/twilio/voice/handle-speech"));
   } catch (err) {
     console.error("handle-speech error:", err);
-    return xml(hangupTwiml("Une erreur est survenue. Merci de rappeler."));
+    return xml(hangupTwiml(baseUrl, "Une erreur est survenue. Merci de rappeler."));
   }
 }
