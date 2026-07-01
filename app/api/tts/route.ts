@@ -6,22 +6,18 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const text = (searchParams.get("text") ?? "").trim();
-
   if (!text) return new Response("Missing text", { status: 400 });
 
   const apiKey = process.env.ELEVENLABS_API_KEY;
   const voiceId = process.env.ELEVENLABS_VOICE_ID;
+  if (!apiKey || !voiceId) return new Response("Missing ElevenLabs env vars", { status: 500 });
 
-  if (!apiKey || !voiceId) {
-    return new Response("Missing ElevenLabs env vars", { status: 500 });
-  }
-
-  const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=ulaw_8000`, {
+  const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_22050_32`, {
     method: "POST",
     headers: {
       "xi-api-key": apiKey,
       "Content-Type": "application/json",
-      Accept: "audio/basic",
+      Accept: "audio/mpeg",
     },
     body: JSON.stringify({
       text,
@@ -39,7 +35,7 @@ export async function GET(req: NextRequest) {
   const audio = await r.arrayBuffer();
   return new Response(audio, {
     headers: {
-      "Content-Type": "audio/basic",
+      "Content-Type": "audio/mpeg",
       "Cache-Control": "public, max-age=3600",
     },
   });
