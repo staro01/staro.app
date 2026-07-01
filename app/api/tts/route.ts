@@ -3,6 +3,9 @@ import { NextRequest } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Cache en mémoire pour les phrases répétées
+const audioCache = new Map<string, Buffer>();
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const text = (searchParams.get("text") ?? "").trim();
@@ -11,6 +14,19 @@ export async function GET(req: NextRequest) {
   const apiKey = process.env.ELEVENLABS_API_KEY;
   const voiceId = process.env.ELEVENLABS_VOICE_ID;
   if (!apiKey || !voiceId) return new Response("Missing ElevenLabs env vars", { status: 500 });
+
+  const cacheKey = `${voiceId}:${text}`;
+
+  // Retourner depuis le cache si disponible
+  if (audioCache.has(cacheKey)) {
+    return new Response(audioCache.get(cacheKey)!, {
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Cache-Control": "public, max-age=3600",
+        "X-Cache": "HIT",
+      },
+    });
+  }
 
   const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_22050_32`, {
     method: "POST",
@@ -32,11 +48,19 @@ export async function GET(req: NextRequest) {
     return new Response(`ElevenLabs error: ${r.status}`, { status: 500 });
   }
 
-  const audio = await r.arrayBuffer();
-  return new Response(audio, {
+  const arrayBuffer = await r.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  // Mettre en cache seulement les phrases courtes et répétables
+  if (text.length < 200) {
+    audioCache.set(cacheKey, buffer);
+  }
+
+  return new Response(buffer, {
     headers: {
       "Content-Type": "audio/mpeg",
       "Cache-Control": "public, max-age=3600",
+      "X-Cache": "MISS",
     },
   });
 }
