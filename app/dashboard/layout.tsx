@@ -18,7 +18,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     business = await ensureBusinessForCurrentUser();
     const menuCount = business ? await prisma.menuItem.count({ where: { businessId: business.id } }) : 0;
     const needsOnboarding = !business?.name || (business.name.startsWith("Business ") && (business.name.includes("@") || business.name.length < 20));
-    if (needsOnboarding && menuCount === 0) redirect("/dashboard/onboarding");
+    const isOnboarding = req?.url?.includes("onboarding") ?? false;
+    if (needsOnboarding && menuCount === 0 && !isOnboarding) redirect("/onboarding");
   }
 
   return (
