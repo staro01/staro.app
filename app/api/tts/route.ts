@@ -21,12 +21,12 @@ export async function GET(req: NextRequest) {
     headers: {
       "xi-api-key": apiKey,
       "Content-Type": "application/json",
-      Accept: "audio/ulaw",
+      Accept: "audio/basic",
     },
     body: JSON.stringify({
       text,
-      model_id: "eleven_multilingual_v2",
-      voice_settings: { stability: 0.4, similarity_boost: 0.85, style: 0.2, speaker_boost: true },
+      model_id: "eleven_turbo_v2_5",
+      voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0.0, speaker_boost: false },
     }),
   });
 
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   const audio = await r.arrayBuffer();
   return new Response(audio, {
     headers: {
-      "Content-Type": "audio/ulaw",
+      "Content-Type": "audio/basic",
       "Cache-Control": "public, max-age=3600",
     },
   });
