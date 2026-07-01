@@ -173,10 +173,10 @@ export default function MenuPage() {
   );
 }
 
-const btnPrimary: React.CSSProperties = { padding: "10px 18px", borderRadius: 12, border: "none", background: "#111", color: "#fff", fontWeight: 800, cursor: "pointer", fontSize: 14 };
-const btnSecondary: React.CSSProperties = { padding: "10px 18px", borderRadius: 12, border: "1px solid #ddd", background: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 14 };
-const btnSmall: React.CSSProperties = { padding: "6px 12px", borderRadius: 10, border: "1px solid #eee", background: "#fafafa", fontWeight: 700, cursor: "pointer", fontSize: 13 };
-const inputStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid #ddd", fontSize: 14, width: "100%", boxSizing: "border-box" };
-const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 5, fontSize: 13, fontWeight: 600, color: "#444" };
-const tabActive: React.CSSProperties = { padding: "8px 16px", borderRadius: 10, border: "none", background: "#111", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 14 };
-const tabInactive: React.CSSProperties = { padding: "8px 16px", borderRadius: 10, border: "1px solid #eee", background: "#fafafa", fontWeight: 700, cursor: "pointer", fontSize: 14 };
+const btnPrimary: React.CSSProperties = { padding: "10px 18px", borderRadius: 12, border: "none", background: "#6b1fad", color: "#fff", fontWeight: 800, cursor: "pointer", fontSize: 14 };
+const btnSecondary: React.CSSProperties = { padding: "10px 18px", borderRadius: 12, border: "1px solid #ddd", background: "#1a1a2e", fontWeight: 700, cursor: "pointer", fontSize: 14, color: "#ccc" };
+const btnSmall: React.CSSProperties = { padding: "6px 12px", borderRadius: 10, border: "1px solid #eee", background: "#1a1a2e", fontWeight: 700, cursor: "pointer", fontSize: 13, color: "#ccc" };
+const inputStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid #2a1a3e", background: "#0a0a0a", color: "#fff", fontSize: 14, width: "100%", boxSizing: "border-box" };
+const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 5, fontSize: 13, fontWeight: 600, color: "#aaa" };
+const tabActive: React.CSSProperties = { padding: "8px 16px", borderRadius: 10, border: "none", background: "#6b1fad", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 14 };
+const tabInactive: React.CSSProperties = { padding: "8px 16px", borderRadius: 10, border: "1px solid #2a1a3e", background: "#1a1a2e", fontWeight: 700, cursor: "pointer", fontSize: 14 };
