@@ -16,6 +16,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   
   if (needsOnboarding && menuCount === 0) redirect("/onboarding");
 
+  const vertical = business?.vertical ?? "pizzeria";
+  const isRestaurant = ["pizzeria", "restaurant"].includes(vertical);
+  const isCoiffeur = ["coiffeur"].includes(vertical);
+
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>
       <header style={{ background: "#111111", borderBottom: "1px solid #2a1a3e", padding: "14px 20px" }}>
@@ -25,9 +29,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
             Staro.app
           </div>
           <nav style={{ display: "flex", gap: 8 }}>
-            <Link href="/dashboard" style={navStyle}>📋 Commandes</Link>
-            <Link href="/dashboard/menu" style={navStyle}>🍽️ Ma carte</Link>
-            <Link href="/dashboard/agenda" style={navStyle}>📅 Agenda</Link>
+            {isRestaurant && <>
+              <Link href="/dashboard" style={navStyle}>📋 Commandes</Link>
+              <Link href="/dashboard/menu" style={navStyle}>🍽️ Ma carte</Link>
+            </>}
+            {isCoiffeur && <>
+              <Link href="/dashboard/agenda" style={navStyle}>📅 Agenda</Link>
+              <Link href="/dashboard/agenda?tab=services" style={navStyle}>✂️ Services & Équipe</Link>
+            </>}
+            {!isRestaurant && !isCoiffeur && <>
+              <Link href="/dashboard/agenda" style={navStyle}>📅 Agenda</Link>
+            </>}
             <Link href="/dashboard/settings" style={navStyle}>⚙️ Paramètres</Link>
           </nav>
           <Link href="/sign-out" style={{ fontSize: 13, color: "#888" }}>Déconnexion</Link>

@@ -1,9 +1,9 @@
-"use server";
-
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../lib/prisma";
 import { redirect } from "next/navigation";
-import OrdersDashboard from "./OrdersDashboard";
+import DashboardClient from "./DashboardClient";
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -12,8 +12,10 @@ export default async function DashboardPage() {
   const business = await prisma.business.findFirst({ where: { clerkUserId: user.id } });
   if (!business) redirect("/onboarding");
 
-  const isRestaurant = ["pizzeria", "restaurant"].includes(business.vertical ?? "");
+  const vertical = business.vertical ?? "pizzeria";
+  const isRestaurant = ["pizzeria", "restaurant"].includes(vertical);
+
   if (!isRestaurant) redirect("/dashboard/agenda");
 
-  return <OrdersDashboard />;
+  return <DashboardClient />;
 }
