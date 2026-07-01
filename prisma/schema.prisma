@@ -8,30 +8,33 @@ datasource db {
 }
 
 model Business {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  name         String
-  vertical     String
-  clerkUserId  String?  @unique
-  twilioNumber String?  @unique
-  phone        String?
-  address      String?
-  welcomeMessage   String?
-  vacationMode     Boolean @default(false)
-  vacationMessage  String?
-  openingHours     Json?
-  allergensInfo    String?
-  currentPromos    String?
-  deliveryEnabled  Boolean @default(true)
-  deliveryFee      Float?  @default(0)
-  deliveryMinimum  Float?  @default(0)
-  estimatedPrepTime Int?   @default(20)
-  paymentMethods   String? @default("CB, espèces")
-  menuItems    MenuItem[]
-  supplements  Supplement[]
-  events       Event[]
-  conversations Conversation[]
+  id                String         @id @default(cuid())
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  name              String
+  vertical          String
+  clerkUserId       String?        @unique
+  twilioNumber      String?        @unique
+  phone             String?
+  address           String?
+  welcomeMessage    String?
+  vacationMode      Boolean        @default(false)
+  vacationMessage   String?
+  openingHours      Json?
+  allergensInfo     String?
+  currentPromos     String?
+  deliveryEnabled   Boolean        @default(true)
+  deliveryFee       Float?         @default(0)
+  deliveryMinimum   Float?         @default(0)
+  estimatedPrepTime Int?           @default(20)
+  paymentMethods    String?        @default("CB, espèces")
+  menuItems         MenuItem[]
+  supplements       Supplement[]
+  events            Event[]
+  conversations     Conversation[]
+  staff             Staff[]
+  services          Service[]
+  appointments      Appointment[]
 }
 
 model MenuItem {
@@ -81,12 +84,59 @@ model Event {
 }
 
 model Conversation {
-  id         String   @id @default(cuid())
-  createdAt  DateTime @default(now())
-  externalId String?  @unique
+  id         String    @id @default(cuid())
+  createdAt  DateTime  @default(now())
+  externalId String?   @unique
   businessId String?
   business   Business? @relation(fields: [businessId], references: [id])
   messages   Json?
 
   @@index([businessId])
+}
+
+model Staff {
+  id           String        @id @default(cuid())
+  createdAt    DateTime      @default(now())
+  businessId   String
+  business     Business      @relation(fields: [businessId], references: [id])
+  name         String
+  available    Boolean       @default(true)
+  appointments Appointment[]
+
+  @@index([businessId])
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  createdAt    DateTime      @default(now())
+  businessId   String
+  business     Business      @relation(fields: [businessId], references: [id])
+  name         String
+  duration     Int
+  price        Float         @default(0)
+  available    Boolean       @default(true)
+  appointments Appointment[]
+
+  @@index([businessId])
+}
+
+model Appointment {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  businessId    String
+  business      Business  @relation(fields: [businessId], references: [id])
+  serviceId     String?
+  service       Service?  @relation(fields: [serviceId], references: [id])
+  staffId       String?
+  staff         Staff?    @relation(fields: [staffId], references: [id])
+  customerName  String
+  customerPhone String
+  startAt       DateTime
+  endAt         DateTime
+  status        String    @default("confirmed")
+  notes         String?
+  externalRef   String?   @unique
+
+  @@index([businessId])
+  @@index([startAt])
 }

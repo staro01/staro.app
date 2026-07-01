@@ -27,6 +27,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <nav style={{ display: "flex", gap: 8 }}>
             <Link href="/dashboard" style={navStyle}>📋 Commandes</Link>
             <Link href="/dashboard/menu" style={navStyle}>🍽️ Ma carte</Link>
+            <Link href="/dashboard/agenda" style={navStyle}>📅 Agenda</Link>
             <Link href="/dashboard/settings" style={navStyle}>⚙️ Paramètres</Link>
           </nav>
           <Link href="/sign-out" style={{ fontSize: 13, color: "#888" }}>Déconnexion</Link>
