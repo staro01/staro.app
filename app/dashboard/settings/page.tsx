@@ -110,7 +110,7 @@ export default function SettingsPage() {
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return <div style={{ marginBottom: 24, border: "1px solid #eee", borderRadius: 16, padding: 20 }}><h2 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 800 }}>{title}</h2><div style={{ display: "grid", gap: 12 }}>{children}</div></div>;
+  return <div style={{ marginBottom: 24, border: "1px solid #2a1a3e", borderRadius: 16, padding: 20, background: "#111" }}><h2 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 800 }}>{title}</h2><div style={{ display: "grid", gap: 12 }}>{children}</div></div>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -121,6 +121,6 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   return <label style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, fontWeight: 600, cursor: "pointer" }}><input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />{label}</label>;
 }
 
-const btnPrimary: React.CSSProperties = { padding: "10px 18px", borderRadius: 12, border: "none", background: "#111", color: "#fff", fontWeight: 800, cursor: "pointer", fontSize: 14 };
-const inputStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid #ddd", fontSize: 14, width: "100%", boxSizing: "border-box" };
-const timeInput: React.CSSProperties = { padding: "6px 8px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13 };
+const btnPrimary: React.CSSProperties = { padding: "10px 18px", borderRadius: 12, border: "none", background: "#6b1fad", color: "#fff", fontWeight: 800, cursor: "pointer", fontSize: 14 };
+const inputStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid #2a1a3e", background: "#0a0a0a", color: "#fff", fontSize: 14, width: "100%", boxSizing: "border-box" };
+const timeInput: React.CSSProperties = { padding: "6px 8px", borderRadius: 8, border: "1px solid #2a1a3e", background: "#0a0a0a", color: "#fff", fontSize: 13 };
