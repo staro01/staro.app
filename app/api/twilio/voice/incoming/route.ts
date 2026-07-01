@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
   const greet = business.welcomeMessage?.trim()
     ? business.welcomeMessage.trim()
-    : `Bonjour, ${business.name}, puis-je vous aider ?`;
+    : `Bonjour, pizzeria ${business.name}, puis-je prendre votre commande ?`;
 
   if (callSid) {
     await prisma.conversation.upsert({
