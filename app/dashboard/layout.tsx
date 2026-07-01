@@ -10,17 +10,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
-  const role = String((user.publicMetadata as any)?.role ?? "").toUpperCase();
-  // Accepte tous les utilisateurs connectés pour staro.app
-
-  let business = null;
-  if (true) {
-    business = await ensureBusinessForCurrentUser();
-    const menuCount = business ? await prisma.menuItem.count({ where: { businessId: business.id } }) : 0;
-    const needsOnboarding = !business?.name || (business.name.startsWith("Business ") && (business.name.includes("@") || business.name.length < 20));
-    const isOnboarding = req?.url?.includes("onboarding") ?? false;
-    if (needsOnboarding && menuCount === 0 && !isOnboarding) redirect("/onboarding");
-  }
+  const business = await ensureBusinessForCurrentUser();
+  const menuCount = business ? await prisma.menuItem.count({ where: { businessId: business.id } }) : 0;
+  const needsOnboarding = !business?.name || (business.name.startsWith("Business ") && (business.name.includes("@") || business.name.length < 20));
+  
+  if (needsOnboarding && menuCount === 0) redirect("/onboarding");
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff" }}>
