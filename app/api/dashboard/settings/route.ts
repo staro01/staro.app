@@ -4,25 +4,26 @@ import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-async function getBusiness() {
-  const user = await currentUser();
-  if (!user) return null;
-  return prisma.business.findFirst({ where: { clerkUserId: user.id } });
+async function getUser() {
+  return await currentUser();
 }
 
 export async function GET() {
-  const business = await getBusiness();
+  const user = await getUser();
+  if (!user) return Response.json(null, { status: 404 });
+  const business = await prisma.business.findFirst({ where: { clerkUserId: user.id } });
   if (!business) return Response.json(null, { status: 404 });
   return Response.json(business);
 }
 
 export async function PATCH(req: NextRequest) {
-  const business = await getBusiness();
-  if (!business) return Response.json({ error: "Non autorisé" }, { status: 401 });
+  const user = await getUser();
+  if (!user) return Response.json({ error: "Non autorisé" }, { status: 401 });
   const body = await req.json();
-  const updated = await prisma.business.update({
-    where: { id: business.id },
-    data: {
+
+  const business = await prisma.business.upsert({
+    where: { clerkUserId: user.id },
+    update: {
       name: body.name,
       phone: body.phone,
       address: body.address,
@@ -38,6 +39,14 @@ export async function PATCH(req: NextRequest) {
       welcomeMessage: body.welcomeMessage,
       openingHours: body.openingHours,
     },
+    create: {
+      clerkUserId: user.id,
+      vertical: "pizzeria",
+      name: body.name ?? "Mon établissement",
+      phone: body.phone,
+      address: body.address,
+    },
   });
-  return Response.json(updated);
+
+  return Response.json(business);
 }
