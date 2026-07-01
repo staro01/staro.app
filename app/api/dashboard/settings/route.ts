@@ -25,6 +25,7 @@ export async function PATCH(req: NextRequest) {
     where: { clerkUserId: user.id },
     update: {
       name: body.name,
+      vertical: body.vertical,
       phone: body.phone,
       address: body.address,
       estimatedPrepTime: body.estimatedPrepTime,
