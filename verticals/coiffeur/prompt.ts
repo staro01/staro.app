@@ -1,12 +1,9 @@
 import type { Business, Service, Staff, Appointment } from "@prisma/client";
+import { formatParisDate, formatParisTime, parisDateKey, parisWeekday } from "../../lib/timezone";
 
 const DAY_NAMES = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
 
 type DaySchedule = { open: string; close: string; dinnerOpen: string; dinnerClose: string; closed: boolean };
-
-function formatDateFr(d: Date): string {
-  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
-}
 
 export function buildCoiffeurPrompt(
   business: Business,
@@ -37,7 +34,7 @@ Raccroche poliment après.`;
   for (let i = 0; i < 7; i++) {
     const d = new Date(now);
     d.setDate(d.getDate() + i);
-    const dayKey = DAY_NAMES[d.getDay()];
+    const dayKey = DAY_NAMES[parisWeekday(d)];
     const sched = openingHours[dayKey];
     if (!sched || sched.closed) continue;
 
@@ -48,13 +45,13 @@ Raccroche poliment après.`;
     }
     if (blocks.length === 0) continue;
 
-    const dateLabel = formatDateFr(d);
-    const dayStr = d.toISOString().slice(0, 10);
+    const dateLabel = formatParisDate(d);
+    const dayStr = parisDateKey(d);
 
     const busy = upcomingAppointments
-      .filter(a => a.startAt.toISOString().slice(0, 10) === dayStr && a.status !== "cancelled")
+      .filter(a => parisDateKey(a.startAt) === dayStr && a.status !== "cancelled")
       .sort((a, b) => a.startAt.getTime() - b.startAt.getTime())
-      .map(a => `${a.startAt.toTimeString().slice(0, 5)}-${a.endAt.toTimeString().slice(0, 5)}${a.staffId ? ` (${a.staffId})` : ""}`)
+      .map(a => `${formatParisTime(a.startAt)}-${formatParisTime(a.endAt)}${a.staffId ? ` (${a.staffId})` : ""}`)
       .join(", ");
 
     dayBlocks.push(
@@ -72,13 +69,14 @@ Raccroche poliment après.`;
 - Tu salues toujours avec "Bonjour" peu importe l'heure.
 - Si le client dit "[silence]" : dis juste "Vous êtes là ?"
 - Tu ne proposes JAMAIS un créneau qui chevauche un créneau déjà pris, ni en dehors des horaires d'ouverture.
-- Nous sommes le ${formatDateFr(now)}, il est ${now.toTimeString().slice(0, 5)}. Ne propose jamais un créneau déjà passé aujourd'hui.
+- Nous sommes le ${formatParisDate(now)}, il est ${formatParisTime(now)} (heure de Paris). Ne propose jamais un créneau déjà passé aujourd'hui.
+- Toutes les heures que tu donnes ou reçois sont en heure de Paris.
 
 ## Services proposés
 ${serviceLines || "Aucun service configuré."}
 
 ${availableStaff.length > 0 ? `## Équipe\n${staffLines}\n` : ""}
-## Disponibilités des 7 prochains jours (horaires d'ouverture et créneaux déjà pris)
+## Disponibilités des 7 prochains jours (horaires d'ouverture et créneaux déjà pris, heure de Paris)
 ${dayBlocks.join("\n") || "Aucune disponibilité configurée."}
 
 ## Déroulé naturel — suivre dans l'ordre
@@ -98,7 +96,7 @@ Règles JSON :
 - "serviceId" : l'identifiant exact entre crochets dans la liste des services ci-dessus.
 - "staffId" : l'identifiant exact entre crochets si un membre précis a été demandé, sinon "".
 - "phone" : 10 chiffres sans espaces ni tirets.
-- "startAt" : date et heure ISO exactes du créneau confirmé (sans "Z").
+- "startAt" : date et heure ISO du créneau confirmé, SANS "Z" et SANS décalage — c'est l'heure locale de Paris telle quelle.
 - "notes" : précisions du client, "" si aucune.
 - Ne produire ce bloc QU'après confirmation explicite du client.`;
 }
