@@ -15,7 +15,8 @@ export async function GET(req: NextRequest) {
   if (!business) return Response.json([], { status: 200 });
   const { searchParams } = new URL(req.url);
   const date = searchParams.get("date");
-  
+  const staffId = searchParams.get("staffId");
+
   const where: any = { businessId: business.id, status: { not: "cancelled" } };
   if (date) {
     const start = new Date(date);
@@ -24,6 +25,7 @@ export async function GET(req: NextRequest) {
     end.setHours(23, 59, 59, 999);
     where.startAt = { gte: start, lte: end };
   }
+  if (staffId) where.staffId = staffId;
 
   const appointments = await prisma.appointment.findMany({
     where,

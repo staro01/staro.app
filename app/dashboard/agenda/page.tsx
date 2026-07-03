@@ -17,16 +17,31 @@ type Appointment = {
   staff?: Staff;
 };
 
+const TZ = "Europe/Paris";
+const STORAGE_KEY = "staro_staff_id";
+
 function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: TZ, hour12: false });
 }
 
 function formatDate(d: Date) {
-  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: TZ });
 }
 
 function isoDate(d: Date) {
-  return d.toISOString().split("T")[0];
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(d);
+  const y = parts.find(p => p.type === "year")?.value;
+  const m = parts.find(p => p.type === "month")?.value;
+  const day = parts.find(p => p.type === "day")?.value;
+  return `${y}-${m}-${day}`;
+}
+
+// Minutes depuis minuit, en heure de Paris
+function parisMinutes(iso: string) {
+  const d = new Date(iso);
+  const str = d.toLocaleTimeString("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false });
+  const [h, m] = str.split(":").map(Number);
+  return h * 60 + m;
 }
 
 export default function AgendaPage() {
@@ -39,10 +54,24 @@ export default function AgendaPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [modal, setModal] = useState<any>(null);
   const [saving, setSaving] = useState(false);
+  const [whoAmI, setWhoAmI] = useState<string>("all");
+  const [whoAmILoaded, setWhoAmILoaded] = useState(false);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored) setWhoAmI(stored);
+    setWhoAmILoaded(true);
+  }, []);
+
+  function changeWhoAmI(id: string) {
+    setWhoAmI(id);
+    window.localStorage.setItem(STORAGE_KEY, id);
+  }
 
   async function load() {
+    const staffParam = whoAmI !== "all" ? `&staffId=${whoAmI}` : "";
     const [appts, staffList, serviceList] = await Promise.all([
-      fetch(`/api/dashboard/appointments?date=${isoDate(date)}`).then(r => r.json()),
+      fetch(`/api/dashboard/appointments?date=${isoDate(date)}${staffParam}`).then(r => r.json()),
       fetch("/api/dashboard/staff").then(r => r.json()),
       fetch("/api/dashboard/services").then(r => r.json()),
     ]);
@@ -51,7 +80,7 @@ export default function AgendaPage() {
     setServices(Array.isArray(serviceList) ? serviceList : []);
   }
 
-  useEffect(() => { load(); }, [date]);
+  useEffect(() => { if (whoAmILoaded) load(); }, [date, whoAmI, whoAmILoaded]);
 
   async function saveStaff() {
     setSaving(true);
@@ -90,14 +119,33 @@ export default function AgendaPage() {
   const prevDay = () => { const d = new Date(date); d.setDate(d.getDate() - 1); setDate(d); };
   const nextDay = () => { const d = new Date(date); d.setDate(d.getDate() + 1); setDate(d); };
 
-  const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8h-19h
+  // Créneaux de 30 min, de 8h00 à 19h30
+  const slots: number[] = [];
+  for (let m = 8 * 60; m <= 19 * 60 + 30; m += 30) slots.push(m);
+
+  function slotLabel(m: number) {
+    const h = Math.floor(m / 60);
+    const mm = m % 60;
+    return `${h}:${mm === 0 ? "00" : mm}`;
+  }
+
+  const currentStaffName = staff.find(s => s.id === whoAmI)?.name;
 
   return (
     <div>
       {view === "agenda" && (
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
             <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, color: "#fff" }}>📅 Agenda</h1>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12, color: "#888", fontWeight: 600 }}>Qui êtes-vous ?</span>
+              <select value={whoAmI} onChange={e => changeWhoAmI(e.target.value)} style={selectStyle}>
+                <option value="all">👥 Toute l'équipe</option>
+                {staff.map(s => (
+                  <option key={s.id} value={s.id}>👤 {s.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
@@ -105,25 +153,52 @@ export default function AgendaPage() {
             <span style={{ fontSize: 16, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{formatDate(date)}</span>
             <button onClick={nextDay} style={navBtn}>→</button>
             <button onClick={() => setDate(new Date())} style={{ ...navBtn, fontSize: 12, padding: "6px 12px" }}>Aujourd'hui</button>
+            {whoAmI !== "all" && currentStaffName && (
+              <span style={{ fontSize: 12, color: "#9b4fdd", fontWeight: 700, background: "#1a1a2e", border: "1px solid #2a1a3e", borderRadius: 8, padding: "6px 12px" }}>
+                Agenda de {currentStaffName}
+              </span>
+            )}
           </div>
 
           <div style={{ border: "1px solid #2a1a3e", borderRadius: 16, overflow: "hidden" }}>
-            {hours.map(h => {
-              const slotAppts = appointments.filter(a => new Date(a.startAt).getHours() === h);
+            {slots.map(slotMin => {
+              const slotAppts = appointments.filter(a => {
+                const start = parisMinutes(a.startAt);
+                const end = parisMinutes(a.endAt);
+                return start <= slotMin && slotMin < end;
+              });
+              const isHour = slotMin % 60 === 0;
               return (
-                <div key={h} style={{ display: "grid", gridTemplateColumns: "60px 1fr", borderBottom: "1px solid #1a1a2e" }}>
-                  <div style={{ padding: "12px 8px", color: "#555", fontSize: 13, textAlign: "right", borderRight: "1px solid #1a1a2e" }}>
-                    {h}:00
+                <div key={slotMin} style={{
+                  display: "grid", gridTemplateColumns: "70px 1fr",
+                  borderBottom: isHour ? "1px solid #2a1a3e" : "1px solid #161622",
+                }}>
+                  <div style={{
+                    padding: "10px 10px", color: isHour ? "#888" : "#444", fontSize: isHour ? 13 : 11,
+                    fontWeight: isHour ? 700 : 400, textAlign: "right", borderRight: "1px solid #1a1a2e",
+                  }}>
+                    {slotLabel(slotMin)}
                   </div>
-                  <div style={{ padding: 8, minHeight: 48, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div style={{ padding: "6px 10px", minHeight: 40, display: "flex", flexDirection: "column", gap: 6 }}>
                     {slotAppts.map(a => (
                       <div key={a.id} style={{
-                        background: "#2a1a3e", border: "1px solid #6b1fad", borderRadius: 8,
-                        padding: "6px 10px", fontSize: 13, cursor: "pointer",
+                        background: "#1e1430", border: "1px solid #6b1fad", borderRadius: 10,
+                        padding: "10px 14px", fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
                       }}>
-                        <div style={{ fontWeight: 700, color: "#fff" }}>{formatTime(a.startAt)} — {a.customerName}</div>
-                        <div style={{ color: "#9b4fdd", fontSize: 12 }}>{a.service?.name ?? "RDV"}{a.staff ? ` · ${a.staff.name}` : ""}</div>
-                        <button onClick={() => cancelAppointment(a.id)} style={{ background: "none", border: "none", color: "#ff6b6b", fontSize: 11, cursor: "pointer", padding: 0, marginTop: 4 }}>✕ Annuler</button>
+                        <div>
+                          <div style={{ fontWeight: 800, color: "#fff", fontSize: 14 }}>
+                            {formatTime(a.startAt)}–{formatTime(a.endAt)} · {a.customerName}
+                          </div>
+                          <div style={{ color: "#c084fc", fontSize: 12, marginTop: 2 }}>
+                            ✂️ {a.service?.name ?? "RDV"}{a.staff ? `  ·  👤 ${a.staff.name}` : "  ·  👤 non assigné"}
+                          </div>
+                          {a.customerPhone && (
+                            <div style={{ color: "#666", fontSize: 11, marginTop: 2 }}>📞 {a.customerPhone}</div>
+                          )}
+                        </div>
+                        <button onClick={() => cancelAppointment(a.id)} style={{ background: "none", border: "1px solid #442222", color: "#ff6b6b", fontSize: 11, cursor: "pointer", padding: "6px 10px", borderRadius: 8, whiteSpace: "nowrap" }}>
+                          ✕ Annuler
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -133,7 +208,7 @@ export default function AgendaPage() {
           </div>
 
           {appointments.length === 0 && (
-            <p style={{ color: "#555", textAlign: "center", marginTop: 20 }}>Aucun RDV ce jour.</p>
+            <p style={{ color: "#555", textAlign: "center", marginTop: 20 }}>Aucun RDV ce jour{whoAmI !== "all" && currentStaffName ? ` pour ${currentStaffName}` : ""}.</p>
           )}
 
           <div style={{ marginTop: 24, border: "1px solid #2a1a3e", borderRadius: 16, padding: 20 }}>
@@ -242,3 +317,4 @@ const btnSecondary: React.CSSProperties = { padding: "10px 18px", borderRadius: 
 const btnSmall: React.CSSProperties = { padding: "6px 12px", borderRadius: 10, border: "1px solid #2a1a3e", background: "#1a1a2e", fontWeight: 700, cursor: "pointer", fontSize: 13, color: "#ccc" };
 const inputStyle: React.CSSProperties = { padding: "9px 12px", borderRadius: 10, border: "1px solid #2a1a3e", background: "#0a0a0a", color: "#fff", fontSize: 14, width: "100%", boxSizing: "border-box" };
 const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 5, fontSize: 13, fontWeight: 600, color: "#aaa" };
+const selectStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid #2a1a3e", background: "#1a1a2e", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" };
