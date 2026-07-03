@@ -1,5 +1,5 @@
 import { prisma } from "../../../../../lib/prisma";
-import { xml, getBaseUrl, hangupTwiml, gatherSay, normPhone, escapeXml, say } from "../../../../../core/twilio/incoming";
+import { xml, getBaseUrl, hangupTwiml, gatherSay, normPhone } from "../../../../../core/twilio/incoming";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,19 +34,17 @@ export async function POST(req: Request) {
     return xml(hangupTwiml(baseUrl, business.vacationMessage ?? "L'établissement est actuellement fermé. Merci de rappeler."));
   }
 
-  const greet = business.welcomeMessage?.trim()
-    ? business.welcomeMessage.trim()
+  const defaultGreet = business.vertical === "coiffeur"
+    ? `Bonjour, salon ${business.name}, que puis-je faire pour vous ?`
     : `Bonjour, pizzeria ${business.name}, puis-je prendre votre commande ?`;
+
+  const greet = business.welcomeMessage?.trim() ? business.welcomeMessage.trim() : defaultGreet;
 
   if (callSid) {
     await prisma.conversation.upsert({
       where: { externalId: callSid },
       update: {},
-      create: {
-        externalId: callSid,
-        businessId: business.id,
-        messages: [{ role: "assistant", content: greet }],
-      },
+      create: { externalId: callSid, businessId: business.id, messages: [{ role: "assistant", content: greet }] },
     });
   }
 

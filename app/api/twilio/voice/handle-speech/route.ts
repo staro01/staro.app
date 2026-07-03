@@ -5,6 +5,8 @@ import { loadHistory, saveHistory } from "../../../../../core/ai/conversation";
 import { askClaude } from "../../../../../core/ai/claude";
 import { buildPizzeriaPrompt } from "../../../../../verticals/pizzeria/prompt";
 import { extractOrderJson, stripOrderBlock, saveOrder } from "../../../../../verticals/pizzeria/actions";
+import { buildCoiffeurPrompt } from "../../../../../verticals/coiffeur/prompt";
+import { extractAppointmentJson, stripAppointmentBlock, saveAppointment } from "../../../../../verticals/coiffeur/actions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,35 +36,55 @@ export async function POST(req: NextRequest) {
     const business = await findBusiness(to);
     if (!business) return xml(hangupTwiml(baseUrl, "Ce numéro n'est pas configuré."));
 
-    // Charger menu + suppléments
-    const menuItems = await prisma.menuItem.findMany({
-      where: { businessId: business.id },
-      orderBy: { category: "asc" },
-    });
+    const history = await loadHistory(callSid);
+    history.push({ role: "user", content: speech || "[silence]" });
 
-    const supplements = await prisma.supplement.findMany({
-      where: { businessId: business.id },
-      orderBy: { name: "asc" },
-    });
+    if (business.vertical === "coiffeur") {
+      const services = await prisma.service.findMany({ where: { businessId: business.id }, orderBy: { name: "asc" } });
+      const staff = await prisma.staff.findMany({ where: { businessId: business.id }, orderBy: { name: "asc" } });
 
-    // Menu vide
+      if (services.length === 0) {
+        return xml(hangupTwiml(baseUrl, "Notre système de prise de rendez-vous n'est pas encore configuré. Merci de nous appeler directement."));
+      }
+
+      const in7Days = new Date();
+      in7Days.setDate(in7Days.getDate() + 7);
+      const upcomingAppointments = await prisma.appointment.findMany({
+        where: { businessId: business.id, status: { not: "cancelled" }, startAt: { lte: in7Days } },
+      });
+
+      const system = buildCoiffeurPrompt(business, services, staff, upcomingAppointments);
+      const claudeText = await askClaude(system, history);
+      history.push({ role: "assistant", content: claudeText });
+
+      const apptData = extractAppointmentJson(claudeText);
+      if (apptData) {
+        const { conflict } = await saveAppointment(callSid, business.id, apptData);
+        if (conflict) {
+          const retryText = "Ce créneau vient d'être pris, pouvez-vous choisir un autre horaire ?";
+          history.push({ role: "assistant", content: retryText });
+          await saveHistory(callSid, history, business.id);
+          return xml(gatherSay(baseUrl, retryText, "/api/twilio/voice/handle-speech"));
+        }
+        await saveHistory(callSid, history, business.id);
+        const confirmText = stripAppointmentBlock(claudeText) || "Votre rendez-vous est bien enregistré. Merci et à bientôt !";
+        return xml(hangupTwiml(baseUrl, confirmText));
+      }
+
+      await saveHistory(callSid, history, business.id);
+      return xml(gatherSay(baseUrl, claudeText, "/api/twilio/voice/handle-speech"));
+    }
+
+    // Vertical pizzeria (par défaut)
+    const menuItems = await prisma.menuItem.findMany({ where: { businessId: business.id }, orderBy: { category: "asc" } });
+    const supplements = await prisma.supplement.findMany({ where: { businessId: business.id }, orderBy: { name: "asc" } });
+
     if (menuItems.length === 0) {
       return xml(hangupTwiml(baseUrl, "Notre système de commande n'est pas encore configuré. Merci de nous appeler directement."));
     }
 
-    // Choisir le prompt selon le vertical
-    let system = "";
-    if (business.vertical === "pizzeria") {
-      system = buildPizzeriaPrompt(business, menuItems, supplements);
-    } else {
-      system = buildPizzeriaPrompt(business, menuItems, supplements); // fallback
-    }
-
-    const history = await loadHistory(callSid);
-    history.push({ role: "user", content: speech || "[silence]" });
-
+    const system = buildPizzeriaPrompt(business, menuItems, supplements);
     const claudeText = await askClaude(system, history);
-
     history.push({ role: "assistant", content: claudeText });
     await saveHistory(callSid, history, business.id);
 
