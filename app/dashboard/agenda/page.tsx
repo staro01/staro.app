@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Staff = { id: string; name: string; available: boolean };
 type Service = { id: string; name: string; duration: number; price: number; available: boolean };
@@ -29,11 +30,13 @@ function isoDate(d: Date) {
 }
 
 export default function AgendaPage() {
+  const searchParams = useSearchParams();
+  const view = searchParams.get("tab") === "services" ? "services" : "agenda";
+
   const [date, setDate] = useState(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [services, setServices] = useState<Service[]>([]);
-  const [tab, setTab] = useState<"agenda" | "staff" | "services">("agenda");
   const [modal, setModal] = useState<any>(null);
   const [saving, setSaving] = useState(false);
 
@@ -91,26 +94,12 @@ export default function AgendaPage() {
 
   return (
     <div>
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, color: "#fff" }}>📅 Agenda</h1>
-        <div style={{ display: "flex", gap: 8 }}>
-          {(["agenda", "staff", "services"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              padding: "8px 16px", borderRadius: 10, border: "1px solid #2a1a3e",
-              background: tab === t ? "#6b1fad" : "#1a1a2e", color: "#fff",
-              fontWeight: 700, cursor: "pointer", fontSize: 13,
-            }}>
-              {t === "agenda" ? "📅 Agenda" : t === "staff" ? "👤 Équipe" : "✂️ Services"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* AGENDA TAB */}
-      {tab === "agenda" && (
+      {view === "agenda" && (
         <div>
-          {/* Navigation date */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, color: "#fff" }}>📅 Agenda</h1>
+          </div>
+
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
             <button onClick={prevDay} style={navBtn}>←</button>
             <span style={{ fontSize: 16, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{formatDate(date)}</span>
@@ -118,7 +107,6 @@ export default function AgendaPage() {
             <button onClick={() => setDate(new Date())} style={{ ...navBtn, fontSize: 12, padding: "6px 12px" }}>Aujourd'hui</button>
           </div>
 
-          {/* Créneaux horaires */}
           <div style={{ border: "1px solid #2a1a3e", borderRadius: 16, overflow: "hidden" }}>
             {hours.map(h => {
               const slotAppts = appointments.filter(a => new Date(a.startAt).getHours() === h);
@@ -148,7 +136,6 @@ export default function AgendaPage() {
             <p style={{ color: "#555", textAlign: "center", marginTop: 20 }}>Aucun RDV ce jour.</p>
           )}
 
-          {/* Intégrations futures */}
           <div style={{ marginTop: 24, border: "1px solid #2a1a3e", borderRadius: 16, padding: 20 }}>
             <p style={{ color: "#666", fontSize: 13, margin: "0 0 12px", fontWeight: 700 }}>🔗 Synchronisation</p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -165,16 +152,18 @@ export default function AgendaPage() {
         </div>
       )}
 
-      {/* STAFF TAB */}
-      {tab === "staff" && (
+      {view === "services" && (
         <div>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 24px", color: "#fff" }}>✂️ Services & Équipe</h1>
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: "#ccc", margin: 0 }}>👤 Équipe</h2>
             <button onClick={() => setModal({ type: "staff", name: "", available: true })} style={btnPrimary}>+ Ajouter</button>
           </div>
           {staff.length === 0 ? (
             <p style={{ color: "#555", textAlign: "center" }}>Aucun membre d'équipe.</p>
           ) : (
-            <div style={{ display: "grid", gap: 10 }}>
+            <div style={{ display: "grid", gap: 10, marginBottom: 32 }}>
               {staff.map(s => (
                 <div key={s.id} style={{ border: "1px solid #2a1a3e", borderRadius: 14, padding: "14px 20px", background: "#111", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
@@ -189,13 +178,9 @@ export default function AgendaPage() {
               ))}
             </div>
           )}
-        </div>
-      )}
 
-      {/* SERVICES TAB */}
-      {tab === "services" && (
-        <div>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: "#ccc", margin: 0 }}>✂️ Services</h2>
             <button onClick={() => setModal({ type: "service", name: "", duration: 30, price: 0, available: true })} style={btnPrimary}>+ Ajouter</button>
           </div>
           {services.length === 0 ? (
@@ -219,12 +204,11 @@ export default function AgendaPage() {
         </div>
       )}
 
-      {/* MODAL */}
       {modal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
           <div style={{ background: "#111", border: "1px solid #2a1a3e", borderRadius: 20, padding: 28, width: "100%", maxWidth: 400, display: "grid", gap: 14 }}>
             <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#fff" }}>
-              {modal.type === "staff" ? (modal.id ? "Modifier" : "Ajouter") : (modal.id ? "Modifier" : "Ajouter")} {modal.type === "staff" ? "un membre" : "un service"}
+              {modal.id ? "Modifier" : "Ajouter"} {modal.type === "staff" ? "un membre" : "un service"}
             </h2>
 
             <label style={labelStyle}>Nom<input value={modal.name} onChange={e => setModal({ ...modal, name: e.target.value })} style={inputStyle} /></label>
