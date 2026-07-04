@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useToast } from "../../../components/Toast";
 
 type Staff = { id: string; name: string; available: boolean };
 type Service = { id: string; name: string; duration: number; price: number; available: boolean };
@@ -56,6 +57,7 @@ function parisMinutes(iso: string) {
 export default function AgendaPage() {
   const searchParams = useSearchParams();
   const view = searchParams.get("tab") === "services" ? "services" : "agenda";
+  const { showToast } = useToast();
 
   const [date, setDate] = useState(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -104,13 +106,24 @@ export default function AgendaPage() {
     setSaving(true);
     const method = modal.id ? "PATCH" : "POST";
     const url = modal.id ? `/api/dashboard/staff/${modal.id}` : "/api/dashboard/staff";
-    await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(modal) });
+    const isEdit = !!modal.id;
+    try {
+      await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(modal) });
+      showToast(isEdit ? "Membre modifié" : "Membre ajouté");
+    } catch {
+      showToast("Erreur lors de l'enregistrement", "error");
+    }
     setModal(null); setSaving(false); load();
   }
 
   async function deleteStaff(id: string) {
     if (!confirm("Supprimer ce membre ?")) return;
-    await fetch(`/api/dashboard/staff/${id}`, { method: "DELETE" });
+    try {
+      await fetch(`/api/dashboard/staff/${id}`, { method: "DELETE" });
+      showToast("Membre supprimé");
+    } catch {
+      showToast("Erreur lors de la suppression", "error");
+    }
     load();
   }
 
@@ -118,19 +131,35 @@ export default function AgendaPage() {
     setSaving(true);
     const method = modal.id ? "PATCH" : "POST";
     const url = modal.id ? `/api/dashboard/services/${modal.id}` : "/api/dashboard/services";
-    await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(modal) });
+    const isEdit = !!modal.id;
+    try {
+      await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(modal) });
+      showToast(isEdit ? "Service modifié" : "Service ajouté");
+    } catch {
+      showToast("Erreur lors de l'enregistrement", "error");
+    }
     setModal(null); setSaving(false); load();
   }
 
   async function deleteService(id: string) {
     if (!confirm("Supprimer ce service ?")) return;
-    await fetch(`/api/dashboard/services/${id}`, { method: "DELETE" });
+    try {
+      await fetch(`/api/dashboard/services/${id}`, { method: "DELETE" });
+      showToast("Service supprimé");
+    } catch {
+      showToast("Erreur lors de la suppression", "error");
+    }
     load();
   }
 
   async function cancelAppointment(id: string) {
     if (!confirm("Annuler ce RDV ?")) return;
-    await fetch(`/api/dashboard/appointments/${id}`, { method: "DELETE" });
+    try {
+      await fetch(`/api/dashboard/appointments/${id}`, { method: "DELETE" });
+      showToast("Rendez-vous annulé");
+    } catch {
+      showToast("Erreur lors de l'annulation", "error");
+    }
     load();
   }
 
