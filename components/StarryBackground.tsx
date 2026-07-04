@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Star = { id: number; top: number; left: number; size: number; delay: number; duration: number };
-type ShootingStar = { id: number; top: number; left: number; angle: number; length: number; duration: number };
+
+type Comet = {
+  x: number; y: number; vx: number; vy: number;
+  life: number; maxLife: number;
+};
 
 export default function StarryBackground() {
   const [stars, setStars] = useState<Star[]>([]);
-  const [shootingStars, setShootingStars] = useState<ShootingStar[]>([]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Étoiles fixes scintillantes, générées une fois côté client (évite les erreurs d'hydratation SSR)
+  // Étoiles fixes scintillantes (générées côté client pour éviter les soucis d'hydratation SSR)
   useEffect(() => {
     setStars(Array.from({ length: 90 }, (_, i) => ({
       id: i,
@@ -21,39 +25,78 @@ export default function StarryBackground() {
     })));
   }, []);
 
-  // Étoiles filantes générées dynamiquement, une par une, à des positions/moments aléatoires sur tout l'écran
+  // Comètes dessinées frame par frame sur un canvas : point lumineux + traînée qui s'estompe naturellement
   useEffect(() => {
-    let nextId = 0;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    function spawnShootingStar() {
-      const id = nextId++;
-      const angle = 20 + Math.random() * 40; // toujours en diagonale descendante, angle variable
-      const duration = 1.2 + Math.random() * 1;
-      const star: ShootingStar = {
-        id,
-        top: Math.random() * 85,
-        left: Math.random() * 95,
-        angle,
-        length: 60 + Math.random() * 60,
-        duration,
-      };
-      setShootingStars(prev => [...prev, star]);
-      setTimeout(() => {
-        setShootingStars(prev => prev.filter(s => s.id !== id));
-      }, duration * 1000 + 100);
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
+    resize();
+    window.addEventListener("resize", resize);
 
-    function scheduleNext() {
-      const wait = 800 + Math.random() * 2500;
-      const timeout = setTimeout(() => {
-        spawnShootingStar();
-        scheduleNext();
-      }, wait);
-      return timeout;
+    let comets: Comet[] = [];
+    let rafId: number;
+    let spawnTimeout: ReturnType<typeof setTimeout>;
+
+    function spawnComet() {
+      const startFromLeft = Math.random() > 0.5;
+      const angle = (20 + Math.random() * 30) * (Math.PI / 180); // diagonale descendante
+      const speed = 6 + Math.random() * 5;
+      comets.push({
+        x: startFromLeft ? Math.random() * canvas.width * 0.4 : Math.random() * canvas.width,
+        y: -20,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0,
+        maxLife: 40 + Math.random() * 20,
+      });
+      spawnTimeout = setTimeout(spawnComet, 900 + Math.random() * 2200);
     }
+    spawnTimeout = setTimeout(spawnComet, 500);
 
-    const timeout = scheduleNext();
-    return () => clearTimeout(timeout);
+    function draw() {
+      // Efface très légèrement la frame précédente (canvas transparent, n'assombrit pas le fond derrière)
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillStyle = "rgba(0,0,0,0.12)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.globalCompositeOperation = "source-over";
+
+      comets = comets.filter(c => c.life < c.maxLife && c.y < canvas.height + 50 && c.x < canvas.width + 50);
+
+      for (const c of comets) {
+        c.x += c.vx;
+        c.y += c.vy;
+        c.life += 1;
+
+        const fadeIn = Math.min(c.life / 6, 1);
+        const fadeOut = Math.max(0, 1 - Math.max(0, c.life - (c.maxLife - 10)) / 10);
+        const opacity = fadeIn * fadeOut;
+
+        const gradient = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 6);
+        gradient.addColorStop(0, `rgba(255,255,255,${opacity})`);
+        gradient.addColorStop(0.4, `rgba(200,150,240,${opacity * 0.6})`);
+        gradient.addColorStop(1, "rgba(155,79,221,0)");
+
+        ctx.beginPath();
+        ctx.fillStyle = gradient;
+        ctx.arc(c.x, c.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      rafId = requestAnimationFrame(draw);
+    }
+    rafId = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(spawnTimeout);
+      window.removeEventListener("resize", resize);
+    };
   }, []);
 
   return (
@@ -77,34 +120,7 @@ export default function StarryBackground() {
         }} />
       ))}
 
-      {shootingStars.map(s => {
-        const rad = (s.angle * Math.PI) / 180;
-        const dx = Math.cos(rad) * 400;
-        const dy = Math.sin(rad) * 400;
-        return (
-          <div key={s.id} style={{
-            position: "absolute", top: `${s.top}%`, left: `${s.left}%`,
-            width: 1, height: 1, pointerEvents: "none",
-            animation: `staro-fly-${s.id} ${s.duration}s ease-in forwards`,
-          }}>
-            <div style={{
-              width: s.length, height: 2, borderRadius: 2,
-              background: "linear-gradient(90deg, transparent, rgba(155,79,221,0.6), #fff)",
-              transform: `rotate(${s.angle}deg)`,
-              transformOrigin: "left center",
-              boxShadow: "0 0 6px 1px rgba(255,255,255,0.7)",
-            }} />
-            <style>{`
-              @keyframes staro-fly-${s.id} {
-                0% { transform: translate(0, 0); opacity: 0; }
-                10% { opacity: 1; }
-                90% { opacity: 1; }
-                100% { transform: translate(${dx}px, ${dy}px); opacity: 0; }
-              }
-            `}</style>
-          </div>
-        );
-      })}
+      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
 
       <style>{`
         @keyframes staro-twinkle {
