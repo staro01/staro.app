@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useToast } from "../../components/Toast";
 
 type EventItem = {
   id: string;
@@ -36,12 +37,20 @@ function playDing() {
   } catch {}
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  preparing: "En préparation",
+  ready: "Prête",
+  done: "Terminée",
+  cancelled: "Annulée",
+};
+
 export default function OrdersDashboard() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [businessName, setBusinessName] = useState("Mon établissement");
   const [newAlert, setNewAlert] = useState(false);
   const prevIds = useRef<Set<string>>(new Set());
+  const { showToast } = useToast();
 
   async function fetchEvents() {
     try {
@@ -65,11 +74,16 @@ export default function OrdersDashboard() {
   }, []);
 
   async function setStatus(id: string, status: string) {
-    await fetch(`/api/dashboard/events/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
+    try {
+      await fetch(`/api/dashboard/events/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      showToast(`Commande marquée : ${STATUS_LABELS[status] ?? status}`);
+    } catch {
+      showToast("Erreur lors de la mise à jour", "error");
+    }
     await fetchEvents();
   }
 
@@ -123,19 +137,19 @@ export default function OrdersDashboard() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, color: "#fff" }}>📋 {businessName}</h1>
           <p style={{ fontSize: 12, color: "#666", margin: "4px 0 0" }}>Temps réel</p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {newAlert && <div style={{ background: "#6b1fad", color: "#fff", padding: "8px 14px", borderRadius: 10, fontSize: 13, fontWeight: 800 }}>🔔 Nouvelle commande !</div>}
           <button onClick={fetchEvents} style={btn}>↻ Rafraîchir</button>
         </div>
       </div>
 
-      {loading ? <p style={{ color: "#666" }}>Chargement…</p> : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      {loading ? <p style={{ color: "#666", textAlign: "center", padding: "40px 0" }}>Chargement des commandes…</p> : (
+        <div className="staro-orders-grid">
           <Column title="🆕 Nouvelles" subtitle="À prendre en charge" list={groups.new} />
           <Column title="👨‍🍳 En préparation" subtitle="En cours" list={groups.preparing} />
           <Column title="✅ Prêtes" subtitle="À remettre" list={groups.ready} />

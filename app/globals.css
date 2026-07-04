@@ -106,3 +106,15 @@ body {
 .staro-appt-card > button {
   margin-left: auto;
 }
+
+/* --- Responsive orders dashboard grid --- */
+.staro-orders-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 700px) {
+  .staro-orders-grid {
+    grid-template-columns: 1fr;
+  }
+}
