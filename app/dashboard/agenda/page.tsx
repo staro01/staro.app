@@ -137,9 +137,37 @@ export default function AgendaPage() {
   const prevDay = () => { const d = new Date(date); d.setDate(d.getDate() - 1); setDate(d); };
   const nextDay = () => { const d = new Date(date); d.setDate(d.getDate() + 1); setDate(d); };
 
-  // Créneaux de 30 min, de 8h00 à 19h30
+  // Créneaux de 30 min, plage calculée dynamiquement à partir des horaires d'ouverture configurés
+  const { rangeStart, rangeEnd } = (() => {
+    const DEFAULT_START = 8 * 60;
+    const DEFAULT_END = 19 * 60 + 30;
+    const allSchedules = Object.values(openingHours) as DaySchedule[];
+    if (allSchedules.length === 0) return { rangeStart: DEFAULT_START, rangeEnd: DEFAULT_END };
+
+    let earliest: number | null = null;
+    let latest: number | null = null;
+    for (const sched of allSchedules) {
+      if (!sched || sched.closed) continue;
+      const candidates = [
+        timeToMinutes(sched.open),
+        timeToMinutes(sched.dinnerOpen),
+      ].filter((v): v is number => v !== null);
+      const candidatesEnd = [
+        timeToMinutes(sched.close),
+        timeToMinutes(sched.dinnerClose),
+      ].filter((v): v is number => v !== null);
+      for (const c of candidates) if (earliest === null || c < earliest) earliest = c;
+      for (const c of candidatesEnd) if (latest === null || c > latest) latest = c;
+    }
+    if (earliest === null || latest === null) return { rangeStart: DEFAULT_START, rangeEnd: DEFAULT_END };
+    // Marge de 30 min avant/après pour ne pas coller pile aux bords
+    const start = Math.max(0, Math.floor((earliest - 30) / 30) * 30);
+    const end = Math.min(23 * 60 + 30, Math.ceil((latest + 30) / 30) * 30);
+    return { rangeStart: start, rangeEnd: end };
+  })();
+
   const slots: number[] = [];
-  for (let m = 8 * 60; m <= 19 * 60 + 30; m += 30) slots.push(m);
+  for (let m = rangeStart; m <= rangeEnd; m += 30) slots.push(m);
 
   const WEEKDAY_MAP: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
   const weekdayShort = date.toLocaleDateString("en-US", { timeZone: TZ, weekday: "short" });
