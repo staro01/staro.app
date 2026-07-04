@@ -24,16 +24,34 @@ export default function SignUpPage() {
   return (
     <div style={{
       minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      background: "#0a0a0a", gap: 28,
+      background: "#0a0a0a", gap: 28, position: "relative", overflow: "hidden",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        background: `
+          radial-gradient(circle at 20% 20%, rgba(107,31,173,0.35), transparent 45%),
+          radial-gradient(circle at 80% 15%, rgba(155,79,221,0.25), transparent 40%),
+          radial-gradient(circle at 50% 90%, rgba(107,31,173,0.3), transparent 50%),
+          linear-gradient(180deg, #0a0a0a 0%, #0d0714 100%)
+        `,
+      }} />
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.4,
+        backgroundImage: "radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)",
+        backgroundSize: "28px 28px",
+      }} />
+
+      <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{
           background: "linear-gradient(135deg, #6b1fad, #9b4fdd)", borderRadius: 10, width: 40, height: 40,
           display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+          boxShadow: "0 0 30px rgba(155,79,221,0.5)",
         }}>✦</span>
         <span style={{ fontSize: 24, fontWeight: 900, color: "#fff" }}>Staro.app</span>
       </div>
-      <SignUp appearance={clerkAppearance} />
+      <div style={{ position: "relative" }}>
+        <SignUp appearance={clerkAppearance} />
+      </div>
     </div>
   );
 }
