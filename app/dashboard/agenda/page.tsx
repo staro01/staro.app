@@ -71,6 +71,8 @@ export default function AgendaPage() {
   const [openingHours, setOpeningHours] = useState<Record<string, DaySchedule>>({});
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [weekAppointments, setWeekAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [weekLoading, setWeekLoading] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => setNowTick(new Date()), 60000);
@@ -107,24 +109,34 @@ export default function AgendaPage() {
   }
 
   async function loadWeek() {
-    const days = getWeekDays(date);
-    const staffParam = whoAmI !== "all" ? `&staffId=${whoAmI}` : "";
-    const res = await fetch(`/api/dashboard/appointments?start=${isoDate(days[0])}&end=${isoDate(days[6])}${staffParam}`).then(r => r.json());
-    setWeekAppointments(Array.isArray(res) ? res : []);
+    setWeekLoading(true);
+    try {
+      const days = getWeekDays(date);
+      const staffParam = whoAmI !== "all" ? `&staffId=${whoAmI}` : "";
+      const res = await fetch(`/api/dashboard/appointments?start=${isoDate(days[0])}&end=${isoDate(days[6])}${staffParam}`).then(r => r.json());
+      setWeekAppointments(Array.isArray(res) ? res : []);
+    } finally {
+      setWeekLoading(false);
+    }
   }
 
   async function load() {
-    const staffParam = whoAmI !== "all" ? `&staffId=${whoAmI}` : "";
-    const [appts, staffList, serviceList, settings] = await Promise.all([
-      fetch(`/api/dashboard/appointments?date=${isoDate(date)}${staffParam}`).then(r => r.json()),
-      fetch("/api/dashboard/staff").then(r => r.json()),
-      fetch("/api/dashboard/services").then(r => r.json()),
-      fetch("/api/dashboard/settings").then(r => r.ok ? r.json() : null),
-    ]);
-    setAppointments(Array.isArray(appts) ? appts : []);
-    setStaff(Array.isArray(staffList) ? staffList : []);
-    setServices(Array.isArray(serviceList) ? serviceList : []);
-    setOpeningHours(settings?.openingHours ?? {});
+    setLoading(true);
+    try {
+      const staffParam = whoAmI !== "all" ? `&staffId=${whoAmI}` : "";
+      const [appts, staffList, serviceList, settings] = await Promise.all([
+        fetch(`/api/dashboard/appointments?date=${isoDate(date)}${staffParam}`).then(r => r.json()),
+        fetch("/api/dashboard/staff").then(r => r.json()),
+        fetch("/api/dashboard/services").then(r => r.json()),
+        fetch("/api/dashboard/settings").then(r => r.ok ? r.json() : null),
+      ]);
+      setAppointments(Array.isArray(appts) ? appts : []);
+      setStaff(Array.isArray(staffList) ? staffList : []);
+      setServices(Array.isArray(serviceList) ? serviceList : []);
+      setOpeningHours(settings?.openingHours ?? {});
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { if (whoAmILoaded) load(); }, [date, whoAmI, whoAmILoaded]);
@@ -312,7 +324,11 @@ export default function AgendaPage() {
             )}
           </div>
 
-          {viewMode === "week" && (
+          {viewMode === "week" && weekLoading && (
+            <p style={{ color: "#666", textAlign: "center", padding: "40px 0" }}>Chargement de la semaine…</p>
+          )}
+
+          {viewMode === "week" && !weekLoading && (
             <div style={{ border: "1px solid #2a1a3e", borderRadius: 16, overflow: "auto", marginBottom: 24 }}>
               <div style={{ display: "grid", gridTemplateColumns: "60px repeat(7, minmax(120px, 1fr))", minWidth: 900 }}>
                 <div style={{ borderBottom: "1px solid #2a1a3e", borderRight: "1px solid #1a1a2e" }} />
@@ -381,7 +397,11 @@ export default function AgendaPage() {
             </div>
           )}
 
-          {viewMode === "day" && (
+          {viewMode === "day" && loading && (
+            <p style={{ color: "#666", textAlign: "center", padding: "40px 0" }}>Chargement de l'agenda…</p>
+          )}
+
+          {viewMode === "day" && !loading && (
           <div style={{ border: "1px solid #2a1a3e", borderRadius: 16, overflow: "hidden", position: "relative" }}>
             {showNowLine && (
               <div style={{
@@ -461,7 +481,7 @@ export default function AgendaPage() {
 
           )}
 
-          {viewMode === "day" && appointments.length === 0 && (
+          {viewMode === "day" && !loading && appointments.length === 0 && (
             <p style={{ color: "#555", textAlign: "center", marginTop: 20 }}>Aucun RDV ce jour{whoAmI !== "all" && currentStaffName ? ` pour ${currentStaffName}` : ""}.</p>
           )}
 
