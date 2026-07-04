@@ -146,7 +146,10 @@ export default function AgendaPage() {
   const dayKey = DAY_KEYS[WEEKDAY_MAP[weekdayShort] ?? date.getDay()];
   const todaySchedule = openingHours[dayKey];
 
+  const hasAnyScheduleConfigured = Object.keys(openingHours).length > 0;
+
   function isSlotOpen(slotMin: number) {
+    if (!hasAnyScheduleConfigured) return true; // pas encore configuré : ne rien griser
     if (!todaySchedule || todaySchedule.closed) return false;
     const ranges: [number | null, number | null][] = [
       [timeToMinutes(todaySchedule.open), timeToMinutes(todaySchedule.close)],
