@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { frFR } from "@clerk/localizations";
 import { ToastProvider } from "../components/Toast";
 import "./globals.css";
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider localization={frFR}>
       <html lang="fr">
         <body>
           <ToastProvider>{children}</ToastProvider>

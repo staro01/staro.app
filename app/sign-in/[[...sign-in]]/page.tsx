@@ -1,5 +1,4 @@
 import { SignIn } from "@clerk/nextjs";
-import { frFR } from "@clerk/localizations";
 import StarryBackground from "../../../components/StarryBackground";
 
 const clerkAppearance = {
@@ -43,7 +42,7 @@ export default function SignInPage() {
         <span style={{ fontSize: 24, fontWeight: 900, color: "#fff" }}>Staro.app</span>
       </div>
       <div style={{ position: "relative" }}>
-        <SignIn localization={frFR} appearance={clerkAppearance} />
+        <SignIn appearance={clerkAppearance} />
       </div>
     </div>
   );
