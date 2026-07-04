@@ -15,15 +15,23 @@ export async function GET(req: NextRequest) {
   if (!business) return Response.json([], { status: 200 });
   const { searchParams } = new URL(req.url);
   const date = searchParams.get("date");
+  const start = searchParams.get("start");
+  const end = searchParams.get("end");
   const staffId = searchParams.get("staffId");
 
   const where: any = { businessId: business.id, status: { not: "cancelled" } };
   if (date) {
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 999);
-    where.startAt = { gte: start, lte: end };
+    const s = new Date(date);
+    s.setHours(0, 0, 0, 0);
+    const e = new Date(date);
+    e.setHours(23, 59, 59, 999);
+    where.startAt = { gte: s, lte: e };
+  } else if (start && end) {
+    const s = new Date(start);
+    s.setHours(0, 0, 0, 0);
+    const e = new Date(end);
+    e.setHours(23, 59, 59, 999);
+    where.startAt = { gte: s, lte: e };
   }
   if (staffId) where.staffId = staffId;
 

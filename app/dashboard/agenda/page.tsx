@@ -69,6 +69,8 @@ export default function AgendaPage() {
   const [whoAmILoaded, setWhoAmILoaded] = useState(false);
   const [nowTick, setNowTick] = useState(new Date());
   const [openingHours, setOpeningHours] = useState<Record<string, DaySchedule>>({});
+  const [viewMode, setViewMode] = useState<"day" | "week">("day");
+  const [weekAppointments, setWeekAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => setNowTick(new Date()), 60000);
@@ -86,6 +88,31 @@ export default function AgendaPage() {
     window.localStorage.setItem(STORAGE_KEY, id);
   }
 
+  function getWeekStart(d: Date) {
+    const weekdayShort = d.toLocaleDateString("en-US", { timeZone: TZ, weekday: "short" });
+    const map: Record<string, number> = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
+    const offset = map[weekdayShort] ?? 0;
+    const start = new Date(d);
+    start.setDate(start.getDate() - offset);
+    return start;
+  }
+
+  function getWeekDays(d: Date) {
+    const start = getWeekStart(d);
+    return Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(start);
+      day.setDate(day.getDate() + i);
+      return day;
+    });
+  }
+
+  async function loadWeek() {
+    const days = getWeekDays(date);
+    const staffParam = whoAmI !== "all" ? `&staffId=${whoAmI}` : "";
+    const res = await fetch(`/api/dashboard/appointments?start=${isoDate(days[0])}&end=${isoDate(days[6])}${staffParam}`).then(r => r.json());
+    setWeekAppointments(Array.isArray(res) ? res : []);
+  }
+
   async function load() {
     const staffParam = whoAmI !== "all" ? `&staffId=${whoAmI}` : "";
     const [appts, staffList, serviceList, settings] = await Promise.all([
@@ -101,6 +128,7 @@ export default function AgendaPage() {
   }
 
   useEffect(() => { if (whoAmILoaded) load(); }, [date, whoAmI, whoAmILoaded]);
+  useEffect(() => { if (whoAmILoaded && viewMode === "week") loadWeek(); }, [date, whoAmI, whoAmILoaded, viewMode]);
 
   async function saveStaff() {
     setSaving(true);
@@ -165,6 +193,12 @@ export default function AgendaPage() {
 
   const prevDay = () => { const d = new Date(date); d.setDate(d.getDate() - 1); setDate(d); };
   const nextDay = () => { const d = new Date(date); d.setDate(d.getDate() + 1); setDate(d); };
+  const prevWeek = () => { const d = new Date(date); d.setDate(d.getDate() - 7); setDate(d); };
+  const nextWeek = () => { const d = new Date(date); d.setDate(d.getDate() + 7); setDate(d); };
+
+  function formatShortDay(d: Date) {
+    return d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: TZ });
+  }
 
   // Créneaux de 30 min, plage calculée dynamiquement à partir des horaires d'ouverture configurés
   const { rangeStart, rangeEnd } = (() => {
@@ -241,7 +275,17 @@ export default function AgendaPage() {
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
             <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, color: "#fff" }}>📅 Agenda</h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 4, background: "#0a0a0a", border: "1px solid #2a1a3e", borderRadius: 10, padding: 3 }}>
+                <button onClick={() => setViewMode("day")} style={{
+                  padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
+                  background: viewMode === "day" ? "#6b1fad" : "transparent", color: "#fff",
+                }}>Jour</button>
+                <button onClick={() => setViewMode("week")} style={{
+                  padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
+                  background: viewMode === "week" ? "#6b1fad" : "transparent", color: "#fff",
+                }}>Semaine</button>
+              </div>
               <span style={{ fontSize: 12, color: "#888", fontWeight: 600 }}>Qui êtes-vous ?</span>
               <select value={whoAmI} onChange={e => changeWhoAmI(e.target.value)} style={selectStyle}>
                 <option value="all">👥 Toute l'équipe</option>
@@ -252,10 +296,14 @@ export default function AgendaPage() {
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
-            <button onClick={prevDay} style={navBtn}>←</button>
-            <span style={{ fontSize: 16, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{formatDate(date)}</span>
-            <button onClick={nextDay} style={navBtn}>→</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+            <button onClick={viewMode === "day" ? prevDay : prevWeek} style={navBtn}>←</button>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>
+              {viewMode === "day"
+                ? formatDate(date)
+                : `${formatShortDay(getWeekDays(date)[0])} — ${formatShortDay(getWeekDays(date)[6])}`}
+            </span>
+            <button onClick={viewMode === "day" ? nextDay : nextWeek} style={navBtn}>→</button>
             <button onClick={() => setDate(new Date())} style={{ ...navBtn, fontSize: 12, padding: "6px 12px" }}>Aujourd'hui</button>
             {whoAmI !== "all" && currentStaffName && (
               <span style={{ fontSize: 12, color: "#9b4fdd", fontWeight: 700, background: "#1a1a2e", border: "1px solid #2a1a3e", borderRadius: 8, padding: "6px 12px" }}>
@@ -264,6 +312,76 @@ export default function AgendaPage() {
             )}
           </div>
 
+          {viewMode === "week" && (
+            <div style={{ border: "1px solid #2a1a3e", borderRadius: 16, overflow: "auto", marginBottom: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "60px repeat(7, minmax(120px, 1fr))", minWidth: 900 }}>
+                <div style={{ borderBottom: "1px solid #2a1a3e", borderRight: "1px solid #1a1a2e" }} />
+                {getWeekDays(date).map(day => {
+                  const isDayToday = isoDate(day) === isoDate(nowTick);
+                  return (
+                    <button
+                      key={isoDate(day)}
+                      onClick={() => { setDate(day); setViewMode("day"); }}
+                      style={{
+                        padding: "10px 6px", textAlign: "center", cursor: "pointer",
+                        background: isDayToday ? "#2a1a3e" : "transparent",
+                        border: "none", borderBottom: "1px solid #2a1a3e", borderRight: "1px solid #1a1a2e",
+                        color: isDayToday ? "#fff" : "#ccc", fontWeight: 700, fontSize: 13,
+                      }}
+                    >
+                      {formatShortDay(day)}
+                    </button>
+                  );
+                })}
+
+                {slots.map(slotMin => {
+                  const isHour = slotMin % 60 === 0;
+                  return (
+                    <>
+                      <div key={`label-${slotMin}`} style={{
+                        padding: "8px 6px", color: isHour ? "#888" : "#444", fontSize: isHour ? 12 : 10,
+                        fontWeight: isHour ? 700 : 400, textAlign: "right", borderRight: "1px solid #1a1a2e",
+                        borderBottom: isHour ? "1px solid #2a1a3e" : "1px solid #161622",
+                      }}>
+                        {slotLabel(slotMin)}
+                      </div>
+                      {getWeekDays(date).map(day => {
+                        const dayAppts = weekAppointments.filter(a => {
+                          if (isoDate(new Date(a.startAt)) !== isoDate(day)) return false;
+                          const start = parisMinutes(a.startAt);
+                          const end = parisMinutes(a.endAt);
+                          return start <= slotMin && slotMin < end;
+                        });
+                        return (
+                          <div key={`${isoDate(day)}-${slotMin}`} style={{
+                            padding: 3, minHeight: 30, borderRight: "1px solid #1a1a2e",
+                            borderBottom: isHour ? "1px solid #2a1a3e" : "1px solid #161622",
+                            display: "flex", flexDirection: "column", gap: 3,
+                          }}>
+                            {dayAppts.map(a => {
+                              const isConflict = a.status === "conflict";
+                              return (
+                                <div key={a.id} title={`${a.customerName} — ${a.service?.name ?? "RDV"}${a.staff ? ` (${a.staff.name})` : ""}`} style={{
+                                  background: isConflict ? "#2e1414" : "#1e1430",
+                                  border: isConflict ? "1px solid #e11d48" : "1px solid #6b1fad",
+                                  borderRadius: 6, padding: "3px 6px", fontSize: 10, color: "#fff", overflow: "hidden",
+                                  whiteSpace: "nowrap", textOverflow: "ellipsis", cursor: "default",
+                                }}>
+                                  {isConflict && "⚠️ "}{formatTime(a.startAt)} {a.customerName}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {viewMode === "day" && (
           <div style={{ border: "1px solid #2a1a3e", borderRadius: 16, overflow: "hidden", position: "relative" }}>
             {showNowLine && (
               <div style={{
@@ -341,7 +459,9 @@ export default function AgendaPage() {
             })}
           </div>
 
-          {appointments.length === 0 && (
+          )}
+
+          {viewMode === "day" && appointments.length === 0 && (
             <p style={{ color: "#555", textAlign: "center", marginTop: 20 }}>Aucun RDV ce jour{whoAmI !== "all" && currentStaffName ? ` pour ${currentStaffName}` : ""}.</p>
           )}
 
