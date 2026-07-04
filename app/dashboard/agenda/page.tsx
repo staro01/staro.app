@@ -180,27 +180,42 @@ export default function AgendaPage() {
                     {slotLabel(slotMin)}
                   </div>
                   <div style={{ padding: "6px 10px", minHeight: 40, display: "flex", flexDirection: "column", gap: 6 }}>
-                    {slotAppts.map(a => (
+                    {slotAppts.map(a => {
+                      const isConflict = a.status === "conflict";
+                      return (
                       <div key={a.id} style={{
-                        background: "#1e1430", border: "1px solid #6b1fad", borderRadius: 10,
+                        background: isConflict ? "#2e1414" : "#1e1430",
+                        border: isConflict ? "1px solid #e11d48" : "1px solid #6b1fad",
+                        borderRadius: 10,
                         padding: "10px 14px", fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
                       }}>
                         <div>
-                          <div style={{ fontWeight: 800, color: "#fff", fontSize: 14 }}>
+                          <div style={{ fontWeight: 800, color: "#fff", fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
                             {formatTime(a.startAt)}–{formatTime(a.endAt)} · {a.customerName}
+                            {isConflict && (
+                              <span style={{ background: "#e11d48", color: "#fff", fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 999 }}>
+                                ⚠️ CONFLIT
+                              </span>
+                            )}
                           </div>
-                          <div style={{ color: "#c084fc", fontSize: 12, marginTop: 2 }}>
+                          <div style={{ color: isConflict ? "#fca5a5" : "#c084fc", fontSize: 12, marginTop: 2 }}>
                             ✂️ {a.service?.name ?? "RDV"}{a.staff ? `  ·  👤 ${a.staff.name}` : "  ·  👤 non assigné"}
                           </div>
                           {a.customerPhone && (
                             <div style={{ color: "#666", fontSize: 11, marginTop: 2 }}>📞 {a.customerPhone}</div>
+                          )}
+                          {isConflict && (
+                            <div style={{ color: "#fca5a5", fontSize: 11, marginTop: 4, fontWeight: 700 }}>
+                              Ce créneau chevauche un autre RDV — à recontacter le client pour ajuster.
+                            </div>
                           )}
                         </div>
                         <button onClick={() => cancelAppointment(a.id)} style={{ background: "none", border: "1px solid #442222", color: "#ff6b6b", fontSize: 11, cursor: "pointer", padding: "6px 10px", borderRadius: 8, whiteSpace: "nowrap" }}>
                           ✕ Annuler
                         </button>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               );
