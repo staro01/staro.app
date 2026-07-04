@@ -9,7 +9,7 @@ type Comet = {
   life: number; maxLife: number;
 };
 
-export default function StarryBackground() {
+export default function StarryBackground({ showBackdrop = true }: { showBackdrop?: boolean }) {
   const [stars, setStars] = useState<Star[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -35,8 +35,8 @@ export default function StarryBackground() {
     const cvs: HTMLCanvasElement = canvas;
 
     function resize() {
-      cvs.width = window.innerWidth;
-      cvs.height = window.innerHeight;
+      cvs.width = cvs.offsetWidth;
+      cvs.height = cvs.offsetHeight;
     }
     resize();
     window.addEventListener("resize", resize);
@@ -102,15 +102,17 @@ export default function StarryBackground() {
 
   return (
     <>
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none",
-        background: `
-          radial-gradient(circle at 20% 15%, rgba(107,31,173,0.25), transparent 40%),
-          radial-gradient(circle at 80% 10%, rgba(155,79,221,0.18), transparent 35%),
-          radial-gradient(circle at 50% 100%, rgba(107,31,173,0.22), transparent 50%),
-          linear-gradient(180deg, #05050a 0%, #0b0614 60%, #0d0714 100%)
-        `,
-      }} />
+      {showBackdrop && (
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          background: `
+            radial-gradient(circle at 20% 15%, rgba(107,31,173,0.25), transparent 40%),
+            radial-gradient(circle at 80% 10%, rgba(155,79,221,0.18), transparent 35%),
+            radial-gradient(circle at 50% 100%, rgba(107,31,173,0.22), transparent 50%),
+            linear-gradient(180deg, #05050a 0%, #0b0614 60%, #0d0714 100%)
+          `,
+        }} />
+      )}
 
       {stars.map(s => (
         <div key={s.id} style={{
