@@ -141,7 +141,9 @@ export default function AgendaPage() {
   const slots: number[] = [];
   for (let m = 8 * 60; m <= 19 * 60 + 30; m += 30) slots.push(m);
 
-  const dayKey = DAY_KEYS[Number(date.toLocaleDateString("en-US", { timeZone: TZ, weekday: "numeric" })) % 7] ?? DAY_KEYS[new Date(date).getDay()];
+  const WEEKDAY_MAP: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  const weekdayShort = date.toLocaleDateString("en-US", { timeZone: TZ, weekday: "short" });
+  const dayKey = DAY_KEYS[WEEKDAY_MAP[weekdayShort] ?? date.getDay()];
   const todaySchedule = openingHours[dayKey];
 
   function isSlotOpen(slotMin: number) {
