@@ -28,26 +28,28 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>
       <header style={{ background: "#111111", borderBottom: "1px solid #2a1a3e", padding: "14px 20px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ background: "linear-gradient(135deg, #6b1fad, #9b4fdd)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>✦</span>
-            Staro.app
+        <div className="staro-header-inner">
+          <div className="staro-top-row">
+            <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ background: "linear-gradient(135deg, #6b1fad, #9b4fdd)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>✦</span>
+              Staro.app
+            </div>
+            <Link href="/sign-out" style={{ fontSize: 13, color: "#888" }}>Déconnexion</Link>
           </div>
-          <nav style={{ display: "flex", gap: 8 }}>
+          <nav className="staro-nav">
             {isRestaurant && <>
-              <Link href="/dashboard" style={navStyle}>📋 Commandes</Link>
-              <Link href="/dashboard/menu" style={navStyle}>🍽️ Ma carte</Link>
+              <Link href="/dashboard" className="staro-nav-link">📋 Commandes</Link>
+              <Link href="/dashboard/menu" className="staro-nav-link">🍽️ Ma carte</Link>
             </>}
             {isCoiffeur && <>
-              <Link href="/dashboard/agenda" style={navStyle}>📅 Agenda</Link>
-              <Link href="/dashboard/agenda?tab=services" style={navStyle}>✂️ Services & Équipe</Link>
+              <Link href="/dashboard/agenda" className="staro-nav-link">📅 Agenda</Link>
+              <Link href="/dashboard/agenda?tab=services" className="staro-nav-link">✂️ Services & Équipe</Link>
             </>}
             {!isRestaurant && !isCoiffeur && <>
-              <Link href="/dashboard/agenda" style={navStyle}>📅 Agenda</Link>
+              <Link href="/dashboard/agenda" className="staro-nav-link">📅 Agenda</Link>
             </>}
-            <Link href="/dashboard/settings" style={navStyle}>⚙️ Paramètres</Link>
+            <Link href="/dashboard/settings" className="staro-nav-link">⚙️ Paramètres</Link>
           </nav>
-          <Link href="/sign-out" style={{ fontSize: 13, color: "#888" }}>Déconnexion</Link>
         </div>
       </header>
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: 20 }}>

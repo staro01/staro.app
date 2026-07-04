@@ -285,8 +285,7 @@ export default function AgendaPage() {
               const isHour = slotMin % 60 === 0;
               const closed = !isSlotOpen(slotMin);
               return (
-                <div key={slotMin} style={{
-                  display: "grid", gridTemplateColumns: "70px 1fr",
+                <div key={slotMin} className="staro-agenda-row" style={{
                   borderBottom: isHour ? "1px solid #2a1a3e" : "1px solid #161622",
                   background: closed ? "#000" : "rgba(155, 79, 221, 0.05)",
                 }}>
@@ -303,11 +302,11 @@ export default function AgendaPage() {
                     {slotAppts.map(a => {
                       const isConflict = a.status === "conflict";
                       return (
-                      <div key={a.id} style={{
+                      <div key={a.id} className="staro-appt-card" style={{
                         background: isConflict ? "#2e1414" : "#1e1430",
                         border: isConflict ? "1px solid #e11d48" : "1px solid #6b1fad",
                         borderRadius: 10,
-                        padding: "10px 14px", fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+                        padding: "10px 14px", fontSize: 13,
                       }}>
                         <div>
                           <div style={{ fontWeight: 800, color: "#fff", fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>

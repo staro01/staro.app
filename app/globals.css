@@ -24,3 +24,85 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* --- Responsive dashboard header --- */
+.staro-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.staro-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+
+.staro-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.staro-nav::-webkit-scrollbar { display: none; }
+
+.staro-nav-link {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #2a1a3e;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  color: #ccc;
+  background: #1a1a2e;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .staro-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .staro-nav {
+    order: 2;
+    width: 100%;
+  }
+  .staro-top-row {
+    order: 1;
+  }
+  .staro-nav-link {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+}
+
+/* --- Responsive agenda grid --- */
+.staro-agenda-row {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+}
+@media (max-width: 480px) {
+  .staro-agenda-row {
+    grid-template-columns: 50px 1fr;
+  }
+}
+
+.staro-appt-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.staro-appt-card > button {
+  margin-left: auto;
+}
