@@ -1,5 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../../../../lib/prisma";
+import { isAdminEmail } from "../../../../../lib/admin";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +9,7 @@ async function isAdmin() {
   const user = await currentUser();
   if (!user) return false;
   const email = user.emailAddresses?.[0]?.emailAddress ?? "";
-  return email === "staro.ml001@gmail.com";
+  return isAdminEmail(email);
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -23,6 +24,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       twilioNumber: body.twilioNumber,
       phone: body.phone,
       address: body.address,
+      status: body.status,
     },
   });
   return Response.json(business);

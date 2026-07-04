@@ -15,6 +15,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (isAdminEmail(email)) redirect("/admin");
 
   const business = await ensureBusinessForCurrentUser();
+
+  if (business && business.status !== "approved") {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div style={{ maxWidth: 480, textAlign: "center", border: "1px solid #2a1a3e", borderRadius: 20, padding: 40, background: "#111" }}>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
+          <h1 style={{ fontSize: 20, fontWeight: 900, color: "#fff", margin: "0 0 12px" }}>Compte en attente de validation</h1>
+          <p style={{ color: "#888", fontSize: 14, lineHeight: 1.6, margin: "0 0 20px" }}>
+            Votre inscription a bien été reçue. Notre équipe va valider votre compte sous peu — vous recevrez un accès complet dès l'approbation.
+          </p>
+          <Link href="/sign-out" style={{ color: "#9b4fdd", fontSize: 13, fontWeight: 700 }}>Se déconnecter</Link>
+        </div>
+      </div>
+    );
+  }
+
   const menuCount = business ? await prisma.menuItem.count({ where: { businessId: business.id } }) : 0;
   const needsOnboarding = !business?.name || (business.name.startsWith("Business ") && (business.name.includes("@") || business.name.length < 20));
   

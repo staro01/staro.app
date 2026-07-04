@@ -10,6 +10,7 @@ type Business = {
   phone?: string;
   address?: string;
   createdAt: string;
+  status: string;
   _count: { menuItems: number; events: number };
 };
 
@@ -46,6 +47,15 @@ export default function AdminPage() {
     setSaving(false);
   }
 
+  async function setStatus(id: string, status: string) {
+    await fetch(`/api/admin/businesses/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    await load();
+  }
+
   async function deleteBusiness(id: string, name: string) {
     if (!confirm(`Supprimer "${name}" ? Cette action est irréversible.`)) return;
     await fetch(`/api/admin/businesses/${id}`, { method: "DELETE" });
@@ -55,6 +65,14 @@ export default function AdminPage() {
   const verticalEmoji: Record<string, string> = {
     pizzeria: "🍕", coiffeur: "✂️", restaurant: "🍽️", artisan: "🔧", hotel: "🏨", autre: "⭐"
   };
+
+  const sortedBusinesses = [...businesses].sort((a, b) => {
+    if (a.status === "pending" && b.status !== "pending") return -1;
+    if (a.status !== "pending" && b.status === "pending") return 1;
+    return 0;
+  });
+
+  const pendingCount = businesses.filter(b => b.status === "pending").length;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", padding: 20 }}>
@@ -71,6 +89,12 @@ export default function AdminPage() {
           <button onClick={() => setEditing(emptyBusiness())} style={btnPrimary}>+ Nouveau client</button>
         </div>
 
+        {pendingCount > 0 && (
+          <div style={{ background: "#2e2414", border: "1px solid #b8860b", borderRadius: 14, padding: "12px 18px", marginBottom: 20, color: "#f0c674", fontSize: 14, fontWeight: 700 }}>
+            ⏳ {pendingCount} compte{pendingCount > 1 ? "s" : ""} en attente d'approbation
+          </div>
+        )}
+
         {loading ? <p style={{ color: "#666" }}>Chargement…</p> : businesses.length === 0 ? (
           <div style={{ textAlign: "center", padding: 60, color: "#555" }}>
             <p style={{ fontSize: 18 }}>Aucun client pour l'instant.</p>
@@ -78,13 +102,23 @@ export default function AdminPage() {
           </div>
         ) : (
           <div style={{ display: "grid", gap: 12 }}>
-            {businesses.map(b => (
-              <div key={b.id} style={{ border: "1px solid #2a1a3e", borderRadius: 16, padding: "16px 20px", background: "#111", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            {sortedBusinesses.map(b => {
+              const isPending = b.status === "pending";
+              return (
+              <div key={b.id} style={{
+                border: isPending ? "1px solid #b8860b" : "1px solid #2a1a3e", borderRadius: 16, padding: "16px 20px",
+                background: isPending ? "#1a1608" : "#111", display: "flex", justifyContent: "space-between", alignItems: "center",
+              }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                     <span style={{ fontSize: 20 }}>{verticalEmoji[b.vertical] ?? "⭐"}</span>
                     <span style={{ fontWeight: 900, fontSize: 16, color: "#fff" }}>{b.name}</span>
                     <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "#2a1a3e", color: "#9b4fdd", fontWeight: 700 }}>{b.vertical}</span>
+                    {isPending ? (
+                      <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "#b8860b", color: "#1a1608", fontWeight: 800 }}>⏳ EN ATTENTE</span>
+                    ) : (
+                      <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "#1a3e2a", color: "#4ade80", fontWeight: 800 }}>✓ APPROUVÉ</span>
+                    )}
                   </div>
                   <div style={{ display: "flex", gap: 16, fontSize: 13, color: "#666" }}>
                     {b.twilioNumber && <span>📞 {b.twilioNumber}</span>}
@@ -95,11 +129,15 @@ export default function AdminPage() {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
+                  {isPending && (
+                    <button onClick={() => setStatus(b.id, "approved")} style={{ ...btnPrimary, background: "#1a8a3e" }}>✓ Approuver</button>
+                  )}
                   <button onClick={() => setEditing({ ...b })} style={btnSmall}>✏️ Modifier</button>
                   <button onClick={() => deleteBusiness(b.id, b.name)} style={{ ...btnSmall, color: "#ff6b6b", borderColor: "#5a1a1a" }}>🗑️</button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
