@@ -69,10 +69,12 @@ export default function AgendaPage() {
   const [whoAmILoaded, setWhoAmILoaded] = useState(false);
   const [nowTick, setNowTick] = useState(new Date());
   const [openingHours, setOpeningHours] = useState<Record<string, DaySchedule>>({});
-  const [viewMode, setViewMode] = useState<"day" | "week">("day");
+  const [viewMode, setViewMode] = useState<"day" | "week" | "history">("day");
   const [weekAppointments, setWeekAppointments] = useState<Appointment[]>([]);
+  const [historyAppointments, setHistoryAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekLoading, setWeekLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => setNowTick(new Date()), 60000);
@@ -120,6 +122,17 @@ export default function AgendaPage() {
     }
   }
 
+  async function loadHistory() {
+    setHistoryLoading(true);
+    try {
+      const staffParam = whoAmI !== "all" ? `&staffId=${whoAmI}` : "";
+      const res = await fetch(`/api/dashboard/appointments?history=true${staffParam}`).then(r => r.json());
+      setHistoryAppointments(Array.isArray(res) ? res : []);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }
+
   async function load() {
     setLoading(true);
     try {
@@ -141,6 +154,7 @@ export default function AgendaPage() {
 
   useEffect(() => { if (whoAmILoaded) load(); }, [date, whoAmI, whoAmILoaded]);
   useEffect(() => { if (whoAmILoaded && viewMode === "week") loadWeek(); }, [date, whoAmI, whoAmILoaded, viewMode]);
+  useEffect(() => { if (whoAmILoaded && viewMode === "history") loadHistory(); }, [whoAmI, whoAmILoaded, viewMode]);
 
   async function saveStaff() {
     setSaving(true);
@@ -190,6 +204,46 @@ export default function AgendaPage() {
       showToast("Erreur lors de la suppression", "error");
     }
     load();
+  }
+
+  async function saveAppointmentEdit() {
+    setSaving(true);
+    try {
+      const service = services.find(s => s.id === modal.serviceId);
+      const duration = service?.duration ?? 30;
+      const startAt = new Date(modal.startAt);
+      const endAt = new Date(startAt.getTime() + duration * 60000);
+      await fetch(`/api/dashboard/appointments/${modal.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          startAt: startAt.toISOString(),
+          endAt: endAt.toISOString(),
+          staffId: modal.staffId || null,
+          notes: modal.notes ?? "",
+        }),
+      });
+      showToast("Rendez-vous modifié");
+    } catch {
+      showToast("Erreur lors de la modification", "error");
+    }
+    setModal(null); setSaving(false); load(); loadWeek();
+  }
+
+  function openEditAppointment(a: Appointment) {
+    // Convertit l'heure UTC stockée en valeur locale Paris pour l'input datetime-local
+    const parisStr = new Date(a.startAt).toLocaleString("sv-SE", { timeZone: TZ }).slice(0, 16).replace(" ", "T");
+    setModal({
+      type: "appointment",
+      id: a.id,
+      customerName: a.customerName,
+      customerPhone: a.customerPhone,
+      serviceId: a.service?.id ?? "",
+      serviceName: a.service?.name ?? "RDV",
+      staffId: a.staff?.id ?? "",
+      startAt: parisStr,
+      notes: a.notes ?? "",
+    });
   }
 
   async function cancelAppointment(id: string) {
@@ -297,6 +351,10 @@ export default function AgendaPage() {
                   padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
                   background: viewMode === "week" ? "#6b1fad" : "transparent", color: "#fff",
                 }}>Semaine</button>
+                <button onClick={() => setViewMode("history")} style={{
+                  padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
+                  background: viewMode === "history" ? "#6b1fad" : "transparent", color: "#fff",
+                }}>Historique</button>
               </div>
               <span style={{ fontSize: 12, color: "#888", fontWeight: 600 }}>Qui êtes-vous ?</span>
               <select value={whoAmI} onChange={e => changeWhoAmI(e.target.value)} style={selectStyle}>
@@ -308,6 +366,7 @@ export default function AgendaPage() {
             </div>
           </div>
 
+          {viewMode !== "history" && (
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
             <button onClick={viewMode === "day" ? prevDay : prevWeek} style={navBtn}>←</button>
             <span style={{ fontSize: 16, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>
@@ -323,6 +382,48 @@ export default function AgendaPage() {
               </span>
             )}
           </div>
+          )}
+
+          {viewMode === "history" && historyLoading && (
+            <p style={{ color: "#666", textAlign: "center", padding: "40px 0" }}>Chargement de l'historique…</p>
+          )}
+
+          {viewMode === "history" && !historyLoading && (
+            <div style={{ display: "grid", gap: 8 }}>
+              {historyAppointments.length === 0 && (
+                <p style={{ color: "#555", textAlign: "center", padding: "20px 0" }}>Aucun historique{whoAmI !== "all" && currentStaffName ? ` pour ${currentStaffName}` : ""}.</p>
+              )}
+              {historyAppointments.map(a => {
+                const isCancelled = a.status === "cancelled";
+                const isConflict = a.status === "conflict";
+                return (
+                  <div
+                    key={a.id}
+                    onClick={() => !isCancelled && openEditAppointment(a)}
+                    style={{
+                      border: isConflict ? "1px solid #e11d48" : "1px solid #2a1a3e",
+                      borderRadius: 12, padding: "12px 16px", background: isCancelled ? "#0d0d0d" : "#111",
+                      display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+                      cursor: isCancelled ? "default" : "pointer", opacity: isCancelled ? 0.5 : 1,
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, color: "#fff", fontSize: 14 }}>
+                        {new Date(a.startAt).toLocaleDateString("fr-FR", { timeZone: TZ, day: "numeric", month: "short", year: "numeric" })}
+                        {" · "}{formatTime(a.startAt)} · {a.customerName}
+                        {isCancelled && <span style={{ marginLeft: 8, fontSize: 11, color: "#888", fontWeight: 700 }}>ANNULÉ</span>}
+                        {isConflict && <span style={{ marginLeft: 8, fontSize: 11, color: "#e11d48", fontWeight: 800 }}>⚠️ CONFLIT</span>}
+                      </div>
+                      <div style={{ color: "#9b4fdd", fontSize: 12, marginTop: 2 }}>
+                        ✂️ {a.service?.name ?? "RDV"}{a.staff ? `  ·  👤 ${a.staff.name}` : ""}
+                      </div>
+                    </div>
+                    {!isCancelled && <span style={{ fontSize: 11, color: "#666" }}>Cliquer pour modifier</span>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {viewMode === "week" && weekLoading && (
             <p style={{ color: "#666", textAlign: "center", padding: "40px 0" }}>Chargement de la semaine…</p>
@@ -440,11 +541,11 @@ export default function AgendaPage() {
                     {slotAppts.map(a => {
                       const isConflict = a.status === "conflict";
                       return (
-                      <div key={a.id} className="staro-appt-card" style={{
+                      <div key={a.id} className="staro-appt-card" onClick={() => openEditAppointment(a)} style={{
                         background: isConflict ? "#2e1414" : "#1e1430",
                         border: isConflict ? "1px solid #e11d48" : "1px solid #6b1fad",
                         borderRadius: 10,
-                        padding: "10px 14px", fontSize: 13,
+                        padding: "10px 14px", fontSize: 13, cursor: "pointer",
                       }}>
                         <div>
                           <div style={{ fontWeight: 800, color: "#fff", fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
@@ -467,7 +568,7 @@ export default function AgendaPage() {
                             </div>
                           )}
                         </div>
-                        <button onClick={() => cancelAppointment(a.id)} style={{ background: "none", border: "1px solid #442222", color: "#ff6b6b", fontSize: 11, cursor: "pointer", padding: "6px 10px", borderRadius: 8, whiteSpace: "nowrap" }}>
+                        <button onClick={(e) => { e.stopPropagation(); cancelAppointment(a.id); }} style={{ background: "none", border: "1px solid #442222", color: "#ff6b6b", fontSize: 11, cursor: "pointer", padding: "6px 10px", borderRadius: 8, whiteSpace: "nowrap" }}>
                           ✕ Annuler
                         </button>
                       </div>
@@ -553,7 +654,48 @@ export default function AgendaPage() {
         </div>
       )}
 
-      {modal && (
+      {modal && modal.type === "appointment" && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+          <div style={{ background: "#111", border: "1px solid #2a1a3e", borderRadius: 20, padding: 28, width: "100%", maxWidth: 420, display: "grid", gap: 14 }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#fff" }}>Modifier le rendez-vous</h2>
+            <p style={{ margin: 0, color: "#888", fontSize: 13 }}>
+              {modal.customerName} · {modal.customerPhone} · ✂️ {modal.serviceName}
+            </p>
+
+            <label style={labelStyle}>
+              Date et heure
+              <input
+                type="datetime-local"
+                value={modal.startAt}
+                onChange={e => setModal({ ...modal, startAt: e.target.value })}
+                style={inputStyle}
+              />
+            </label>
+
+            <label style={labelStyle}>
+              Coiffeur
+              <select value={modal.staffId} onChange={e => setModal({ ...modal, staffId: e.target.value })} style={{ ...inputStyle, cursor: "pointer" }}>
+                <option value="">Non assigné</option>
+                {staff.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </label>
+
+            <label style={labelStyle}>
+              Notes
+              <input value={modal.notes} onChange={e => setModal({ ...modal, notes: e.target.value })} style={inputStyle} />
+            </label>
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => setModal(null)} style={btnSecondary}>Annuler</button>
+              <button onClick={saveAppointmentEdit} disabled={saving} style={btnPrimary}>{saving ? "…" : "Enregistrer"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal && (modal.type === "staff" || modal.type === "service") && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
           <div style={{ background: "#111", border: "1px solid #2a1a3e", borderRadius: 20, padding: 28, width: "100%", maxWidth: 400, display: "grid", gap: 14 }}>
             <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#fff" }}>

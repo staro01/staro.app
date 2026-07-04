@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
 import { xml, getBaseUrl, hangupTwiml, gatherSay, normPhone } from "../../../../../core/twilio/incoming";
+import { verifyTwilioRequest } from "../../../../../core/twilio/verify";
 import { loadHistory, saveHistory } from "../../../../../core/ai/conversation";
 import { askClaude } from "../../../../../core/ai/claude";
 import { buildPizzeriaPrompt } from "../../../../../verticals/pizzeria/prompt";
@@ -29,9 +30,17 @@ export async function POST(req: NextRequest) {
   const baseUrl = getBaseUrl(req);
   try {
     const form = await req.formData();
+    const params: Record<string, string> = {};
+    form.forEach((value, key) => { params[key] = value.toString(); });
+
     const speech = ((form.get("SpeechResult") ?? "") as string).trim();
     const callSid = ((form.get("CallSid") ?? "") as string).toString();
     const to = ((form.get("To") ?? "") as string).toString();
+
+    const isValid = await verifyTwilioRequest(req, baseUrl, "/api/twilio/voice/handle-speech", params);
+    if (!isValid) {
+      return new Response("Forbidden", { status: 403 });
+    }
 
     const business = await findBusiness(to);
     if (!business) return xml(hangupTwiml(baseUrl, "Ce numéro n'est pas configuré."));

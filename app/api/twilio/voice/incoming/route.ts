@@ -1,5 +1,6 @@
 import { prisma } from "../../../../../lib/prisma";
 import { xml, getBaseUrl, hangupTwiml, gatherSay, normPhone } from "../../../../../core/twilio/incoming";
+import { verifyTwilioRequest } from "../../../../../core/twilio/verify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,9 +21,17 @@ async function findBusiness(to: string) {
 
 export async function POST(req: Request) {
   const form = await req.formData();
+  const params: Record<string, string> = {};
+  form.forEach((value, key) => { params[key] = value.toString(); });
+
   const to = (form.get("To") ?? "").toString();
   const callSid = (form.get("CallSid") ?? "").toString();
   const baseUrl = getBaseUrl(req);
+
+  const isValid = await verifyTwilioRequest(req, baseUrl, "/api/twilio/voice/incoming", params);
+  if (!isValid) {
+    return new Response("Forbidden", { status: 403 });
+  }
 
   const business = await findBusiness(to);
 
