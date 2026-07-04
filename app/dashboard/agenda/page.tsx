@@ -56,6 +56,12 @@ export default function AgendaPage() {
   const [saving, setSaving] = useState(false);
   const [whoAmI, setWhoAmI] = useState<string>("all");
   const [whoAmILoaded, setWhoAmILoaded] = useState(false);
+  const [nowTick, setNowTick] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNowTick(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -123,6 +129,18 @@ export default function AgendaPage() {
   const slots: number[] = [];
   for (let m = 8 * 60; m <= 19 * 60 + 30; m += 30) slots.push(m);
 
+  const isToday = isoDate(date) === isoDate(nowTick);
+  const nowMinutes = (() => {
+    const str = nowTick.toLocaleTimeString("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false });
+    const [h, m] = str.split(":").map(Number);
+    return h * 60 + m;
+  })();
+  const SLOT_HEIGHT = 52; // hauteur approx d'un créneau en px, doit matcher le CSS des lignes
+  const firstSlotMinutes = slots[0];
+  const lastSlotMinutes = slots[slots.length - 1];
+  const showNowLine = isToday && nowMinutes >= firstSlotMinutes && nowMinutes <= lastSlotMinutes;
+  const nowLineOffset = ((nowMinutes - firstSlotMinutes) / 30) * SLOT_HEIGHT;
+
   function slotLabel(m: number) {
     const h = Math.floor(m / 60);
     const mm = m % 60;
@@ -160,7 +178,18 @@ export default function AgendaPage() {
             )}
           </div>
 
-          <div style={{ border: "1px solid #2a1a3e", borderRadius: 16, overflow: "hidden" }}>
+          <div style={{ border: "1px solid #2a1a3e", borderRadius: 16, overflow: "hidden", position: "relative" }}>
+            {showNowLine && (
+              <div style={{
+                position: "absolute", left: 70, right: 0, top: nowLineOffset,
+                borderTop: "2px solid #ef4444", zIndex: 10, pointerEvents: "none",
+              }}>
+                <div style={{
+                  position: "absolute", left: -6, top: -5, width: 10, height: 10,
+                  borderRadius: "50%", background: "#ef4444",
+                }} />
+              </div>
+            )}
             {slots.map(slotMin => {
               const slotAppts = appointments.filter(a => {
                 const start = parisMinutes(a.startAt);
