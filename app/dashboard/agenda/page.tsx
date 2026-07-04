@@ -259,15 +259,18 @@ export default function AgendaPage() {
                 <div key={slotMin} style={{
                   display: "grid", gridTemplateColumns: "70px 1fr",
                   borderBottom: isHour ? "1px solid #2a1a3e" : "1px solid #161622",
-                  background: closed ? "rgba(0,0,0,0.35)" : "transparent",
+                  background: closed ? "#000" : "rgba(155, 79, 221, 0.05)",
                 }}>
                   <div style={{
-                    padding: "10px 10px", color: closed ? "#333" : (isHour ? "#888" : "#444"), fontSize: isHour ? 13 : 11,
+                    padding: "10px 10px", color: closed ? "#2a2a2a" : (isHour ? "#aaa" : "#666"), fontSize: isHour ? 13 : 11,
                     fontWeight: isHour ? 700 : 400, textAlign: "right", borderRight: "1px solid #1a1a2e",
                   }}>
                     {slotLabel(slotMin)}
                   </div>
-                  <div style={{ padding: "6px 10px", minHeight: 40, display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ padding: "6px 10px", minHeight: 40, display: "flex", flexDirection: "column", gap: 6, justifyContent: "center" }}>
+                    {closed && slotAppts.length === 0 && (
+                      <span style={{ color: "#2a2a2a", fontSize: 11, fontStyle: "italic" }}>Fermé</span>
+                    )}
                     {slotAppts.map(a => {
                       const isConflict = a.status === "conflict";
                       return (
