@@ -13,7 +13,6 @@ export default function StarryBackground() {
   const [stars, setStars] = useState<Star[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Étoiles fixes scintillantes (générées côté client pour éviter les soucis d'hydratation SSR)
   useEffect(() => {
     setStars(Array.from({ length: 90 }, (_, i) => ({
       id: i,
@@ -25,16 +24,19 @@ export default function StarryBackground() {
     })));
   }, []);
 
-  // Comètes dessinées frame par frame sur un canvas : point lumineux + traînée qui s'estompe naturellement
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // À partir d'ici, TypeScript sait que canvas et ctx ne sont pas null (capturés dans des const)
+    const c2d: CanvasRenderingContext2D = ctx;
+    const cvs: HTMLCanvasElement = canvas;
+
     function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      cvs.width = window.innerWidth;
+      cvs.height = window.innerHeight;
     }
     resize();
     window.addEventListener("resize", resize);
@@ -45,10 +47,10 @@ export default function StarryBackground() {
 
     function spawnComet() {
       const startFromLeft = Math.random() > 0.5;
-      const angle = (20 + Math.random() * 30) * (Math.PI / 180); // diagonale descendante
+      const angle = (20 + Math.random() * 30) * (Math.PI / 180);
       const speed = 6 + Math.random() * 5;
       comets.push({
-        x: startFromLeft ? Math.random() * canvas.width * 0.4 : Math.random() * canvas.width,
+        x: startFromLeft ? Math.random() * cvs.width * 0.4 : Math.random() * cvs.width,
         y: -20,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
@@ -60,13 +62,12 @@ export default function StarryBackground() {
     spawnTimeout = setTimeout(spawnComet, 500);
 
     function draw() {
-      // Efface très légèrement la frame précédente (canvas transparent, n'assombrit pas le fond derrière)
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.fillStyle = "rgba(0,0,0,0.12)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = "source-over";
+      c2d.globalCompositeOperation = "destination-out";
+      c2d.fillStyle = "rgba(0,0,0,0.12)";
+      c2d.fillRect(0, 0, cvs.width, cvs.height);
+      c2d.globalCompositeOperation = "source-over";
 
-      comets = comets.filter(c => c.life < c.maxLife && c.y < canvas.height + 50 && c.x < canvas.width + 50);
+      comets = comets.filter(c => c.life < c.maxLife && c.y < cvs.height + 50 && c.x < cvs.width + 50);
 
       for (const c of comets) {
         c.x += c.vx;
@@ -77,15 +78,15 @@ export default function StarryBackground() {
         const fadeOut = Math.max(0, 1 - Math.max(0, c.life - (c.maxLife - 10)) / 10);
         const opacity = fadeIn * fadeOut;
 
-        const gradient = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 6);
+        const gradient = c2d.createRadialGradient(c.x, c.y, 0, c.x, c.y, 6);
         gradient.addColorStop(0, `rgba(255,255,255,${opacity})`);
         gradient.addColorStop(0.4, `rgba(200,150,240,${opacity * 0.6})`);
         gradient.addColorStop(1, "rgba(155,79,221,0)");
 
-        ctx.beginPath();
-        ctx.fillStyle = gradient;
-        ctx.arc(c.x, c.y, 6, 0, Math.PI * 2);
-        ctx.fill();
+        c2d.beginPath();
+        c2d.fillStyle = gradient;
+        c2d.arc(c.x, c.y, 6, 0, Math.PI * 2);
+        c2d.fill();
       }
 
       rafId = requestAnimationFrame(draw);

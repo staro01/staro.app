@@ -1,4 +1,5 @@
 import { SignUp } from "@clerk/nextjs";
+import { frFR } from "@clerk/localizations";
 import StarryBackground from "../../../components/StarryBackground";
 
 const clerkAppearance = {
@@ -6,7 +7,7 @@ const clerkAppearance = {
     colorPrimary: "#6b1fad",
     colorBackground: "#111111",
     colorText: "#ffffff",
-    colorTextSecondary: "#aaaaaa",
+    colorTextSecondary: "#cccccc",
     colorInputBackground: "#0a0a0a",
     colorInputText: "#ffffff",
     borderRadius: "12px",
@@ -14,10 +15,15 @@ const clerkAppearance = {
   elements: {
     card: { border: "1px solid #2a1a3e", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" },
     headerTitle: { color: "#fff" },
-    headerSubtitle: { color: "#aaa" },
+    headerSubtitle: { color: "#ccc" },
     socialButtonsBlockButton: { border: "1px solid #2a1a3e" },
     formButtonPrimary: { background: "linear-gradient(135deg, #6b1fad, #9b4fdd)", fontWeight: 800 },
     footerActionLink: { color: "#9b4fdd" },
+    formFieldLabel: { color: "#ddd" },
+    identityPreviewText: { color: "#ddd" },
+    formFieldInputShowPasswordButton: { color: "#888" },
+    dividerText: { color: "#888" },
+    footerActionText: { color: "#aaa" },
   },
 };
 
@@ -37,7 +43,7 @@ export default function SignUpPage() {
         <span style={{ fontSize: 24, fontWeight: 900, color: "#fff" }}>Staro.app</span>
       </div>
       <div style={{ position: "relative" }}>
-        <SignUp appearance={clerkAppearance} />
+        <SignUp localization={frFR} appearance={clerkAppearance} />
       </div>
     </div>
   );
