@@ -136,6 +136,7 @@ model Appointment {
   status        String    @default("confirmed")
   notes         String?
   externalRef   String?   @unique
+  reminderSentAt DateTime?
 
   @@index([businessId])
   @@index([startAt])
