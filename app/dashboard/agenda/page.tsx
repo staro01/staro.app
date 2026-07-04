@@ -157,6 +157,10 @@ export default function AgendaPage() {
   useEffect(() => { if (whoAmILoaded && viewMode === "history") loadHistory(); }, [whoAmI, whoAmILoaded, viewMode]);
 
   async function saveStaff() {
+    if (!modal.name || !modal.name.trim()) {
+      showToast("Le nom est obligatoire", "error");
+      return;
+    }
     setSaving(true);
     const method = modal.id ? "PATCH" : "POST";
     const url = modal.id ? `/api/dashboard/staff/${modal.id}` : "/api/dashboard/staff";
@@ -182,6 +186,18 @@ export default function AgendaPage() {
   }
 
   async function saveService() {
+    if (!modal.name || !modal.name.trim()) {
+      showToast("Le nom est obligatoire", "error");
+      return;
+    }
+    if (!modal.duration || modal.duration <= 0) {
+      showToast("La durée doit être supérieure à 0 minute", "error");
+      return;
+    }
+    if (modal.price === undefined || modal.price === null || isNaN(modal.price) || modal.price < 0) {
+      showToast("Le prix doit être positif ou nul", "error");
+      return;
+    }
     setSaving(true);
     const method = modal.id ? "PATCH" : "POST";
     const url = modal.id ? `/api/dashboard/services/${modal.id}` : "/api/dashboard/services";
@@ -706,8 +722,8 @@ export default function AgendaPage() {
 
             {modal.type === "service" && (
               <>
-                <label style={labelStyle}>Durée (minutes)<input type="number" value={modal.duration} onChange={e => setModal({ ...modal, duration: parseInt(e.target.value) })} style={inputStyle} /></label>
-                <label style={labelStyle}>Prix (€)<input type="number" value={modal.price} onChange={e => setModal({ ...modal, price: parseFloat(e.target.value) })} style={inputStyle} /></label>
+                <label style={labelStyle}>Durée (minutes)<input type="number" min={1} value={modal.duration} onChange={e => setModal({ ...modal, duration: parseInt(e.target.value) || 0 })} style={inputStyle} /></label>
+                <label style={labelStyle}>Prix (€)<input type="number" min={0} step="0.01" value={modal.price} onChange={e => setModal({ ...modal, price: parseFloat(e.target.value) })} style={inputStyle} /></label>
               </>
             )}
 
