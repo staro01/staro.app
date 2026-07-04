@@ -2,18 +2,17 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ensureBusinessForCurrentUser } from "../../lib/business-bootstrap";
 import { prisma } from "../../lib/prisma";
+import { isAdminEmail } from "../../lib/admin";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
-
-const ADMIN_EMAIL = "staro.ml001@gmail.com";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
   const email = user.emailAddresses[0]?.emailAddress;
-  if (email === ADMIN_EMAIL) redirect("/admin");
+  if (isAdminEmail(email)) redirect("/admin");
 
   const business = await ensureBusinessForCurrentUser();
   const menuCount = business ? await prisma.menuItem.count({ where: { businessId: business.id } }) : 0;
