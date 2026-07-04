@@ -32,13 +32,22 @@ function generateStars(count: number) {
 }
 
 function generateShootingStars(count: number) {
-  return Array.from({ length: count }, (_, i) => ({
-    id: i,
-    top: Math.random() * 40,
-    left: Math.random() * 60,
-    delay: Math.random() * 8,
-    duration: Math.random() * 2 + 2.5,
-  }));
+  return Array.from({ length: count }, (_, i) => {
+    const dx = 220 + Math.random() * 160;
+    const dy = 120 + Math.random() * 160;
+    const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+    return {
+      id: i,
+      top: Math.random() * 35,
+      left: Math.random() * 55,
+      dx,
+      dy,
+      angleDeg,
+      length: 70 + Math.random() * 50,
+      delay: Math.random() * 9,
+      duration: Math.random() * 1.5 + 2,
+    };
+  });
 }
 
 export default function SignUpPage() {
@@ -72,13 +81,14 @@ export default function SignUpPage() {
       {shootingStars.map(s => (
         <div key={s.id} style={{
           position: "absolute", top: `${s.top}%`, left: `${s.left}%`,
-          width: 2, height: 2, pointerEvents: "none",
-          animation: `staro-shoot ${s.duration}s linear ${s.delay}s infinite`,
+          width: 1, height: 1, pointerEvents: "none",
+          animation: `staro-shoot-${s.id} ${s.duration}s ease-in ${s.delay}s infinite`,
         }}>
           <div style={{
-            width: 90, height: 2, borderRadius: 2,
-            background: "linear-gradient(90deg, #fff, rgba(155,79,221,0.6), transparent)",
-            transform: "rotate(-35deg)",
+            width: s.length, height: 2, borderRadius: 2,
+            background: "linear-gradient(90deg, transparent, rgba(155,79,221,0.5), #fff)",
+            transform: `rotate(${s.angleDeg}deg)`,
+            transformOrigin: "left center",
             boxShadow: "0 0 6px 1px rgba(255,255,255,0.6)",
           }} />
         </div>
@@ -89,12 +99,13 @@ export default function SignUpPage() {
           0%, 100% { opacity: 0.2; }
           50% { opacity: 1; }
         }
-        @keyframes staro-shoot {
+        ${shootingStars.map(s => `
+        @keyframes staro-shoot-${s.id} {
           0% { transform: translate(0, 0); opacity: 0; }
-          5% { opacity: 1; }
-          20% { transform: translate(320px, 220px); opacity: 0; }
-          100% { transform: translate(320px, 220px); opacity: 0; }
-        }
+          8% { opacity: 1; }
+          35% { transform: translate(${s.dx}px, ${s.dy}px); opacity: 0; }
+          100% { transform: translate(${s.dx}px, ${s.dy}px); opacity: 0; }
+        }`).join("\n")}
       `}</style>
 
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 10 }}>
