@@ -5,6 +5,15 @@ import { useSearchParams } from "next/navigation";
 
 type Staff = { id: string; name: string; available: boolean };
 type Service = { id: string; name: string; duration: number; price: number; available: boolean };
+type DaySchedule = { open: string; close: string; dinnerOpen: string; dinnerClose: string; closed: boolean };
+
+const DAY_KEYS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+
+function timeToMinutes(t?: string) {
+  if (!t) return null;
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
 type Appointment = {
   id: string;
   customerName: string;
@@ -57,6 +66,7 @@ export default function AgendaPage() {
   const [whoAmI, setWhoAmI] = useState<string>("all");
   const [whoAmILoaded, setWhoAmILoaded] = useState(false);
   const [nowTick, setNowTick] = useState(new Date());
+  const [openingHours, setOpeningHours] = useState<Record<string, DaySchedule>>({});
 
   useEffect(() => {
     const interval = setInterval(() => setNowTick(new Date()), 60000);
@@ -76,14 +86,16 @@ export default function AgendaPage() {
 
   async function load() {
     const staffParam = whoAmI !== "all" ? `&staffId=${whoAmI}` : "";
-    const [appts, staffList, serviceList] = await Promise.all([
+    const [appts, staffList, serviceList, settings] = await Promise.all([
       fetch(`/api/dashboard/appointments?date=${isoDate(date)}${staffParam}`).then(r => r.json()),
       fetch("/api/dashboard/staff").then(r => r.json()),
       fetch("/api/dashboard/services").then(r => r.json()),
+      fetch("/api/dashboard/settings").then(r => r.ok ? r.json() : null),
     ]);
     setAppointments(Array.isArray(appts) ? appts : []);
     setStaff(Array.isArray(staffList) ? staffList : []);
     setServices(Array.isArray(serviceList) ? serviceList : []);
+    setOpeningHours(settings?.openingHours ?? {});
   }
 
   useEffect(() => { if (whoAmILoaded) load(); }, [date, whoAmI, whoAmILoaded]);
@@ -128,6 +140,18 @@ export default function AgendaPage() {
   // Créneaux de 30 min, de 8h00 à 19h30
   const slots: number[] = [];
   for (let m = 8 * 60; m <= 19 * 60 + 30; m += 30) slots.push(m);
+
+  const dayKey = DAY_KEYS[Number(date.toLocaleDateString("en-US", { timeZone: TZ, weekday: "numeric" })) % 7] ?? DAY_KEYS[new Date(date).getDay()];
+  const todaySchedule = openingHours[dayKey];
+
+  function isSlotOpen(slotMin: number) {
+    if (!todaySchedule || todaySchedule.closed) return false;
+    const ranges: [number | null, number | null][] = [
+      [timeToMinutes(todaySchedule.open), timeToMinutes(todaySchedule.close)],
+      [timeToMinutes(todaySchedule.dinnerOpen), timeToMinutes(todaySchedule.dinnerClose)],
+    ];
+    return ranges.some(([start, end]) => start !== null && end !== null && slotMin >= start && slotMin < end);
+  }
 
   const isToday = isoDate(date) === isoDate(nowTick);
   const nowMinutes = (() => {
@@ -197,13 +221,15 @@ export default function AgendaPage() {
                 return start <= slotMin && slotMin < end;
               });
               const isHour = slotMin % 60 === 0;
+              const closed = !isSlotOpen(slotMin);
               return (
                 <div key={slotMin} style={{
                   display: "grid", gridTemplateColumns: "70px 1fr",
                   borderBottom: isHour ? "1px solid #2a1a3e" : "1px solid #161622",
+                  background: closed ? "rgba(0,0,0,0.35)" : "transparent",
                 }}>
                   <div style={{
-                    padding: "10px 10px", color: isHour ? "#888" : "#444", fontSize: isHour ? 13 : 11,
+                    padding: "10px 10px", color: closed ? "#333" : (isHour ? "#888" : "#444"), fontSize: isHour ? 13 : 11,
                     fontWeight: isHour ? 700 : 400, textAlign: "right", borderRight: "1px solid #1a1a2e",
                   }}>
                     {slotLabel(slotMin)}
