@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { verifyTts } from "../../../core/twilio/ttsSign";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,7 +9,13 @@ const audioCache = new Map<string, ArrayBuffer>();
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const text = (searchParams.get("text") ?? "").trim();
+  const exp = Number(searchParams.get("exp") ?? "0");
+  const sig = searchParams.get("sig") ?? "";
+
   if (!text) return new Response("Missing text", { status: 400 });
+  if (!exp || !sig || !verifyTts(text, exp, sig)) {
+    return new Response("Forbidden", { status: 403 });
+  }
 
   const apiKey = process.env.ELEVENLABS_API_KEY;
   const voiceId = process.env.ELEVENLABS_VOICE_ID;
