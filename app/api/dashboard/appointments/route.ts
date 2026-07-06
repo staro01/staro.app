@@ -23,7 +23,6 @@ export async function GET(req: NextRequest) {
   const where: any = { businessId: business.id };
 
   if (history) {
-    // Historique : tous statuts confondus (y compris annulés), les 90 derniers jours par défaut
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     where.startAt = { gte: ninetyDaysAgo };
@@ -58,6 +57,16 @@ export async function POST(req: NextRequest) {
   const business = await getBusiness();
   if (!business) return Response.json({ error: "Non autorisé" }, { status: 401 });
   const body = await req.json();
+
+  if (body.serviceId) {
+    const service = await prisma.service.findFirst({ where: { id: body.serviceId, businessId: business.id } });
+    if (!service) return Response.json({ error: "Service invalide" }, { status: 400 });
+  }
+  if (body.staffId) {
+    const staff = await prisma.staff.findFirst({ where: { id: body.staffId, businessId: business.id } });
+    if (!staff) return Response.json({ error: "Membre du personnel invalide" }, { status: 400 });
+  }
+
   const appointment = await prisma.appointment.create({
     data: {
       businessId: business.id,

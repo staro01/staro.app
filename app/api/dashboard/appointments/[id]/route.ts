@@ -19,6 +19,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!existing) return Response.json({ error: "Introuvable" }, { status: 404 });
 
   const body = await req.json();
+
+  if (body.staffId) {
+    const staff = await prisma.staff.findFirst({ where: { id: body.staffId, businessId: business.id } });
+    if (!staff) return Response.json({ error: "Membre du personnel invalide" }, { status: 400 });
+  }
+
   const appointment = await prisma.appointment.update({
     where: { id },
     data: {
