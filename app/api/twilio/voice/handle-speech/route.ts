@@ -8,6 +8,7 @@ import { buildPizzeriaPrompt } from "../../../../../verticals/pizzeria/prompt";
 import { extractOrderJson, stripOrderBlock, saveOrder } from "../../../../../verticals/pizzeria/actions";
 import { buildCoiffeurPrompt } from "../../../../../verticals/coiffeur/prompt";
 import { extractAppointmentJson, stripAppointmentBlock, saveAppointment } from "../../../../../verticals/coiffeur/actions";
+import { notifyCriticalError } from "../../../../../core/monitoring/notifyError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -84,7 +85,6 @@ export async function POST(req: NextRequest) {
       return xml(gatherSay(baseUrl, claudeText, "/api/twilio/voice/handle-speech"));
     }
 
-    // Vertical pizzeria (par défaut)
     const menuItems = await prisma.menuItem.findMany({ where: { businessId: business.id }, orderBy: { category: "asc" } });
     const supplements = await prisma.supplement.findMany({ where: { businessId: business.id }, orderBy: { name: "asc" } });
 
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
 
     return xml(gatherSay(baseUrl, claudeText, "/api/twilio/voice/handle-speech"));
   } catch (err) {
-    console.error("handle-speech error:", err);
+    await notifyCriticalError("Twilio voice/handle-speech", err);
     return xml(hangupTwiml(baseUrl, "Une erreur est survenue. Merci de rappeler."));
   }
 }

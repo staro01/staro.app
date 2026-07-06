@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "../../../../lib/stripe";
 import { prisma } from "../../../../lib/prisma";
+import { notifyCriticalError } from "../../../../core/monitoring/notifyError";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
         break;
     }
   } catch (err) {
-    console.error(`Erreur traitement webhook Stripe (${event.type}):`, err);
+    await notifyCriticalError(`Webhook Stripe (${event.type})`, err);
     return NextResponse.json({ error: "Erreur interne." }, { status: 500 });
   }
 

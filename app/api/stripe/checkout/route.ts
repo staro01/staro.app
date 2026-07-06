@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, STRIPE_PRICES } from "../../../../lib/stripe";
+import { notifyCriticalError } from "../../../../core/monitoring/notifyError";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    console.error("Erreur création session Stripe Checkout:", err);
+    await notifyCriticalError("Création session Stripe Checkout", err);
     return NextResponse.json({ error: "Erreur lors de la création du paiement." }, { status: 500 });
   }
 }

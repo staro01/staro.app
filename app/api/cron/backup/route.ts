@@ -1,6 +1,7 @@
 import { prisma } from "../../../../lib/prisma";
 import { sendAdminBackup } from "../../../../core/email/notify";
 import { isCronAuthorized } from "../../../../lib/cronAuth";
+import { notifyCriticalError } from "../../../../core/monitoring/notifyError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,7 +56,7 @@ export async function GET(req: Request) {
       },
     });
   } catch (err) {
-    console.error("Erreur lors de la sauvegarde:", err);
+    await notifyCriticalError("Sauvegarde quotidienne (cron/backup)", err);
     return Response.json({ error: "Erreur lors de la sauvegarde." }, { status: 500 });
   }
 }
