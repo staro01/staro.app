@@ -1,6 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../../../../lib/prisma";
 import { NextRequest } from "next/server";
+import { logAudit } from "../../../../../core/audit/log";
 
 export const dynamic = "force-dynamic";
 
@@ -19,12 +20,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!existing) return Response.json({ error: "Introuvable" }, { status: 404 });
 
   const body = await req.json();
-
-  if (body.staffId) {
-    const staff = await prisma.staff.findFirst({ where: { id: body.staffId, businessId: business.id } });
-    if (!staff) return Response.json({ error: "Membre du personnel invalide" }, { status: 400 });
-  }
-
   const appointment = await prisma.appointment.update({
     where: { id },
     data: {
@@ -36,6 +31,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     },
     include: { service: true, staff: true },
   });
+
+  const user = await currentUser();
+  await logAudit({
+    actorId: user?.id,
+    actorEmail: user?.primaryEmailAddress?.emailAddress,
+    action: "appointment.update",
+    targetType: "appointment",
+    targetId: id,
+    businessId: business.id,
+    metadata: { changes: body },
+  });
+
   return Response.json(appointment);
 }
 
@@ -48,5 +55,16 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   if (!existing) return Response.json({ error: "Introuvable" }, { status: 404 });
 
   await prisma.appointment.update({ where: { id }, data: { status: "cancelled" } });
+
+  const user = await currentUser();
+  await logAudit({
+    actorId: user?.id,
+    actorEmail: user?.primaryEmailAddress?.emailAddress,
+    action: "appointment.cancel",
+    targetType: "appointment",
+    targetId: id,
+    businessId: business.id,
+  });
+
   return Response.json({ ok: true });
 }

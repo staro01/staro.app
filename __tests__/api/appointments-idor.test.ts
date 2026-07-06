@@ -2,13 +2,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock Clerk : simule un utilisateur connecté "business A"
 vi.mock("@clerk/nextjs/server", () => ({
-  currentUser: vi.fn().mockResolvedValue({ id: "user_business_a" }),
+  currentUser: vi.fn().mockResolvedValue({ id: "user_business_a", primaryEmailAddress: { emailAddress: "a@example.com" } }),
 }));
 
 // Mock Prisma
 const mockFindFirst = vi.fn();
 const mockAppointmentFindFirst = vi.fn();
 const mockAppointmentUpdate = vi.fn();
+const mockAuditLogCreate = vi.fn();
 
 vi.mock("../../lib/prisma", () => ({
   prisma: {
@@ -16,6 +17,9 @@ vi.mock("../../lib/prisma", () => ({
     appointment: {
       findFirst: (...args: any[]) => mockAppointmentFindFirst(...args),
       update: (...args: any[]) => mockAppointmentUpdate(...args),
+    },
+    auditLog: {
+      create: (...args: any[]) => mockAuditLogCreate(...args),
     },
   },
 }));
@@ -27,6 +31,7 @@ describe("IDOR protection — /api/dashboard/appointments/[id]", () => {
     vi.clearAllMocks();
     // "business A" est le business de l'utilisateur connecté
     mockFindFirst.mockResolvedValue({ id: "business_a" });
+    mockAuditLogCreate.mockResolvedValue({});
   });
 
   it("refuse de modifier un rendez-vous appartenant à un autre business (PATCH)", async () => {
@@ -70,6 +75,7 @@ describe("IDOR protection — /api/dashboard/appointments/[id]", () => {
 
     expect(res.status).toBe(200);
     expect(mockAppointmentUpdate).toHaveBeenCalled();
+    expect(mockAuditLogCreate).toHaveBeenCalled();
   });
 
   it("refuse tout accès si l'utilisateur n'a pas de business associé", async () => {

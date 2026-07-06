@@ -41,6 +41,7 @@ model Business {
   staff             Staff[]
   services          Service[]
   appointments      Appointment[]
+  auditLogs         AuditLog[]
 
   @@index([customerEmail])
 }
@@ -148,4 +149,21 @@ model Appointment {
 
   @@index([businessId])
   @@index([startAt])
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  actorId     String?
+  actorEmail  String?
+  action      String
+  targetType  String?
+  targetId    String?
+  businessId  String?
+  business    Business? @relation(fields: [businessId], references: [id])
+  metadata    Json?
+
+  @@index([businessId])
+  @@index([action])
+  @@index([createdAt])
 }
