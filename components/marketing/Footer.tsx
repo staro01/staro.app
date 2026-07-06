@@ -26,6 +26,12 @@ const LINK_COLUMNS: { title: string; links: { label: string; href: string }[] }[
   },
 ];
 
+const LEGAL_LINKS = [
+  { label: "Mentions légales", href: "/mentions-legales" },
+  { label: "Politique de confidentialité", href: "/politique-de-confidentialite" },
+  { label: "CGU/CGV", href: "/cgu-cgv" },
+];
+
 const SOCIALS = [
   { label: "Instagram", href: "#" },
   { label: "LinkedIn", href: "#" },
@@ -152,11 +158,23 @@ export default function Footer() {
           borderTop: `1px solid ${colors.border}`,
           marginTop: 40,
           paddingTop: 24,
-          color: colors.textMuted,
-          fontSize: 13,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 16,
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        © {new Date().getFullYear()} Staro.app — Tous droits réservés.
+        <div style={{ color: colors.textMuted, fontSize: 13 }}>
+          © {new Date().getFullYear()} Staro.app — Tous droits réservés.
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+          {LEGAL_LINKS.map(l => (
+            <Link key={l.href} href={l.href} style={{ color: colors.textMuted, fontSize: 13, textDecoration: "none" }}>
+              {l.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       <style>{`

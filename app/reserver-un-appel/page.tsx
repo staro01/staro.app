@@ -1,14 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Script from "next/script";
 import FloatingHeader from "../../components/FloatingHeader";
 import PageHero from "../../components/marketing/PageHero";
 import Footer from "../../components/marketing/Footer";
-import { colors, gradient } from "../../components/marketing/theme";
+import { colors, gradient, btnPrimary } from "../../components/marketing/theme";
+import { getCookieConsent, setCookieConsent } from "../../components/CookieConsent";
 
 const CALENDLY_URL = "https://calendly.com/staro-app/nouvelle-reunion?hide_gdpr_banner=1";
 
 export default function ReserverUnAppelPage() {
+  const [consent, setConsent] = useState<"accepted" | "rejected" | null>(null);
+
+  useEffect(() => {
+    setConsent(getCookieConsent());
+    function onChange() {
+      setConsent(getCookieConsent());
+    }
+    window.addEventListener("staro-consent-change", onChange);
+    return () => window.removeEventListener("staro-consent-change", onChange);
+  }, []);
+
   return (
     <div style={{ background: colors.bg }}>
       <FloatingHeader />
@@ -43,11 +56,40 @@ export default function ReserverUnAppelPage() {
               background: "#fff",
             }}
           >
-            <div
-              className="calendly-inline-widget"
-              data-url={CALENDLY_URL}
-              style={{ minWidth: "320px", height: "720px" }}
-            />
+            {consent === "accepted" ? (
+              <>
+                <div
+                  className="calendly-inline-widget"
+                  data-url={CALENDLY_URL}
+                  style={{ minWidth: "320px", height: "720px" }}
+                />
+                <Script src="https://assets.calendly.com/assets/external/widget.js" strategy="lazyOnload" />
+              </>
+            ) : (
+              <div
+                style={{
+                  minHeight: 400,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 18,
+                  padding: 40,
+                  textAlign: "center",
+                }}
+              >
+                <p style={{ color: "#333", fontSize: 15, maxWidth: 420, margin: 0, lineHeight: 1.6 }}>
+                  Le calendrier de réservation est fourni par Calendly, un service tiers qui dépose des cookies.
+                  Acceptez les cookies non essentiels pour afficher le calendrier.
+                </p>
+                <button
+                  onClick={() => setCookieConsent("accepted")}
+                  style={{ ...btnPrimary, border: "none" }}
+                >
+                  Accepter et afficher le calendrier
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -63,8 +105,6 @@ export default function ReserverUnAppelPage() {
           Aucun engagement — l&apos;appel dure 15 minutes et nous répondons à toutes vos questions.
         </p>
       </section>
-
-      <Script src="https://assets.calendly.com/assets/external/widget.js" strategy="lazyOnload" />
 
       <Footer />
     </div>
