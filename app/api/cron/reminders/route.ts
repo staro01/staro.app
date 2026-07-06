@@ -1,27 +1,12 @@
 import { prisma } from "../../../../lib/prisma";
 import { sendSms } from "../../../../core/twilio/sms";
+import { isCronAuthorized } from "../../../../lib/cronAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Protège l'endpoint : accepte soit un header Authorization (Vercel Cron),
-// soit un paramètre ?secret= dans l'URL (services de cron externes sans support des headers).
-function isAuthorized(req: Request): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return true; // pas configuré = pas de protection (à éviter en prod)
-
-  const auth = req.headers.get("authorization");
-  if (auth === `Bearer ${secret}`) return true;
-
-  const { searchParams } = new URL(req.url);
-  const querySecret = searchParams.get("secret");
-  if (querySecret === secret) return true;
-
-  return false;
-}
-
 export async function GET(req: Request) {
-  if (!isAuthorized(req)) {
+  if (!isCronAuthorized(req)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
