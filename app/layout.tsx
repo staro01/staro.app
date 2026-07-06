@@ -56,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body>
           <OrganizationJsonLd />
           <ToastProvider>
-            {children}
+            <main>{children}</main>
             <CookieConsent />
           </ToastProvider>
         </body>
