@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   motion,
-  useMotionValue,
-  useMotionTemplate,
   useSpring,
   useReducedMotion,
   AnimatePresence,
@@ -18,19 +16,6 @@ import HeroOverlay from "./HeroOverlay";
 const TITLE = "Ne ratez plus aucun appel.";
 const TITLE_WORDS = TITLE.split(" ");
 
-const STATIC_DOTS = Array.from({ length: 26 }, (_, i) => ({
-  top: (i * 37) % 100,
-  left: (i * 53 + 7) % 100,
-  size: (i % 3) + 1,
-  opacity: 0.15 + ((i * 13) % 40) / 100,
-}));
-
-const AURORA_BLOBS = [
-  { color: "rgba(107,31,173,0.55)", size: 620, top: "-14%", left: "-8%", duration: 9 },
-  { color: "rgba(26,10,46,0.85)", size: 700, top: "35%", left: "55%", duration: 11 },
-  { color: "rgba(107,31,173,0.3)", size: 520, top: "62%", left: "5%", duration: 10 },
-];
-
 const TRANSCRIPT: { speaker: "agent" | "client"; text: string }[] = [
   { speaker: "agent", text: "Bonjour, que puis-je faire pour vous ?" },
   { speaker: "client", text: "Je voudrais passer une commande / prendre un rendez-vous." },
@@ -38,45 +23,6 @@ const TRANSCRIPT: { speaker: "agent" | "client"; text: string }[] = [
 ];
 
 type Phase = "ringing" | "connected" | "typing" | "saved" | "fading";
-
-function AuroraBackground({ reduced }: { reduced: boolean }) {
-  return (
-    <div aria-hidden style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-      {AURORA_BLOBS.map((b, i) => (
-        <motion.div
-          key={i}
-          style={{
-            position: "absolute",
-            top: b.top,
-            left: b.left,
-            width: b.size,
-            height: b.size,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${b.color}, transparent 70%)`,
-            filter: "blur(80px)",
-          }}
-          animate={reduced ? undefined : { x: [0, 30, -20, 0], y: [0, -20, 20, 0] }}
-          transition={reduced ? undefined : { duration: b.duration, repeat: Infinity, ease: "easeInOut" }}
-        />
-      ))}
-      {STATIC_DOTS.map((d, i) => (
-        <div
-          key={i}
-          style={{
-            position: "absolute",
-            top: `${d.top}%`,
-            left: `${d.left}%`,
-            width: d.size,
-            height: d.size,
-            borderRadius: "50%",
-            background: "#fff",
-            opacity: d.opacity,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
 
 function CallSimulationCard({ reduced }: { reduced: boolean }) {
   const [phase, setPhase] = useState<Phase>("ringing");
@@ -298,25 +244,11 @@ export default function Hero() {
   const prefersReducedMotion = useReducedMotion();
   const reduced = !!prefersReducedMotion;
 
-  const spotlightX = useMotionValue(0);
-  const spotlightY = useMotionValue(0);
-  const spotlightBg = useMotionTemplate`radial-gradient(650px circle at ${spotlightX}px ${spotlightY}px, rgba(155,79,221,0.1), transparent 70%)`;
-  const sectionRef = useRef<HTMLElement>(null);
-
-  function handleSectionMouseMove(e: React.MouseEvent<HTMLElement>) {
-    if (reduced) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    spotlightX.set(e.clientX - rect.left);
-    spotlightY.set(e.clientY - rect.top);
-  }
-
   const wordDelay = 0.1;
   const ctaDelay = TITLE_WORDS.length * wordDelay + 0.35;
 
   return (
     <section
-      ref={sectionRef}
-      onMouseMove={handleSectionMouseMove}
       style={{
         position: "relative",
         overflow: "hidden",
@@ -327,10 +259,6 @@ export default function Hero() {
       }}
     >
       <HeroBackground />
-
-      {!reduced && (
-        <motion.div aria-hidden style={{ position: "absolute", inset: 0, background: spotlightBg, pointerEvents: "none" }} />
-      )}
 
       <div
         style={{

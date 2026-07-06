@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Header from "../../components/marketing/Header";
+import FloatingHeader from "../../components/FloatingHeader";
+import PageHero from "../../components/marketing/PageHero";
 import Footer from "../../components/marketing/Footer";
-import StarryBackground from "../../components/StarryBackground";
 import { colors, card, gradient, btnPrimary, Section, sectionTitle, sectionSubtitle } from "../../components/marketing/theme";
 import { BoltIcon, CheckBadgeIcon, ClockIcon, PhoneIcon, MessageIcon, TargetIcon } from "../../components/marketing/icons";
 
@@ -54,11 +54,10 @@ const WHY_STARO = [
 export default function AboutPage() {
   return (
     <div style={{ background: colors.bg }}>
-      <Header />
+      <FloatingHeader />
 
-      <section style={{ position: "relative", overflow: "hidden", padding: "80px 20px 60px" }}>
-        <StarryBackground />
-        <div style={{ position: "relative", maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
+      <PageHero>
+        <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
           <h1 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 900, color: colors.text, margin: "0 0 20px" }}>
             À propos de Staro
           </h1>
@@ -67,7 +66,7 @@ export default function AboutPage() {
             l'équipe — à toute heure, sans jamais se fatiguer.
           </p>
         </div>
-      </section>
+      </PageHero>
 
       <Section>
         <div style={{ display: "flex", gap: 48, flexWrap: "wrap", alignItems: "center" }}>

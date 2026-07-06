@@ -30,15 +30,28 @@ export default function StarryBackground({ showBackdrop = true }: { showBackdrop
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // À partir d'ici, TypeScript sait que canvas et ctx ne sont pas null (capturés dans des const)
     const c2d: CanvasRenderingContext2D = ctx;
     const cvs: HTMLCanvasElement = canvas;
 
+    let width = 0;
+    let height = 0;
+
     function resize() {
-      cvs.width = cvs.offsetWidth;
-      cvs.height = cvs.offsetHeight;
+      const parent = cvs.parentElement;
+      width = parent?.clientWidth || cvs.offsetWidth || window.innerWidth;
+      height = parent?.clientHeight || cvs.offsetHeight || window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+      cvs.width = width * dpr;
+      cvs.height = height * dpr;
+      cvs.style.width = `${width}px`;
+      cvs.style.height = `${height}px`;
+      c2d.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     resize();
+
+    const parent = cvs.parentElement;
+    const resizeObserver = parent ? new ResizeObserver(resize) : null;
+    if (parent && resizeObserver) resizeObserver.observe(parent);
     window.addEventListener("resize", resize);
 
     let comets: Comet[] = [];
@@ -50,7 +63,7 @@ export default function StarryBackground({ showBackdrop = true }: { showBackdrop
       const angle = (20 + Math.random() * 30) * (Math.PI / 180);
       const speed = 6 + Math.random() * 5;
       comets.push({
-        x: startFromLeft ? Math.random() * cvs.width * 0.4 : Math.random() * cvs.width,
+        x: startFromLeft ? Math.random() * width * 0.4 : Math.random() * width,
         y: -20,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
@@ -64,10 +77,10 @@ export default function StarryBackground({ showBackdrop = true }: { showBackdrop
     function draw() {
       c2d.globalCompositeOperation = "destination-out";
       c2d.fillStyle = "rgba(0,0,0,0.12)";
-      c2d.fillRect(0, 0, cvs.width, cvs.height);
+      c2d.fillRect(0, 0, width, height);
       c2d.globalCompositeOperation = "source-over";
 
-      comets = comets.filter(c => c.life < c.maxLife && c.y < cvs.height + 50 && c.x < cvs.width + 50);
+      comets = comets.filter(c => c.life < c.maxLife && c.y < height + 50 && c.x < width + 50);
 
       for (const c of comets) {
         c.x += c.vx;
@@ -97,6 +110,7 @@ export default function StarryBackground({ showBackdrop = true }: { showBackdrop
       cancelAnimationFrame(rafId);
       clearTimeout(spawnTimeout);
       window.removeEventListener("resize", resize);
+      if (resizeObserver) resizeObserver.disconnect();
     };
   }, []);
 
@@ -123,7 +137,7 @@ export default function StarryBackground({ showBackdrop = true }: { showBackdrop
         }} />
       ))}
 
-      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
+      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} />
 
       <style>{`
         @keyframes staro-twinkle {

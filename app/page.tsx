@@ -2,7 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { isAdminEmail } from "../lib/admin";
 import { colors } from "../components/marketing/theme";
-import Header from "../components/marketing/Header";
+import FloatingHeader from "../components/FloatingHeader";
 import Hero from "../components/marketing/Hero";
 import Services from "../components/marketing/Services";
 import Process from "../components/marketing/Process";
@@ -23,7 +23,7 @@ export default async function Home() {
 
   return (
     <div style={{ background: colors.bg }}>
-      <Header />
+      <FloatingHeader />
       <Hero />
       <Services />
       <Process />

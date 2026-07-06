@@ -185,6 +185,17 @@ const BLOCKS = [
 export default function Services() {
   return (
     <Section id="services">
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "200px",
+          background: "linear-gradient(to bottom, rgba(5,1,15,0.8) 0%, rgba(0,0,0,0) 100%)",
+          pointerEvents: "none",
+        }}
+      />
       <div style={{ textAlign: "center", maxWidth: 700, margin: "0 auto 56px" }}>
         <h2 style={sectionTitle}>Nos services</h2>
         <p style={sectionSubtitle}>Un agent vocal qui prend le relais au téléphone, pour tous les commerces locaux.</p>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Header from "../../components/marketing/Header";
+import FloatingHeader from "../../components/FloatingHeader";
+import PageHero from "../../components/marketing/PageHero";
 import Footer from "../../components/marketing/Footer";
-import StarryBackground from "../../components/StarryBackground";
 import { colors, card, btnPrimary } from "../../components/marketing/theme";
 import { useToast } from "../../components/Toast";
 
@@ -49,11 +49,10 @@ export default function ContactPage() {
 
   return (
     <div style={{ background: colors.bg }}>
-      <Header />
+      <FloatingHeader />
 
-      <section style={{ position: "relative", overflow: "hidden", padding: "72px 20px" }}>
-        <StarryBackground />
-        <div style={{ position: "relative", maxWidth: 560, margin: "0 auto" }}>
+      <PageHero>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
             <h1 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 900, color: colors.text, margin: "0 0 12px" }}>
               Réservez un appel
@@ -113,7 +112,7 @@ export default function ContactPage() {
             )}
           </div>
         </div>
-      </section>
+      </PageHero>
 
       <Footer />
     </div>

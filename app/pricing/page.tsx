@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Header from "../../components/marketing/Header";
+import FloatingHeader from "../../components/FloatingHeader";
+import PageHero from "../../components/marketing/PageHero";
 import Footer from "../../components/marketing/Footer";
-import StarryBackground from "../../components/StarryBackground";
 import { PricingCard } from "../../components/marketing/Pricing";
 import { Section, sectionTitle, sectionSubtitle, card, colors } from "../../components/marketing/theme";
 
@@ -35,11 +35,10 @@ export default function PricingPage() {
 
   return (
     <div style={{ background: colors.bg }}>
-      <Header />
+      <FloatingHeader />
 
-      <section style={{ position: "relative", overflow: "hidden", padding: "80px 20px 20px" }}>
-        <StarryBackground />
-        <div style={{ position: "relative", maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
+      <PageHero style={{ paddingBottom: 40 }}>
+        <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
           <h1 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 900, color: colors.text, margin: "0 0 16px" }}>
             Une offre simple, sans surprise
           </h1>
@@ -48,7 +47,7 @@ export default function PricingPage() {
             d'autres métiers.
           </p>
         </div>
-      </section>
+      </PageHero>
 
       <Section>
         <PricingCard />
