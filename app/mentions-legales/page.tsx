@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import FloatingHeader from "../../components/FloatingHeader";
 import PageHero from "../../components/marketing/PageHero";
 import Footer from "../../components/marketing/Footer";
 import { colors } from "../../components/marketing/theme";
+
+export const metadata: Metadata = {
+  title: "Mentions légales",
+  description: "Mentions légales de Staro.app.",
+  alternates: { canonical: "/mentions-legales" },
+  robots: { index: true, follow: true },
+};
 
 const h2: React.CSSProperties = { fontSize: 20, fontWeight: 900, color: colors.text, margin: "40px 0 14px" };
 const p: React.CSSProperties = { color: colors.textMuted, fontSize: 15, lineHeight: 1.75, margin: "0 0 14px" };

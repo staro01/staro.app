@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Section, sectionHeader, sectionTitle, sectionSubtitle, card, colors } from "./theme";
+import FaqJsonLd from "../seo/FaqJsonLd";
 
 const QUESTIONS = [
   {
@@ -31,6 +32,7 @@ export default function FAQ() {
 
   return (
     <Section id="faq" style={{ background: colors.bgDeep }}>
+      <FaqJsonLd items={QUESTIONS} />
       <div style={sectionHeader}>
         <h2 style={sectionTitle}>Questions fréquentes</h2>
         <p style={sectionSubtitle}>Tout ce qu'il faut savoir avant de se lancer.</p>

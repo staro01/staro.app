@@ -5,6 +5,7 @@ import FloatingHeader from "../../components/FloatingHeader";
 import PageHero from "../../components/marketing/PageHero";
 import FinalCTA from "../../components/marketing/FinalCTA";
 import Footer from "../../components/marketing/Footer";
+import FaqJsonLd from "../../components/seo/FaqJsonLd";
 import { PricingCard } from "../../components/marketing/Pricing";
 import { Section, sectionTitle, sectionSubtitle, sectionHeader, card, colors } from "../../components/marketing/theme";
 
@@ -36,6 +37,7 @@ export default function PricingPage() {
 
   return (
     <div style={{ background: colors.bg }}>
+      <FaqJsonLd items={PRICING_QUESTIONS} />
       <FloatingHeader />
 
       <PageHero style={{ paddingBottom: 40 }}>

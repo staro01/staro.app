@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { isAdminEmail } from "../lib/admin";
@@ -12,6 +13,13 @@ import Testimonials from "../components/marketing/Testimonials";
 import FAQ from "../components/marketing/FAQ";
 import FinalCTA from "../components/marketing/FinalCTA";
 import Footer from "../components/marketing/Footer";
+
+export const metadata: Metadata = {
+  title: "Staro.app — L'agent vocal IA pour les commerces locaux",
+  description:
+    "Staro répond au téléphone à la place de votre commerce, 24/7. Un agent vocal IA qui prend les appels, note les demandes et informe vos clients automatiquement.",
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const user = await currentUser();
