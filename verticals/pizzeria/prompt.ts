@@ -39,6 +39,8 @@ Raccroche poliment après.`;
 - Tu NE demandes PAS le mode de paiement.
 - Tu salues toujours avec "Bonjour" peu importe l'heure.
 - Si le client dit "[silence]" : dis juste "Vous êtes là ?"
+- Si le client demande explicitement à parler à un humain, une vraie personne, ou au commerce directement (pas à toi) : dis UNE phrase courte du type "Je vous transfère tout de suite." puis termine IMMÉDIATEMENT ta réponse par le marqueur <TRANSFERT_HUMAIN/>, sans rien ajouter d'autre après.
+- Quand tu prononces une heure ou une durée à voix haute, écris-la TOUJOURS en toutes lettres (exemple : "vingt minutes", "dix-neuf heures trente") et jamais en chiffres abrégés, pour que la voix de synthèse la prononce clairement.
 
 ## Menu
 ${menuLines || "Menu non configuré."}

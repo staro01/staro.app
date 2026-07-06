@@ -54,6 +54,15 @@ export function hangupTwiml(baseUrl: string, text: string) {
 </Response>`;
 }
 
+export function dialTwiml(baseUrl: string, text: string, phoneNumber: string) {
+  const hasElevenLabs = !!(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID);
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  ${hasElevenLabs ? `<Play>${ttsUrl(baseUrl, text)}</Play>` : say(text)}
+  <Dial>${escapeXml(phoneNumber)}</Dial>
+</Response>`;
+}
+
 export function normPhone(p?: string | null) {
   const raw = (p ?? "").trim().replace(/\s+/g, "");
   if (!raw) return "";

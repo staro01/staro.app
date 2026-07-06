@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
-import { xml, getBaseUrl, hangupTwiml, gatherSay, normPhone } from "../../../../../core/twilio/incoming";
+import { xml, getBaseUrl, hangupTwiml, gatherSay, dialTwiml, normPhone } from "../../../../../core/twilio/incoming";
 import { verifyTwilioRequest } from "../../../../../core/twilio/verify";
 import { loadHistory, saveHistory } from "../../../../../core/ai/conversation";
 import { askClaude } from "../../../../../core/ai/claude";
+import { wantsHumanTransfer, stripTransferMarker } from "../../../../../core/ai/transfer";
 import { buildPizzeriaPrompt } from "../../../../../verticals/pizzeria/prompt";
 import { extractOrderJson, stripOrderBlock, saveOrder } from "../../../../../verticals/pizzeria/actions";
 import { buildCoiffeurPrompt } from "../../../../../verticals/coiffeur/prompt";
@@ -66,6 +67,15 @@ export async function POST(req: NextRequest) {
       const system = buildCoiffeurPrompt(business, services, staff, upcomingAppointments);
       const claudeText = await askClaude(system, history);
       history.push({ role: "assistant", content: claudeText });
+      await saveHistory(callSid, history, business.id);
+
+      if (wantsHumanTransfer(claudeText)) {
+        const transferText = stripTransferMarker(claudeText) || "Je vous transfère tout de suite.";
+        if (business.phone) {
+          return xml(dialTwiml(baseUrl, transferText, business.phone));
+        }
+        return xml(hangupTwiml(baseUrl, "Nous ne pouvons pas vous transférer pour le moment. Merci de rappeler directement l'établissement."));
+      }
 
       const apptData = extractAppointmentJson(claudeText);
       if (apptData) {
@@ -76,12 +86,10 @@ export async function POST(req: NextRequest) {
           await saveHistory(callSid, history, business.id);
           return xml(gatherSay(baseUrl, retryText, "/api/twilio/voice/handle-speech"));
         }
-        await saveHistory(callSid, history, business.id);
         const confirmText = stripAppointmentBlock(claudeText) || "Votre rendez-vous est bien enregistré. Merci et à bientôt !";
         return xml(hangupTwiml(baseUrl, confirmText));
       }
 
-      await saveHistory(callSid, history, business.id);
       return xml(gatherSay(baseUrl, claudeText, "/api/twilio/voice/handle-speech"));
     }
 
@@ -96,6 +104,14 @@ export async function POST(req: NextRequest) {
     const claudeText = await askClaude(system, history);
     history.push({ role: "assistant", content: claudeText });
     await saveHistory(callSid, history, business.id);
+
+    if (wantsHumanTransfer(claudeText)) {
+      const transferText = stripTransferMarker(claudeText) || "Je vous transfère tout de suite.";
+      if (business.phone) {
+        return xml(dialTwiml(baseUrl, transferText, business.phone));
+      }
+      return xml(hangupTwiml(baseUrl, "Nous ne pouvons pas vous transférer pour le moment. Merci de rappeler directement l'établissement."));
+    }
 
     const orderData = extractOrderJson(claudeText);
     if (orderData) {
