@@ -2,6 +2,7 @@ import { prisma } from "../../../../lib/prisma";
 import { sendAdminBackup } from "../../../../core/email/notify";
 import { isCronAuthorized } from "../../../../lib/cronAuth";
 import { notifyCriticalError } from "../../../../core/monitoring/notifyError";
+import { withRetry } from "../../../../lib/withRetry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,16 +14,18 @@ export async function GET(req: Request) {
 
   try {
     const [businesses, menuItems, supplements, events, conversations, staff, services, appointments] =
-      await Promise.all([
-        prisma.business.findMany(),
-        prisma.menuItem.findMany(),
-        prisma.supplement.findMany(),
-        prisma.event.findMany(),
-        prisma.conversation.findMany(),
-        prisma.staff.findMany(),
-        prisma.service.findMany(),
-        prisma.appointment.findMany(),
-      ]);
+      await withRetry(() =>
+        Promise.all([
+          prisma.business.findMany(),
+          prisma.menuItem.findMany(),
+          prisma.supplement.findMany(),
+          prisma.event.findMany(),
+          prisma.conversation.findMany(),
+          prisma.staff.findMany(),
+          prisma.service.findMany(),
+          prisma.appointment.findMany(),
+        ])
+      );
 
     const data = {
       exportedAt: new Date().toISOString(),
