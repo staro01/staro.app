@@ -11,7 +11,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
-  const email = user.emailAddresses[0]?.emailAddress;
+  const email = user.primaryEmailAddress?.emailAddress;
   if (isAdminEmail(email)) redirect("/admin");
 
   const business = await ensureBusinessForCurrentUser();

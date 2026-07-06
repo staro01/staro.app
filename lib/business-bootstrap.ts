@@ -6,7 +6,7 @@ export async function ensureBusinessForCurrentUser(vertical = "pizzeria") {
   const user = await currentUser();
   if (!user) return null;
 
-  const email = user.emailAddresses?.[0]?.emailAddress ?? null;
+  const email = user.primaryEmailAddress?.emailAddress ?? null;
 
   const existing = await prisma.business.findUnique({ where: { clerkUserId: user.id } });
   if (existing) return existing;

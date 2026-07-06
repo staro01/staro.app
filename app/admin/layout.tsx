@@ -8,7 +8,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
-  const email = user.emailAddresses?.[0]?.emailAddress ?? "";
+  const email = user.primaryEmailAddress?.emailAddress ?? "";
   if (!isAdminEmail(email)) redirect("/dashboard");
 
   return <>{children}</>;

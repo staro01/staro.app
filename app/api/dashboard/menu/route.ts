@@ -13,7 +13,7 @@ async function getOrCreateBusiness() {
     create: {
       clerkUserId: user.id,
       vertical: "pizzeria",
-      name: `Business ${user.emailAddresses?.[0]?.emailAddress ?? user.id.slice(0, 6)}`,
+      name: `Business ${user.primaryEmailAddress?.emailAddress ?? user.id.slice(0, 6)}`,
     },
   });
 }

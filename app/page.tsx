@@ -1,7 +1,4 @@
 import type { Metadata } from "next";
-import { currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import { isAdminEmail } from "../lib/admin";
 import { colors } from "../components/marketing/theme";
 import FloatingHeader from "../components/FloatingHeader";
 import Hero from "../components/marketing/Hero";
@@ -21,14 +18,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-export default async function Home() {
-  const user = await currentUser();
-
-  if (user) {
-    const email = user.emailAddresses[0]?.emailAddress;
-    redirect(isAdminEmail(email) ? "/admin" : "/dashboard");
-  }
-
+export default function Home() {
   return (
     <div style={{ background: colors.bg }}>
       <FloatingHeader />

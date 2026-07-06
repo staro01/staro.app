@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 async function isAdmin() {
   const user = await currentUser();
   if (!user) return false;
-  const email = user.emailAddresses?.[0]?.emailAddress ?? "";
+  const email = user.primaryEmailAddress?.emailAddress ?? "";
   return isAdminEmail(email);
 }
 
