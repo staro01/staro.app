@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SignUp } from "@clerk/nextjs";
 import StarryBackground from "../../../components/StarryBackground";
 
@@ -33,6 +34,26 @@ export default function SignUpPage() {
       background: "#05050a", gap: 28, position: "relative", overflow: "hidden",
     }}>
       <StarryBackground />
+
+      <Link
+        href="/"
+        style={{
+          position: "fixed",
+          top: 24,
+          left: 24,
+          zIndex: 10,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          color: "#ccc",
+          fontSize: 14,
+          fontWeight: 700,
+          textDecoration: "none",
+        }}
+      >
+        ← Retour au site
+      </Link>
+
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{
           background: "linear-gradient(135deg, #6b1fad, #9b4fdd)", borderRadius: 10, width: 40, height: 40,
