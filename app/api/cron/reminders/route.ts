@@ -4,12 +4,20 @@ import { sendSms } from "../../../../core/twilio/sms";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Protège l'endpoint : seul Vercel Cron (avec le bon secret) peut le déclencher
+// Protège l'endpoint : accepte soit un header Authorization (Vercel Cron),
+// soit un paramètre ?secret= dans l'URL (services de cron externes sans support des headers).
 function isAuthorized(req: Request): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return true; // pas configuré = pas de protection (à éviter en prod)
+
   const auth = req.headers.get("authorization");
-  return auth === `Bearer ${secret}`;
+  if (auth === `Bearer ${secret}`) return true;
+
+  const { searchParams } = new URL(req.url);
+  const querySecret = searchParams.get("secret");
+  if (querySecret === secret) return true;
+
+  return false;
 }
 
 export async function GET(req: Request) {
@@ -18,9 +26,8 @@ export async function GET(req: Request) {
   }
 
   const now = new Date();
-  const windowStart = new Date(now.getTime() + 55 * 60000); // 55 min
-  const windowEnd = new Date(now.getTime() + 65 * 60000);   // 65 min
-  // Fenêtre de 10 min autour de "1h avant" pour couvrir l'intervalle entre deux exécutions du cron
+  const windowStart = new Date(now.getTime() + 55 * 60000);
+  const windowEnd = new Date(now.getTime() + 65 * 60000);
 
   const appointments = await prisma.appointment.findMany({
     where: {
@@ -46,7 +53,6 @@ export async function GET(req: Request) {
     const message = `Rappel : votre rendez-vous${serviceLabel} au ${businessLabel} ${appt.business.name} est à ${timeStr}, dans 1h. À bientôt !`;
 
     try {
-      // Le numéro client doit être au format international pour Twilio
       const toNumber = appt.customerPhone.startsWith("+")
         ? appt.customerPhone
         : appt.customerPhone.startsWith("0")
