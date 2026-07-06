@@ -73,7 +73,7 @@ export default function OnboardingPage() {
 
         {step === 0 && (
           <div>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>✦</div>
+            <img src="/logo-badge.png" alt="Staro.app" width={56} height={56} style={{ borderRadius: 12, marginBottom: 12 }} />
             <h1 style={{ fontSize: 24, fontWeight: 900, margin: "0 0 12px", color: "#fff" }}>Bienvenue sur Staro.app !</h1>
             <p style={{ color: "#888", lineHeight: 1.6, margin: "0 0 24px" }}>En 2 minutes, configurez votre assistant vocal qui répondra au téléphone à votre place, 7j/7.</p>
             <div style={{ background: "#1a1a2e", border: "1px solid #2a1a3e", borderRadius: 14, padding: 16, marginBottom: 28 }}>

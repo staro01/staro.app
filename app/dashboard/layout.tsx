@@ -46,7 +46,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="staro-header-inner">
           <div className="staro-top-row">
             <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ background: "linear-gradient(135deg, #6b1fad, #9b4fdd)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>✦</span>
+              <img src="/logo-badge.png" alt="Staro.app" width={32} height={32} style={{ borderRadius: 8 }} />
               Staro.app
             </div>
             <Link href="/sign-out" style={{ fontSize: 13, color: "#888" }}>Déconnexion</Link>

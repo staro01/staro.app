@@ -55,11 +55,7 @@ export default function SignInPage() {
       </Link>
 
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{
-          background: "linear-gradient(135deg, #6b1fad, #9b4fdd)", borderRadius: 10, width: 40, height: 40,
-          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
-          boxShadow: "0 0 30px rgba(155,79,221,0.5)",
-        }}>✦</span>
+        <img src="/logo-badge.png" alt="Staro.app" width={40} height={40} style={{ borderRadius: 10, boxShadow: "0 0 30px rgba(155,79,221,0.5)" }} />
         <span style={{ fontSize: 24, fontWeight: 900, color: "#fff" }}>Staro.app</span>
       </div>
       <div style={{ position: "relative" }}>

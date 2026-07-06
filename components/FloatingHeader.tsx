@@ -49,21 +49,7 @@ export default function FloatingHeader() {
         }}
       >
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <span
-            style={{
-              background: gradient,
-              borderRadius: 8,
-              width: 32,
-              height: 32,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 16,
-              flexShrink: 0,
-            }}
-          >
-            ✦
-          </span>
+          <img src="/logo-badge.png" alt="Staro.app" width={32} height={32} style={{ borderRadius: 8, flexShrink: 0 }} />
           <span style={{ fontSize: 19, fontWeight: 900, color: colors.text }}>Staro.app</span>
         </Link>
 

@@ -68,20 +68,7 @@ export default function Footer() {
       <div style={{ ...container, display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1.2fr", gap: 40 }} className="staro-footer-grid">
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-            <span
-              style={{
-                background: gradient,
-                borderRadius: 8,
-                width: 32,
-                height: 32,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 16,
-              }}
-            >
-              ✦
-            </span>
+            <img src="/logo-badge.png" alt="Staro.app" width={32} height={32} style={{ borderRadius: 8, flexShrink: 0 }} />
             <span style={{ fontSize: 18, fontWeight: 900, color: colors.text }}>Staro.app</span>
           </div>
           <p style={{ color: colors.textMuted, fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 260 }}>

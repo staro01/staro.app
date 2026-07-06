@@ -113,7 +113,7 @@ export default function AdminPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-              <span style={{ background: "linear-gradient(135deg, #6b1fad, #9b4fdd)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>✦</span>
+              <img src="/logo-badge.png" alt="Staro.app" width={32} height={32} style={{ borderRadius: 8 }} />
               <span style={{ fontSize: 22, fontWeight: 900, color: "#fff" }}>Staro.app — Admin</span>
             </div>
             <p style={{ color: "#666", fontSize: 13, margin: 0 }}>Gestion des clients</p>
