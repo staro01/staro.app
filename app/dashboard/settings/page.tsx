@@ -13,6 +13,7 @@ type Settings = {
   allergensInfo: string; currentPromos: string; welcomeMessage: string;
   openingHours: Record<string, DaySchedule>;
 };
+type Subscription = { plan: string | null; status: string | null; hasStripeCustomer: boolean } | null;
 
 const defaultDay = (): DaySchedule => ({ open: "11:30", close: "14:00", dinnerOpen: "19:00", dinnerClose: "22:30", closed: false });
 const defaultSettings = (): Settings => ({
@@ -24,6 +25,87 @@ const defaultSettings = (): Settings => ({
   allergensInfo: "", currentPromos: "", welcomeMessage: "",
   openingHours: Object.fromEntries(DAYS.map(d => [d, defaultDay()])),
 });
+
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  active: { label: "Actif", color: "#4ade80" },
+  trialing: { label: "Période d'essai", color: "#4ade80" },
+  past_due: { label: "Paiement en retard", color: "#f5a623" },
+  cancelled: { label: "Annulé", color: "#ef4444" },
+  canceled: { label: "Annulé", color: "#ef4444" },
+  inactive: { label: "Inactif", color: "#888" },
+};
+
+const PLAN_LABELS: Record<string, string> = {
+  monthly: "Mensuel",
+  annual: "Annuel",
+};
+
+function SubscriptionSection() {
+  const [sub, setSub] = useState<Subscription>(null);
+  const [loading, setLoading] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/dashboard/subscription")
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setSub)
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function openPortal() {
+    setRedirecting(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setRedirecting(false);
+        alert(data.error ?? "Une erreur est survenue.");
+      }
+    } catch {
+      setRedirecting(false);
+      alert("Une erreur est survenue.");
+    }
+  }
+
+  if (loading) return null;
+
+  const statusInfo = sub?.status ? STATUS_LABELS[sub.status] ?? { label: sub.status, color: "#888" } : null;
+  const planLabel = sub?.plan ? PLAN_LABELS[sub.plan] ?? sub.plan : null;
+
+  return (
+    <Section title="💳 Abonnement">
+      {sub?.hasStripeCustomer ? (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
+            <span style={{ color: "#ccc" }}>Statut :</span>
+            <span
+              style={{
+                color: statusInfo?.color ?? "#888",
+                fontWeight: 800,
+                background: `${statusInfo?.color ?? "#888"}22`,
+                padding: "3px 10px",
+                borderRadius: 20,
+                fontSize: 13,
+              }}
+            >
+              {statusInfo?.label ?? "Inconnu"}
+            </span>
+            {planLabel && <span style={{ color: "#888", fontSize: 13 }}>— Formule {planLabel}</span>}
+          </div>
+          <button onClick={openPortal} disabled={redirecting} style={btnSecondary}>
+            {redirecting ? "Redirection..." : "Gérer mon abonnement et ma facturation"}
+          </button>
+        </>
+      ) : (
+        <p style={{ color: "#888", fontSize: 13, margin: 0 }}>
+          Aucun abonnement Stripe associé à ce compte pour le moment.
+        </p>
+      )}
+    </Section>
+  );
+}
 
 export default function SettingsPage() {
   const [s, setS] = useState<Settings>(defaultSettings());
@@ -57,6 +139,8 @@ export default function SettingsPage() {
         <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0 }}>⚙️ Paramètres</h1>
         <button onClick={save} disabled={saving} style={btnPrimary}>{saving ? "Sauvegarde…" : saved ? "✅ Sauvegardé !" : "Sauvegarder"}</button>
       </div>
+
+      <SubscriptionSection />
 
       <Section title="🏠 Informations générales">
         <Field label="Nom *"><input value={s.name} onChange={e => setS({ ...s, name: e.target.value })} style={inputStyle} /></Field>
@@ -122,5 +206,6 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 }
 
 const btnPrimary: React.CSSProperties = { padding: "10px 18px", borderRadius: 12, border: "none", background: "#6b1fad", color: "#fff", fontWeight: 800, cursor: "pointer", fontSize: 14 };
+const btnSecondary: React.CSSProperties = { padding: "10px 18px", borderRadius: 12, border: "1px solid #2a1a3e", background: "transparent", color: "#ccc", fontWeight: 700, cursor: "pointer", fontSize: 13, width: "fit-content" };
 const inputStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid #2a1a3e", background: "#0a0a0a", color: "#fff", fontSize: 14, width: "100%", boxSizing: "border-box" };
 const timeInput: React.CSSProperties = { padding: "6px 8px", borderRadius: 8, border: "1px solid #2a1a3e", background: "#0a0a0a", color: "#fff", fontSize: 13 };
