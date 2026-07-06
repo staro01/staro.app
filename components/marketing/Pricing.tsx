@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Section, sectionTitle, sectionSubtitle, colors, gradient, btnPrimary } from "./theme";
 import { ReceiptIcon } from "./icons";
 
@@ -15,6 +14,28 @@ const INCLUSIONS = [
 
 export function PricingCard() {
   const [annual, setAnnual] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  async function handleCheckout() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: annual ? "annual" : "monthly" }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setLoading(false);
+        alert("Une erreur est survenue, réessayez plus tard.");
+      }
+    } catch {
+      setLoading(false);
+      alert("Une erreur est survenue, réessayez plus tard.");
+    }
+  }
 
   return (
     <div style={{ position: "relative" }}>
@@ -165,9 +186,13 @@ export function PricingCard() {
                 ))}
               </div>
 
-              <Link href="/sign-up" style={{ ...btnPrimary, width: "100%", boxShadow: "0 12px 40px rgba(155,79,221,0.45)" }}>
-                Commencer maintenant
-              </Link>
+              <button
+                onClick={handleCheckout}
+                disabled={loading}
+                style={{ ...btnPrimary, width: "100%", boxShadow: "0 12px 40px rgba(155,79,221,0.45)", border: "none", opacity: loading ? 0.6 : 1 }}
+              >
+                {loading ? "Redirection..." : "Commencer maintenant"}
+              </button>
             </div>
           </div>
         </div>

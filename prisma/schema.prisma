@@ -29,6 +29,10 @@ model Business {
   deliveryMinimum   Float?         @default(0)
   estimatedPrepTime Int?           @default(20)
   paymentMethods    String?        @default("CB, espèces")
+  stripeCustomerId     String?     @unique
+  stripeSubscriptionId String?     @unique
+  subscriptionPlan     String?
+  subscriptionStatus   String?     @default("inactive")
   menuItems         MenuItem[]
   supplements       Supplement[]
   events            Event[]
