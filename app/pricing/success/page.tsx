@@ -11,14 +11,28 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (!sessionId) {
       setStatus("error");
       return;
     }
-    setStatus("ok");
+
+    fetch(`/api/stripe/session?session_id=${encodeURIComponent(sessionId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.paid) {
+          setEmail(data.email ?? null);
+          setStatus("ok");
+        } else {
+          setStatus("error");
+        }
+      })
+      .catch(() => setStatus("error"));
   }, [sessionId]);
+
+  const signUpHref = email ? `/sign-up?email=${encodeURIComponent(email)}` : "/sign-up";
 
   return (
     <div style={{ ...card, padding: 48, maxWidth: 560, width: "100%", textAlign: "center" }}>
@@ -34,7 +48,7 @@ function SuccessContent() {
             Merci pour votre confiance. Créez votre compte dès maintenant pour configurer votre agent vocal
             Staro et démarrer votre activité.
           </p>
-          <Link href="/sign-up" style={{ ...btnPrimary, width: "100%" }}>
+          <Link href={signUpHref} style={{ ...btnPrimary, width: "100%" }}>
             Créer mon compte
           </Link>
         </>

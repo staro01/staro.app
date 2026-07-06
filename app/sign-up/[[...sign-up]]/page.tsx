@@ -1,4 +1,8 @@
+"use client";
+
+import { Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { SignUp } from "@clerk/nextjs";
 import StarryBackground from "../../../components/StarryBackground";
 
@@ -26,6 +30,18 @@ const clerkAppearance = {
     footerActionText: { color: "#aaa" },
   },
 };
+
+function SignUpContent() {
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") ?? undefined;
+
+  return (
+    <SignUp
+      appearance={clerkAppearance}
+      initialValues={email ? { emailAddress: email } : undefined}
+    />
+  );
+}
 
 export default function SignUpPage() {
   return (
@@ -63,7 +79,9 @@ export default function SignUpPage() {
         <span style={{ fontSize: 24, fontWeight: 900, color: "#fff" }}>Staro.app</span>
       </div>
       <div style={{ position: "relative" }}>
-        <SignUp appearance={clerkAppearance} />
+        <Suspense fallback={null}>
+          <SignUpContent />
+        </Suspense>
       </div>
     </div>
   );

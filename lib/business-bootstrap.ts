@@ -11,6 +11,34 @@ export async function ensureBusinessForCurrentUser(vertical = "pizzeria") {
   const existing = await prisma.business.findUnique({ where: { clerkUserId: user.id } });
   if (existing) return existing;
 
+  // Réclamation : si un paiement Stripe a déjà été effectué avec cet email, on rattache ce compte
+  if (email) {
+    const paidBusiness = await prisma.business.findFirst({
+      where: {
+        customerEmail: { equals: email, mode: "insensitive" },
+        clerkUserId: null,
+        subscriptionStatus: "active",
+      },
+    });
+
+    if (paidBusiness) {
+      const claimed = await prisma.business.update({
+        where: { id: paidBusiness.id },
+        data: {
+          clerkUserId: user.id,
+          status: "approved",
+        },
+      });
+
+      sendAdminNotification(
+        "Compte Staro.app rattaché à un paiement",
+        `Le compte ${email} vient de créer son compte et a été automatiquement rattaché à son paiement Stripe.\n\nID business : ${claimed.id}`
+      ).catch(() => {});
+
+      return claimed;
+    }
+  }
+
   const business = await prisma.business.create({
     data: {
       clerkUserId: user.id,

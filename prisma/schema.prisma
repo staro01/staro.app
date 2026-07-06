@@ -33,6 +33,7 @@ model Business {
   stripeSubscriptionId String?     @unique
   subscriptionPlan     String?
   subscriptionStatus   String?     @default("inactive")
+  customerEmail        String?
   menuItems         MenuItem[]
   supplements       Supplement[]
   events            Event[]
@@ -40,6 +41,8 @@ model Business {
   staff             Staff[]
   services          Service[]
   appointments      Appointment[]
+
+  @@index([customerEmail])
 }
 
 model MenuItem {
