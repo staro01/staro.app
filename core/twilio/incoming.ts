@@ -25,7 +25,7 @@ export function ttsUrl(baseUrl: string, text: string) {
   const expiresAt = Date.now() + 10 * 60 * 1000; // valide 10 minutes
   const sig = signTts(text, expiresAt);
   const params = new URLSearchParams({ text, exp: String(expiresAt), sig });
-  return `${baseUrl}/api/tts?${params.toString()}`;
+  return escapeXml(`${baseUrl}/api/tts?${params.toString()}`);
 }
 
 export function gatherSay(baseUrl: string, text: string, actionPath: string) {
