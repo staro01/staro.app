@@ -26,11 +26,14 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth();
   const url = new URL(req.url);
 
-  if (userId && url.pathname === "/") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+  if (url.pathname === "/") {
+    const { userId } = await auth();
+    if (userId) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return;
   }
 
   if (!isPublicRoute(req)) {
