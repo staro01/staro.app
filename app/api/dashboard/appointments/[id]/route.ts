@@ -14,6 +14,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const business = await getBusiness();
   if (!business) return Response.json({ error: "Non autorisé" }, { status: 401 });
+
+  const existing = await prisma.appointment.findFirst({ where: { id, businessId: business.id } });
+  if (!existing) return Response.json({ error: "Introuvable" }, { status: 404 });
+
   const body = await req.json();
   const appointment = await prisma.appointment.update({
     where: { id },
@@ -33,6 +37,10 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const business = await getBusiness();
   if (!business) return Response.json({ error: "Non autorisé" }, { status: 401 });
+
+  const existing = await prisma.appointment.findFirst({ where: { id, businessId: business.id } });
+  if (!existing) return Response.json({ error: "Introuvable" }, { status: 404 });
+
   await prisma.appointment.update({ where: { id }, data: { status: "cancelled" } });
   return Response.json({ ok: true });
 }

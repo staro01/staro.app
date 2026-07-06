@@ -24,9 +24,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const business = await getBusiness();
   if (!business) return Response.json({ error: "Non autorisé" }, { status: 401 });
-  const body = await req.json();
 
-  const previousEvent = await prisma.event.findUnique({ where: { id } });
+  const previousEvent = await prisma.event.findFirst({ where: { id, businessId: business.id } });
+  if (!previousEvent) return Response.json({ error: "Introuvable" }, { status: 404 });
+
+  const body = await req.json();
   const event = await prisma.event.update({ where: { id }, data: body });
 
   // Envoie un SMS au client uniquement lors du passage à "ready" (pas si on repasse dessus par erreur)

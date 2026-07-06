@@ -14,6 +14,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const business = await getBusiness();
   if (!business) return Response.json({ error: "Non autorisé" }, { status: 401 });
+
+  const existing = await prisma.supplement.findFirst({ where: { id, businessId: business.id } });
+  if (!existing) return Response.json({ error: "Introuvable" }, { status: 404 });
+
   const body = await req.json();
   const item = await prisma.supplement.update({ where: { id }, data: body });
   return Response.json(item);
@@ -23,6 +27,10 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const business = await getBusiness();
   if (!business) return Response.json({ error: "Non autorisé" }, { status: 401 });
+
+  const existing = await prisma.supplement.findFirst({ where: { id, businessId: business.id } });
+  if (!existing) return Response.json({ error: "Introuvable" }, { status: 404 });
+
   await prisma.supplement.delete({ where: { id } });
   return Response.json({ ok: true });
 }
