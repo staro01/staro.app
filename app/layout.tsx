@@ -25,6 +25,9 @@ export const metadata: Metadata = {
   authors: [{ name: "Staro.app" }],
   robots: { index: true, follow: true },
   alternates: { canonical: "/" },
+  verification: {
+    google: "PF_KCA8r6H4_B92viU4ixpdDjhbnj_rPTswH5CLKJjg",
+  },
   openGraph: {
     type: "website",
     locale: "fr_FR",
