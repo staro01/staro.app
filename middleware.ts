@@ -5,6 +5,7 @@ const isPublicRoute = createRouteMatcher([
   "/about",
   "/contact",
   "/pricing",
+  "/reserver-un-appel",
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/api/twilio(.*)",

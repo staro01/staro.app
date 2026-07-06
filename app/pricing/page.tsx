@@ -3,9 +3,10 @@
 import { useState } from "react";
 import FloatingHeader from "../../components/FloatingHeader";
 import PageHero from "../../components/marketing/PageHero";
+import FinalCTA from "../../components/marketing/FinalCTA";
 import Footer from "../../components/marketing/Footer";
 import { PricingCard } from "../../components/marketing/Pricing";
-import { Section, sectionTitle, sectionSubtitle, card, colors } from "../../components/marketing/theme";
+import { Section, sectionTitle, sectionSubtitle, sectionHeader, card, colors } from "../../components/marketing/theme";
 
 const PRICING_QUESTIONS = [
   {
@@ -54,7 +55,7 @@ export default function PricingPage() {
       </Section>
 
       <Section style={{ background: colors.bgDeep }}>
-        <div style={{ textAlign: "center", maxWidth: 700, margin: "0 auto 48px" }}>
+        <div style={sectionHeader}>
           <h2 style={sectionTitle}>Questions sur le prix</h2>
           <p style={sectionSubtitle}>Tout ce qu'il faut savoir sur la facturation Staro.</p>
         </div>
@@ -90,6 +91,14 @@ export default function PricingPage() {
           })}
         </div>
       </Section>
+
+      <FinalCTA
+        fadeTop
+        title="Prêt à démarrer avec Staro ?"
+        description="Réservez un appel gratuit et voyons ensemble si Staro correspond à votre commerce."
+        ctaLabel="Réserver un appel gratuit"
+        ctaHref="/reserver-un-appel"
+      />
 
       <Footer />
     </div>

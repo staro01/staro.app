@@ -2,9 +2,36 @@ import Link from "next/link";
 import StarryBackground from "../StarryBackground";
 import { container, gradient, colors } from "./theme";
 
-export default function FinalCTA() {
+export default function FinalCTA({
+  title = "Prêt à ne plus jamais rater un appel ?",
+  description = "Parlons de votre commerce — nous vous montrons comment Staro peut répondre à votre place, dès aujourd'hui.",
+  ctaLabel = "Réserver un appel gratuit",
+  ctaHref = "/reserver-un-appel",
+  fadeTop = false,
+}: {
+  title?: string;
+  description?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  fadeTop?: boolean;
+}) {
   return (
     <section style={{ padding: "20px", position: "relative" }}>
+      {fadeTop && (
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 140,
+            background: `linear-gradient(to bottom, ${colors.bgDeep} 0%, transparent 100%)`,
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
+      )}
       <div
         style={{
           ...container,
@@ -39,10 +66,10 @@ export default function FinalCTA() {
             STARO.APP
           </span>
           <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 900, color: "#fff", margin: 0, maxWidth: 640, lineHeight: 1.2 }}>
-            Prêt à ne plus jamais rater un appel ?
+            {title}
           </h2>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.85)", margin: 0, maxWidth: 460, lineHeight: 1.6 }}>
-            Parlons de votre commerce — nous vous montrons comment Staro peut répondre à votre place, dès aujourd'hui.
+            {description}
           </p>
           <div style={{ position: "relative", marginTop: 8 }}>
             <div
@@ -56,7 +83,7 @@ export default function FinalCTA() {
               }}
             />
             <Link
-              href="/contact"
+              href={ctaHref}
               style={{
                 position: "relative",
                 display: "inline-flex",
@@ -70,7 +97,7 @@ export default function FinalCTA() {
                 boxShadow: "0 15px 40px rgba(0,0,0,0.3)",
               }}
             >
-              Réserver un appel gratuit
+              {ctaLabel}
             </Link>
           </div>
         </div>

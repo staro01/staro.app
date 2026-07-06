@@ -249,10 +249,10 @@ export default function Hero() {
 
   return (
     <section
+      className="staro-hero-section"
       style={{
         position: "relative",
         overflow: "hidden",
-        minHeight: "88vh",
         display: "flex",
         alignItems: "center",
         background: colors.bgDeep,
@@ -352,8 +352,10 @@ export default function Hero() {
       </div>
 
       <style>{`
+        .staro-hero-section { min-height: 88vh; }
         @media (max-width: 900px) {
-          .staro-hero-grid { grid-template-columns: 1fr !important; text-align: center; }
+          .staro-hero-section { min-height: auto; }
+          .staro-hero-grid { grid-template-columns: 1fr !important; text-align: center; padding: 130px 20px 56px !important; }
           .staro-hero-card-col { margin-top: 8px; }
           .staro-hero-subtitle { margin-left: auto !important; margin-right: auto !important; }
           .staro-hero-cta { justify-content: center; }

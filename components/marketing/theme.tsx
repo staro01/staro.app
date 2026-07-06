@@ -42,6 +42,12 @@ export const sectionSubtitle: CSSProperties = {
   margin: 0,
 };
 
+export const sectionHeader: CSSProperties = {
+  textAlign: "center",
+  maxWidth: 700,
+  margin: "0 auto clamp(28px, 6vw, 56px)",
+};
+
 export const btnPrimary: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
@@ -85,7 +91,7 @@ export function Section({
   style?: CSSProperties;
 }) {
   return (
-    <section id={id} style={{ padding: "80px 0", position: "relative", ...style }}>
+    <section id={id} style={{ padding: "clamp(48px, 8vw, 80px) 0", position: "relative", ...style }}>
       <div style={container}>{children}</div>
     </section>
   );

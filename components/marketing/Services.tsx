@@ -1,4 +1,4 @@
-import { Section, sectionTitle, sectionSubtitle, card, colors } from "./theme";
+import { Section, sectionHeader, card, colors } from "./theme";
 import { PhoneIcon, ReceiptIcon, CalendarIcon, ListIcon } from "./icons";
 
 function StatusDot({ color }: { color: string }) {
@@ -186,6 +186,7 @@ export default function Services() {
   return (
     <Section id="services">
       <div
+        aria-hidden
         style={{
           position: "absolute",
           top: 0,
@@ -196,19 +197,23 @@ export default function Services() {
           pointerEvents: "none",
         }}
       />
-      <div style={{ textAlign: "center", maxWidth: 700, margin: "0 auto 56px" }}>
-        <h2 style={sectionTitle}>Nos services</h2>
-        <p style={sectionSubtitle}>Un agent vocal qui prend le relais au téléphone, pour tous les commerces locaux.</p>
+      <div style={{ ...sectionHeader, position: "relative", zIndex: 1 }}>
+        <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 900, color: colors.text, margin: "0 0 16px", lineHeight: 1.15 }}>
+          Nos services
+        </h2>
+        <p style={{ fontSize: 17, color: colors.textMuted, lineHeight: 1.6, margin: 0 }}>
+          Un agent vocal qui prend le relais au téléphone, pour tous les commerces locaux.
+        </p>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 64 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 64, position: "relative", zIndex: 1 }}>
         {BLOCKS.map((block, i) => (
           <div
             key={block.title}
             style={{
               display: "flex",
               flexDirection: i % 2 === 1 ? "row-reverse" : "row",
-              alignItems: "center",
+              alignItems: "flex-start",
               gap: 48,
               flexWrap: "wrap",
             }}

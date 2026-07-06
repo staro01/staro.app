@@ -31,7 +31,7 @@ export default async function Home() {
       <Pricing />
       <Testimonials />
       <FAQ />
-      <FinalCTA />
+      <FinalCTA fadeTop />
       <Footer />
     </div>
   );

@@ -87,10 +87,10 @@ export default function FloatingHeader() {
         </nav>
 
         <div style={{ display: "flex", alignItems: "center", gap: 18 }} className="staro-floating-cta-desktop">
-          <Link href="/sign-in" style={{ color: colors.textMuted, textDecoration: "none", fontSize: 14, fontWeight: 700 }}>
+          <Link href="/sign-in" style={{ color: colors.textSecondary, textDecoration: "none", fontSize: 14, fontWeight: 700 }}>
             Se connecter
           </Link>
-          <Link href="/contact" style={{ ...btnPrimary, padding: "10px 20px", fontSize: 14 }}>
+          <Link href="/reserver-un-appel" style={{ ...btnPrimary, padding: "10px 20px", fontSize: 14 }}>
             Réserver un appel
           </Link>
         </div>
@@ -140,11 +140,11 @@ export default function FloatingHeader() {
           <Link
             href="/sign-in"
             onClick={() => setOpen(false)}
-            style={{ color: colors.textMuted, textDecoration: "none", fontSize: 15, fontWeight: 700 }}
+            style={{ color: colors.textSecondary, textDecoration: "none", fontSize: 15, fontWeight: 700 }}
           >
             Se connecter
           </Link>
-          <Link href="/contact" onClick={() => setOpen(false)} style={{ ...btnPrimary, textAlign: "center" }}>
+          <Link href="/reserver-un-appel" onClick={() => setOpen(false)} style={{ ...btnPrimary, textAlign: "center" }}>
             Réserver un appel
           </Link>
         </div>

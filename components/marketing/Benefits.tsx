@@ -1,4 +1,4 @@
-import { Section, sectionTitle, sectionSubtitle, card, colors, gradient } from "./theme";
+import { Section, sectionHeader, sectionTitle, sectionSubtitle, card, colors, gradient } from "./theme";
 import { BoltIcon, CheckBadgeIcon, ClockIcon, CoinIcon, TargetIcon, TrendingUpIcon } from "./icons";
 
 const BENEFITS = [
@@ -13,7 +13,7 @@ const BENEFITS = [
 export default function Benefits() {
   return (
     <Section id="benefits">
-      <div style={{ textAlign: "center", maxWidth: 700, margin: "0 auto 56px" }}>
+      <div style={sectionHeader}>
         <h2 style={sectionTitle}>Avantages</h2>
         <p style={sectionSubtitle}>Ce que Staro change concrètement pour votre commerce.</p>
       </div>

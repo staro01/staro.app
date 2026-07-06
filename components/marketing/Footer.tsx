@@ -12,7 +12,7 @@ const LINK_COLUMNS: { title: string; links: { label: string; href: string }[] }[
       { label: "Services", href: "/#services" },
       { label: "Processus", href: "/#process" },
       { label: "Bénéfices", href: "/#benefits" },
-      { label: "Prix", href: "/pricing" },
+      { label: "Nos tarifs", href: "/pricing" },
     ],
   },
   {

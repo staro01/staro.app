@@ -1,4 +1,4 @@
-import { Section, sectionTitle, sectionSubtitle, card, colors, gradient } from "./theme";
+import { Section, sectionHeader, sectionTitle, sectionSubtitle, card, colors, gradient } from "./theme";
 import { PhoneIcon, ClipboardIcon, ChartIcon, MessageIcon } from "./icons";
 
 const STEPS = [
@@ -27,7 +27,7 @@ const STEPS = [
 export default function Process() {
   return (
     <Section id="process" style={{ background: colors.bgDeep }}>
-      <div style={{ textAlign: "center", maxWidth: 700, margin: "0 auto 56px" }}>
+      <div style={sectionHeader}>
         <h2 style={sectionTitle}>Notre processus</h2>
         <p style={sectionSubtitle}>De l'appel jusqu'au client informé, tout se passe automatiquement.</p>
       </div>

@@ -1,8 +1,8 @@
-import Link from "next/link";
 import FloatingHeader from "../../components/FloatingHeader";
 import PageHero from "../../components/marketing/PageHero";
+import FinalCTA from "../../components/marketing/FinalCTA";
 import Footer from "../../components/marketing/Footer";
-import { colors, card, gradient, btnPrimary, Section, sectionTitle, sectionSubtitle } from "../../components/marketing/theme";
+import { colors, card, gradient, Section, sectionTitle, sectionSubtitle, sectionHeader } from "../../components/marketing/theme";
 import { BoltIcon, CheckBadgeIcon, ClockIcon, PhoneIcon, MessageIcon, TargetIcon } from "../../components/marketing/icons";
 
 const RELIABILITY = [
@@ -83,8 +83,8 @@ export default function AboutPage() {
               au commerçant — sans jamais interrompre son travail.
             </p>
           </div>
-          <div style={{ flex: "1 1 280px", minWidth: 260, display: "flex", justifyContent: "center" }}>
-            <div style={{ ...card, padding: 32, maxWidth: 360 }}>
+          <div style={{ flex: "1 1 280px", minWidth: 260, display: "flex", alignItems: "stretch", justifyContent: "center" }}>
+            <div style={{ ...card, padding: 32, maxWidth: 360, display: "flex", flexDirection: "column", justifyContent: "center" }}>
               <h3 style={{ color: colors.text, fontSize: 17, fontWeight: 900, margin: "0 0 12px" }}>Notre mission</h3>
               <p style={{ color: colors.textMuted, fontSize: 14, lineHeight: 1.7, margin: 0 }}>
                 Donner à chaque commerçant local les moyens d'un standard téléphonique professionnel, disponible
@@ -96,7 +96,7 @@ export default function AboutPage() {
       </Section>
 
       <Section style={{ background: colors.bgDeep }}>
-        <div style={{ textAlign: "center", maxWidth: 700, margin: "0 auto 48px" }}>
+        <div style={sectionHeader}>
           <h2 style={{ ...sectionTitle, fontSize: "clamp(24px, 3vw, 32px)" }}>Une infrastructure fiable</h2>
           <p style={sectionSubtitle}>Ce qui fait tourner Staro derrière chaque appel.</p>
         </div>
@@ -147,7 +147,7 @@ export default function AboutPage() {
       </Section>
 
       <Section style={{ background: colors.bgDeep }}>
-        <div style={{ textAlign: "center", maxWidth: 700, margin: "0 auto 48px" }}>
+        <div style={sectionHeader}>
           <h2 style={{ ...sectionTitle, fontSize: "clamp(24px, 3vw, 32px)" }}>Pourquoi choisir Staro</h2>
           <p style={sectionSubtitle}>Face à un répondeur classique, un standard externalisé, ou ne rien faire.</p>
         </div>
@@ -175,13 +175,13 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      <Section>
-        <div style={{ textAlign: "center" }}>
-          <Link href="/contact" style={btnPrimary}>
-            Nous contacter
-          </Link>
-        </div>
-      </Section>
+      <FinalCTA
+        fadeTop
+        title="Prêt à faire l'essai avec Staro ?"
+        description="Discutons de votre commerce et voyons ensemble comment Staro peut répondre à votre place, dès aujourd'hui."
+        ctaLabel="Nous contacter"
+        ctaHref="/contact"
+      />
 
       <Footer />
 
