@@ -31,7 +31,7 @@ function MockupCallScreen() {
       <MockupLabel Icon={PhoneIcon}>APPELS ENTRANTS</MockupLabel>
       <div style={{ marginTop: 12 }}>
         {[
-          { name: "Client — 06 12 34 56 78", status: "En cours", color: "#9b4fdd" },
+          { name: "Client — 06 12 34 56 78", status: "En cours", color: "#c9a6f0" },
           { name: "Client — 06 98 76 54 32", status: "Terminé", color: "#4ade80" },
         ].map((row, i) => (
           <div
@@ -75,7 +75,7 @@ function MockupCallScreen() {
 function MockupAgenda() {
   const rows = [
     { time: "09:00", label: "Marie L. — Coupe + brushing", tag: "Confirmé", color: "#4ade80" },
-    { time: "09:30", label: "Commande à emporter — 2 pizzas", tag: "En cours", color: "#9b4fdd" },
+    { time: "09:30", label: "Commande à emporter — 2 pizzas", tag: "En cours", color: "#c9a6f0" },
     { time: "10:15", label: "Julien D. — Coloration", tag: "Confirmé", color: "#4ade80" },
     { time: "12:00", label: "Rush du midi — 6 demandes", tag: "Pic d'activité", color: "#f5a623" },
   ];
@@ -96,7 +96,7 @@ function MockupAgenda() {
               padding: "10px 12px",
             }}
           >
-            <span style={{ color: colors.purple2, fontSize: 12, fontWeight: 800, minWidth: 40 }}>{row.time}</span>
+            <span style={{ color: colors.purple2Text, fontSize: 12, fontWeight: 800, minWidth: 40 }}>{row.time}</span>
             <span style={{ color: colors.textSecondary, fontSize: 12.5, flex: 1 }}>{row.label}</span>
             <span
               style={{
@@ -121,7 +121,7 @@ function MockupAgenda() {
 
 function MockupTracking() {
   const rows = [
-    { label: "Demande #128", status: "Reçu", color: "#9b4fdd" },
+    { label: "Demande #128", status: "Reçu", color: "#c9a6f0" },
     { label: "Demande #127", status: "En traitement", color: "#f5a623" },
     { label: "Demande #126", status: "Prêt", color: "#4ade80" },
   ];

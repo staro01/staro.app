@@ -122,7 +122,7 @@ export function PricingCard() {
                 boxShadow: "0 25px 70px rgba(0,0,0,0.45)",
               }}
             >
-              <div style={{ fontSize: 13, fontWeight: 800, color: colors.purple2, letterSpacing: 1, marginBottom: 22, marginTop: 6 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: colors.purple2Text, letterSpacing: 1, marginBottom: 22, marginTop: 6 }}>
                 ESSENTIEL
               </div>
 
@@ -180,7 +180,7 @@ export function PricingCard() {
               <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 28 }}>
                 {INCLUSIONS.map(item => (
                   <div key={item} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <span style={{ color: colors.purple2, fontWeight: 900 }}>✓</span>
+                    <span style={{ color: colors.purple2Text, fontWeight: 900 }}>✓</span>
                     <span style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 1.5 }}>{item}</span>
                   </div>
                 ))}

@@ -8,6 +8,7 @@ export const colors = {
   borderLight: "#3a2a52",
   purple1: "#6b1fad",
   purple2: "#9b4fdd",
+  purple2Text: "#c9a6f0",
   text: "#ffffff",
   textSecondary: "#cccccc",
   textMuted: "#888888",

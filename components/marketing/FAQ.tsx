@@ -59,7 +59,7 @@ export default function FAQ() {
                 }}
               >
                 <span style={{ color: colors.text, fontWeight: 800, fontSize: 15 }}>{item.q}</span>
-                <span style={{ color: colors.purple2, fontSize: 18, flexShrink: 0 }}>{isOpen ? "−" : "+"}</span>
+                <span style={{ color: colors.purple2Text, fontSize: 18, flexShrink: 0 }}>{isOpen ? "−" : "+"}</span>
               </button>
               {isOpen && (
                 <div style={{ padding: "0 24px 20px", color: colors.textMuted, fontSize: 14, lineHeight: 1.7 }}>{item.a}</div>

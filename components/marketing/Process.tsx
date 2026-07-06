@@ -56,7 +56,7 @@ export default function Process() {
             >
               <step.Icon size={20} color="#fff" />
             </div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: colors.purple2, marginBottom: 8 }}>ÉTAPE {i + 1}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: colors.purple2Text, marginBottom: 8 }}>ÉTAPE {i + 1}</div>
             <h3 style={{ fontSize: 17, fontWeight: 900, color: colors.text, margin: "0 0 10px" }}>{step.title}</h3>
             <p style={{ color: colors.textMuted, fontSize: 14, lineHeight: 1.6, margin: 0 }}>{step.description}</p>
           </div>
