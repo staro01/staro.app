@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 type Business = {
   id: string;
@@ -11,6 +12,10 @@ type Business = {
   address?: string;
   createdAt: string;
   status: string;
+  customerEmail?: string | null;
+  subscriptionStatus?: string | null;
+  subscriptionPlan?: string | null;
+  stripeCustomerId?: string | null;
   _count: { menuItems: number; events: number };
 };
 
@@ -18,11 +23,26 @@ const VERTICALS = ["pizzeria", "coiffeur", "restaurant", "artisan", "hotel", "au
 
 const emptyBusiness = () => ({ name: "", vertical: "pizzeria", twilioNumber: "", phone: "", address: "" });
 
+const SUBSCRIPTION_LABELS: Record<string, { label: string; bg: string; color: string }> = {
+  active: { label: "✓ Abonné actif", bg: "#1a3e2a", color: "#4ade80" },
+  trialing: { label: "✓ Essai en cours", bg: "#1a3e2a", color: "#4ade80" },
+  past_due: { label: "⚠️ Paiement en retard", bg: "#3e2e14", color: "#f0c674" },
+  cancelled: { label: "✕ Abonnement annulé", bg: "#3e1a1a", color: "#ff6b6b" },
+  canceled: { label: "✕ Abonnement annulé", bg: "#3e1a1a", color: "#ff6b6b" },
+  inactive: { label: "— Sans abonnement", bg: "#1a1a2e", color: "#666" },
+};
+
+const PLAN_LABELS: Record<string, string> = {
+  monthly: "Mensuel",
+  annual: "Annuel",
+};
+
 export default function AdminPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<any>(null);
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
 
   async function load() {
     setLoading(true);
@@ -66,19 +86,31 @@ export default function AdminPage() {
     pizzeria: "🍕", coiffeur: "✂️", restaurant: "🍽️", artisan: "🔧", hotel: "🏨", autre: "⭐"
   };
 
-  const sortedBusinesses = [...businesses].sort((a, b) => {
+  const filteredBusinesses = businesses.filter(b => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      b.name.toLowerCase().includes(q) ||
+      b.customerEmail?.toLowerCase().includes(q) ||
+      b.phone?.toLowerCase().includes(q) ||
+      b.twilioNumber?.toLowerCase().includes(q)
+    );
+  });
+
+  const sortedBusinesses = [...filteredBusinesses].sort((a, b) => {
     if (a.status === "pending" && b.status !== "pending") return -1;
     if (a.status !== "pending" && b.status === "pending") return 1;
     return 0;
   });
 
   const pendingCount = businesses.filter(b => b.status === "pending").length;
+  const activeSubsCount = businesses.filter(b => b.subscriptionStatus === "active" || b.subscriptionStatus === "trialing").length;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", padding: 20 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
               <span style={{ background: "linear-gradient(135deg, #6b1fad, #9b4fdd)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>✦</span>
@@ -86,7 +118,25 @@ export default function AdminPage() {
             </div>
             <p style={{ color: "#666", fontSize: 13, margin: 0 }}>Gestion des clients</p>
           </div>
-          <button onClick={() => setEditing(emptyBusiness())} style={btnPrimary}>+ Nouveau client</button>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <Link href="/admin/logs" style={{ ...btnSecondary, textDecoration: "none", display: "inline-flex", alignItems: "center" }}>📜 Logs d&apos;audit</Link>
+            <button onClick={() => setEditing(emptyBusiness())} style={btnPrimary}>+ Nouveau client</button>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+          <div style={{ ...statCard, flex: 1 }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "#fff" }}>{businesses.length}</div>
+            <div style={{ fontSize: 12, color: "#888" }}>Clients au total</div>
+          </div>
+          <div style={{ ...statCard, flex: 1 }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "#4ade80" }}>{activeSubsCount}</div>
+            <div style={{ fontSize: 12, color: "#888" }}>Abonnements actifs</div>
+          </div>
+          <div style={{ ...statCard, flex: 1 }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "#f0c674" }}>{pendingCount}</div>
+            <div style={{ fontSize: 12, color: "#888" }}>En attente d&apos;approbation</div>
+          </div>
         </div>
 
         {pendingCount > 0 && (
@@ -95,22 +145,33 @@ export default function AdminPage() {
           </div>
         )}
 
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="🔍 Rechercher par nom, email, téléphone..."
+          style={{ ...inputStyle, marginBottom: 20 }}
+        />
+
         {loading ? <p style={{ color: "#666" }}>Chargement…</p> : businesses.length === 0 ? (
           <div style={{ textAlign: "center", padding: 60, color: "#555" }}>
             <p style={{ fontSize: 18 }}>Aucun client pour l'instant.</p>
             <button onClick={() => setEditing(emptyBusiness())} style={btnPrimary}>Créer le premier client</button>
           </div>
+        ) : sortedBusinesses.length === 0 ? (
+          <p style={{ color: "#666", textAlign: "center", padding: 40 }}>Aucun résultat pour cette recherche.</p>
         ) : (
           <div style={{ display: "grid", gap: 12 }}>
             {sortedBusinesses.map(b => {
               const isPending = b.status === "pending";
+              const subInfo = b.subscriptionStatus ? SUBSCRIPTION_LABELS[b.subscriptionStatus] : null;
+              const planLabel = b.subscriptionPlan ? PLAN_LABELS[b.subscriptionPlan] ?? b.subscriptionPlan : null;
               return (
               <div key={b.id} style={{
                 border: isPending ? "1px solid #b8860b" : "1px solid #2a1a3e", borderRadius: 16, padding: "16px 20px",
-                background: isPending ? "#1a1608" : "#111", display: "flex", justifyContent: "space-between", alignItems: "center",
+                background: isPending ? "#1a1608" : "#111", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12,
               }}>
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 20 }}>{verticalEmoji[b.vertical] ?? "⭐"}</span>
                     <span style={{ fontWeight: 900, fontSize: 16, color: "#fff" }}>{b.name}</span>
                     <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "#2a1a3e", color: "#9b4fdd", fontWeight: 700 }}>{b.vertical}</span>
@@ -119,8 +180,14 @@ export default function AdminPage() {
                     ) : (
                       <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "#1a3e2a", color: "#4ade80", fontWeight: 800 }}>✓ APPROUVÉ</span>
                     )}
+                    {subInfo && (
+                      <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 99, background: subInfo.bg, color: subInfo.color, fontWeight: 800 }}>
+                        {subInfo.label}{planLabel ? ` (${planLabel})` : ""}
+                      </span>
+                    )}
                   </div>
-                  <div style={{ display: "flex", gap: 16, fontSize: 13, color: "#666" }}>
+                  <div style={{ display: "flex", gap: 16, fontSize: 13, color: "#666", flexWrap: "wrap" }}>
+                    {b.customerEmail && <span>✉️ {b.customerEmail}</span>}
                     {b.twilioNumber && <span>📞 {b.twilioNumber}</span>}
                     {b.phone && <span>☎️ {b.phone}</span>}
                     {b.address && <span>📍 {b.address}</span>}
@@ -145,9 +212,9 @@ export default function AdminPage() {
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
             <div style={{ background: "#111", border: "1px solid #2a1a3e", borderRadius: 20, padding: 28, width: "100%", maxWidth: 480, display: "grid", gap: 14 }}>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#fff" }}>{editing.id ? "Modifier" : "Nouveau"} client</h2>
-              
+
               <label style={labelStyle}>Nom *<input value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} style={inputStyle} placeholder="Ex: La Bella Pizza" /></label>
-              
+
               <label style={labelStyle}>Vertical
                 <select value={editing.vertical} onChange={e => setEditing({ ...editing, vertical: e.target.value })} style={inputStyle}>
                   {VERTICALS.map(v => <option key={v} value={v}>{verticalEmoji[v]} {v}</option>)}
@@ -155,9 +222,9 @@ export default function AdminPage() {
               </label>
 
               <label style={labelStyle}>Numéro Twilio (ex: +33948353853)<input value={editing.twilioNumber ?? ""} onChange={e => setEditing({ ...editing, twilioNumber: e.target.value })} style={inputStyle} placeholder="+33..." /></label>
-              
+
               <label style={labelStyle}>Téléphone du client<input value={editing.phone ?? ""} onChange={e => setEditing({ ...editing, phone: e.target.value })} style={inputStyle} /></label>
-              
+
               <label style={labelStyle}>Adresse<input value={editing.address ?? ""} onChange={e => setEditing({ ...editing, address: e.target.value })} style={inputStyle} /></label>
 
               <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
@@ -177,3 +244,4 @@ const btnSecondary: React.CSSProperties = { padding: "10px 18px", borderRadius: 
 const btnSmall: React.CSSProperties = { padding: "6px 12px", borderRadius: 10, border: "1px solid #2a1a3e", background: "#1a1a2e", fontWeight: 700, cursor: "pointer", fontSize: 13, color: "#ccc" };
 const inputStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid #2a1a3e", background: "#0a0a0a", color: "#fff", fontSize: 14, width: "100%", boxSizing: "border-box" };
 const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 5, fontSize: 13, fontWeight: 600, color: "#aaa" };
+const statCard: React.CSSProperties = { border: "1px solid #2a1a3e", borderRadius: 14, padding: "14px 18px", background: "#111" };
