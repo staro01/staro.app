@@ -55,7 +55,7 @@ export default function ContactPage() {
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
             <h1 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 900, color: colors.text, margin: "0 0 12px" }}>
-              Réservez un appel
+              Une question ?
             </h1>
             <p style={{ color: colors.textMuted, fontSize: 16, lineHeight: 1.6, margin: 0 }}>
               Parlons de votre commerce — nous vous répondons rapidement.
