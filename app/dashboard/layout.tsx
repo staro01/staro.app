@@ -7,6 +7,8 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien"];
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
@@ -33,12 +35,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const menuCount = business ? await prisma.menuItem.count({ where: { businessId: business.id } }) : 0;
   const needsOnboarding = !business?.name || (business.name.startsWith("Business ") && (business.name.includes("@") || business.name.length < 20));
-  
+
   if (needsOnboarding && menuCount === 0) redirect("/onboarding");
 
   const vertical = business?.vertical ?? "pizzeria";
   const isRestaurant = ["pizzeria", "restaurant"].includes(vertical);
   const isCoiffeur = ["coiffeur"].includes(vertical);
+  const isArtisan = ARTISAN_VERTICALS.includes(vertical);
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>
@@ -60,7 +63,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <Link href="/dashboard/agenda" className="staro-nav-link">📅 Agenda</Link>
               <Link href="/dashboard/agenda?tab=services" className="staro-nav-link">✂️ Services & Équipe</Link>
             </>}
-            {!isRestaurant && !isCoiffeur && <>
+            {isArtisan && <>
+              <Link href="/dashboard/requests" className="staro-nav-link">📨 Mes demandes</Link>
+            </>}
+            {!isRestaurant && !isCoiffeur && !isArtisan && <>
               <Link href="/dashboard/agenda" className="staro-nav-link">📅 Agenda</Link>
             </>}
             <Link href="/dashboard/settings" className="staro-nav-link">⚙️ Paramètres</Link>
@@ -73,14 +79,3 @@ export default async function DashboardLayout({ children }: { children: React.Re
     </div>
   );
 }
-
-const navStyle: React.CSSProperties = {
-  padding: "8px 14px",
-  borderRadius: 10,
-  border: "1px solid #2a1a3e",
-  fontWeight: 700,
-  fontSize: 14,
-  textDecoration: "none",
-  color: "#ccc",
-  background: "#1a1a2e",
-};

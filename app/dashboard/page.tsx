@@ -5,6 +5,8 @@ import { prisma } from "../../lib/prisma";
 import { redirect } from "next/navigation";
 import OrdersDashboard from "./OrdersDashboard";
 
+const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien"];
+
 export default async function DashboardPage() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
@@ -12,8 +14,9 @@ export default async function DashboardPage() {
   const business = await prisma.business.findFirst({ where: { clerkUserId: user.id } });
   if (!business) redirect("/onboarding");
 
-  const isRestaurant = ["pizzeria", "restaurant"].includes(business.vertical ?? "");
-  if (!isRestaurant) redirect("/dashboard/agenda");
+  const vertical = business.vertical ?? "";
+  if (["pizzeria", "restaurant"].includes(vertical)) return <OrdersDashboard />;
+  if (ARTISAN_VERTICALS.includes(vertical)) redirect("/dashboard/requests");
 
-  return <OrdersDashboard />;
+  redirect("/dashboard/agenda");
 }
