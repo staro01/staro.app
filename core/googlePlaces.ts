@@ -1,0 +1,49 @@
+export type PlaceLookupResult = {
+  name: string;
+  address: string | null;
+  phone: string | null;
+  openingHours: string[] | null;
+  primaryType: string | null;
+  suggestedVertical: "pizzeria" | "coiffeur";
+};
+
+const HAIR_TYPES = ["hair_salon", "beauty_salon", "hair_care"];
+
+export async function lookupPlace(query: string): Promise<PlaceLookupResult | null> {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+  if (!apiKey) throw new Error("GOOGLE_PLACES_API_KEY manquant");
+
+  const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask":
+        "places.id,places.displayName,places.formattedAddress,places.internationalPhoneNumber,places.regularOpeningHours,places.primaryType",
+    },
+    body: JSON.stringify({ textQuery: query, languageCode: "fr", regionCode: "FR" }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Erreur Google Places (${res.status}): ${await res.text()}`);
+  }
+
+  const data = await res.json();
+  const place = data.places?.[0];
+  if (!place) return null;
+
+  const openingHours: string[] | null = place.regularOpeningHours?.weekdayDescriptions ?? null;
+  const primaryType: string | null = place.primaryType ?? null;
+  const suggestedVertical: "pizzeria" | "coiffeur" = HAIR_TYPES.includes(primaryType ?? "")
+    ? "coiffeur"
+    : "pizzeria";
+
+  return {
+    name: place.displayName?.text ?? query,
+    address: place.formattedAddress ?? null,
+    phone: place.internationalPhoneNumber ?? null,
+    openingHours,
+    primaryType,
+    suggestedVertical,
+  };
+}
