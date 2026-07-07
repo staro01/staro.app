@@ -4,6 +4,7 @@ import FloatingHeader from "../components/FloatingHeader";
 import Hero from "../components/marketing/Hero";
 import Services from "../components/marketing/Services";
 import Process from "../components/marketing/Process";
+import AvailabilitySection from "../components/marketing/AvailabilitySection";
 import Benefits from "../components/marketing/Benefits";
 import Pricing from "../components/marketing/Pricing";
 import Testimonials from "../components/marketing/Testimonials";
@@ -25,6 +26,7 @@ export default function Home() {
       <Hero />
       <Services />
       <Process />
+      <AvailabilitySection />
       <Benefits />
       <Pricing />
       <Testimonials />

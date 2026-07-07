@@ -2,6 +2,7 @@ import FloatingHeader from "../../components/FloatingHeader";
 import PageHero from "../../components/marketing/PageHero";
 import FinalCTA from "../../components/marketing/FinalCTA";
 import Footer from "../../components/marketing/Footer";
+import AvailabilitySection from "../../components/marketing/AvailabilitySection";
 import { colors, card, gradient, Section, sectionTitle, sectionSubtitle, sectionHeader } from "../../components/marketing/theme";
 import { BoltIcon, CheckBadgeIcon, ClockIcon, PhoneIcon, MessageIcon, TargetIcon } from "../../components/marketing/icons";
 
@@ -174,6 +175,8 @@ export default function AboutPage() {
           ))}
         </div>
       </Section>
+
+      <AvailabilitySection />
 
       <FinalCTA
         fadeTop
