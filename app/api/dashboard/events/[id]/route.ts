@@ -29,9 +29,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!previousEvent) return Response.json({ error: "Introuvable" }, { status: 404 });
 
   const body = await req.json();
-  const event = await prisma.event.update({ where: { id }, data: body });
 
-  // Envoie un SMS au client uniquement lors du passage à "ready" (pas si on repasse dessus par erreur)
+  const updateData: Record<string, unknown> = {};
+  if (body.status !== undefined) updateData.status = body.status;
+
+  // La note est fusionnée dans le JSON "data" existant plutôt que de l'écraser
+  if (body.note !== undefined) {
+    const existingData = (previousEvent.data as Record<string, unknown>) ?? {};
+    updateData.data = { ...existingData, note: body.note };
+  }
+
+  const event = await prisma.event.update({ where: { id }, data: updateData });
+
   const justBecameReady = body.status === "ready" && previousEvent?.status !== "ready";
   if (justBecameReady && business.twilioNumber) {
     const toNumber = normalizePhone(event.customerPhone);

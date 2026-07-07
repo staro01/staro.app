@@ -22,6 +22,10 @@ function formatDateTime(iso: string) {
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+function hoursSince(iso: string) {
+  return (Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60);
+}
+
 function playDing() {
   try {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -41,6 +45,7 @@ export default function RequestsDashboard() {
   const [loading, setLoading] = useState(true);
   const [businessName, setBusinessName] = useState("Mon activité");
   const [newAlert, setNewAlert] = useState(false);
+  const [notes, setNotes] = useState<Record<string, string>>({});
   const prevIds = useRef<Set<string>>(new Set());
   const { showToast } = useToast();
 
@@ -55,6 +60,13 @@ export default function RequestsDashboard() {
       if (hasNew && prevIds.current.size > 0) { playDing(); setNewAlert(true); setTimeout(() => setNewAlert(false), 4000); }
       prevIds.current = new Set(newIds);
       setEvents(requests);
+      setNotes(prev => {
+        const next = { ...prev };
+        for (const e of requests) {
+          if (next[e.id] === undefined) next[e.id] = e.data?.note ?? "";
+        }
+        return next;
+      });
     } catch { setEvents([]); }
     finally { setLoading(false); }
   }
@@ -73,40 +85,90 @@ export default function RequestsDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      showToast(status === "done" ? "Demande marquée comme traitée" : "Demande remise en nouvelle");
+      const labels: Record<string, string> = { new: "remise en nouvelle", done: "marquée traitée", no_follow_up: "marquée sans suite" };
+      showToast(`Demande ${labels[status] ?? status}`);
     } catch {
       showToast("Erreur lors de la mise à jour", "error");
     }
     await fetchEvents();
   }
 
+  async function saveNote(id: string, note: string) {
+    try {
+      await fetch(`/api/dashboard/events/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note }),
+      });
+    } catch {
+      showToast("Erreur lors de l'enregistrement de la note", "error");
+    }
+  }
+
   const groups = useMemo(() => {
     const sort = (a: EventItem, b: EventItem) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     return {
       new: events.filter(e => e.status === "new").sort(sort),
+      noFollowUp: events.filter(e => e.status === "no_follow_up").sort(sort),
       done: events.filter(e => e.status === "done").sort(sort),
     };
   }, [events]);
 
-  const Card = ({ e }: { e: EventItem }) => (
-    <div style={{ border: "1px solid #2a1a3e", borderRadius: 14, padding: 14, background: "#1a1a2e" }}>
-      <div style={{ fontWeight: 900, fontSize: 15, marginBottom: 6, color: "#fff" }}>🌿 {e.summary || "Demande client"}</div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-        <span style={badge}>⏱ {formatDateTime(e.createdAt)}</span>
-        {e.data?.availability && <span style={{ ...badge, color: "#9b4fdd", borderColor: "#6b1fad" }}>📅 {e.data.availability}</span>}
+  const Card = ({ e }: { e: EventItem }) => {
+    const hrs = hoursSince(e.createdAt);
+    const isStale = e.status === "new" && hrs >= 24;
+    const phoneDigits = e.customerPhone?.replace(/\s+/g, "");
+    const mapsUrl = e.data?.address
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.data.address)}`
+      : null;
+
+    return (
+      <div style={{
+        border: isStale ? "1px solid #d97706" : "1px solid #2a1a3e",
+        borderRadius: 14, padding: 14, background: "#1a1a2e",
+      }}>
+        <div style={{ fontWeight: 900, fontSize: 15, marginBottom: 6, color: "#fff" }}>🌿 {e.summary || "Demande client"}</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+          <span style={badge}>⏱ {formatDateTime(e.createdAt)}</span>
+          {e.data?.availability && <span style={{ ...badge, color: "#9b4fdd", borderColor: "#6b1fad" }}>📅 {e.data.availability}</span>}
+          {isStale && (
+            <span style={{ ...badge, color: "#fbbf24", borderColor: "#d97706" }}>
+              ⚠️ En attente depuis {Math.floor(hrs)}h
+            </span>
+          )}
+        </div>
+        {e.customerName && <div style={{ fontSize: 13, marginBottom: 4, color: "#aaa" }}><b style={{ color: "#ccc" }}>Client :</b> {e.customerName}{e.customerPhone ? ` — ${e.customerPhone}` : ""}</div>}
+        {e.data?.address && <div style={{ fontSize: 13, marginBottom: 4, color: "#aaa" }}><b style={{ color: "#ccc" }}>Adresse :</b> {e.data.address}</div>}
+        {e.data?.problem && <div style={{ fontSize: 13, marginBottom: 8, color: "#aaa" }}><b style={{ color: "#ccc" }}>Détail :</b> {e.data.problem}</div>}
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+          {phoneDigits && (
+            <a href={`tel:${phoneDigits}`} style={{ ...btn, textDecoration: "none", display: "inline-block" }}>📞 Appeler</a>
+          )}
+          {mapsUrl && (
+            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ ...btn, textDecoration: "none", display: "inline-block" }}>📍 Itinéraire</a>
+          )}
+        </div>
+
+        <input
+          value={notes[e.id] ?? ""}
+          onChange={(ev) => setNotes(prev => ({ ...prev, [e.id]: ev.target.value }))}
+          onBlur={(ev) => saveNote(e.id, ev.target.value)}
+          placeholder="Note privée (ex: devis envoyé le 12)"
+          style={{
+            width: "100%", boxSizing: "border-box", padding: "7px 10px", borderRadius: 8,
+            border: "1px solid #2a1a3e", background: "#0a0a0a", color: "#ccc", fontSize: 12, marginBottom: 10,
+          }}
+        />
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {e.status !== "done" && <button onClick={() => setStatus(e.id, "done")} style={btn}>✅ Traitée</button>}
+          {e.status !== "no_follow_up" && <button onClick={() => setStatus(e.id, "no_follow_up")} style={{ ...btn, color: "#aaa" }}>🚫 Sans suite</button>}
+          {e.status !== "new" && <button onClick={() => setStatus(e.id, "new")} style={btn}>↩️ Nouvelle</button>}
+        </div>
       </div>
-      {e.customerName && <div style={{ fontSize: 13, marginBottom: 4, color: "#aaa" }}><b style={{ color: "#ccc" }}>Client :</b> {e.customerName}{e.customerPhone ? ` — ${e.customerPhone}` : ""}</div>}
-      {e.data?.address && <div style={{ fontSize: 13, marginBottom: 4, color: "#aaa" }}><b style={{ color: "#ccc" }}>Adresse :</b> {e.data.address}</div>}
-      {e.data?.problem && <div style={{ fontSize: 13, marginBottom: 8, color: "#aaa" }}><b style={{ color: "#ccc" }}>Détail :</b> {e.data.problem}</div>}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-        {e.status === "new" ? (
-          <button onClick={() => setStatus(e.id, "done")} style={btn}>✅ Marquer traitée</button>
-        ) : (
-          <button onClick={() => setStatus(e.id, "new")} style={btn}>↩️ Remettre en nouvelle</button>
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
   const Column = ({ title, subtitle, list }: { title: string; subtitle?: string; list: EventItem[] }) => (
     <div style={{ border: "1px solid #2a1a3e", borderRadius: 18, padding: 14, background: "#111", minHeight: 200 }}>
@@ -137,14 +199,15 @@ export default function RequestsDashboard() {
       </div>
 
       {loading ? <p style={{ color: "#666", textAlign: "center", padding: "40px 0" }}>Chargement des demandes…</p> : (
-        <div className="staro-requests-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="staro-requests-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
           <Column title="🆕 Nouvelles" subtitle="À rappeler" list={groups.new} />
+          <Column title="🚫 Sans suite" subtitle="Client injoignable / annulé" list={groups.noFollowUp} />
           <Column title="✅ Traitées" subtitle="Historique" list={groups.done} />
         </div>
       )}
 
       <style>{`
-        @media (max-width: 700px) {
+        @media (max-width: 1000px) {
           .staro-requests-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
