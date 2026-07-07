@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 
 const DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien"];
+
 type DaySchedule = { open: string; close: string; dinnerOpen: string; dinnerClose: string; closed: boolean };
 type Settings = {
-  name: string; phone: string; address: string;
+  name: string; phone: string; address: string; vertical: string; customerEmail: string;
   estimatedPrepTime: number;
   deliveryEnabled: boolean; deliveryFee: number; deliveryMinimum: number;
   paymentMethods: string;
@@ -17,7 +19,7 @@ type Subscription = { plan: string | null; status: string | null; hasStripeCusto
 
 const defaultDay = (): DaySchedule => ({ open: "11:30", close: "14:00", dinnerOpen: "19:00", dinnerClose: "22:30", closed: false });
 const defaultSettings = (): Settings => ({
-  name: "", phone: "", address: "",
+  name: "", phone: "", address: "", vertical: "pizzeria", customerEmail: "",
   estimatedPrepTime: 20,
   deliveryEnabled: true, deliveryFee: 0, deliveryMinimum: 0,
   paymentMethods: "CB, espèces",
@@ -133,6 +135,8 @@ export default function SettingsPage() {
 
   if (loading) return <p>Chargement…</p>;
 
+  const isArtisan = ARTISAN_VERTICALS.includes(s.vertical);
+
   return (
     <div style={{ maxWidth: 700 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
@@ -146,48 +150,57 @@ export default function SettingsPage() {
         <Field label="Nom *"><input value={s.name} onChange={e => setS({ ...s, name: e.target.value })} style={inputStyle} /></Field>
         <Field label="Téléphone"><input value={s.phone} onChange={e => setS({ ...s, phone: e.target.value })} style={inputStyle} placeholder="04 90 XX XX XX" /></Field>
         <Field label="Adresse"><input value={s.address} onChange={e => setS({ ...s, address: e.target.value })} style={inputStyle} /></Field>
+        <Field label={isArtisan ? "Email pour recevoir les demandes clients *" : "Email de contact"}>
+          <input value={s.customerEmail} onChange={e => setS({ ...s, customerEmail: e.target.value })} style={inputStyle} placeholder="contact@monentreprise.fr" />
+        </Field>
       </Section>
 
-      <Section title="🚗 Commandes & livraison">
-        <Toggle label="Livraison activée" checked={s.deliveryEnabled} onChange={v => setS({ ...s, deliveryEnabled: v })} />
-        {s.deliveryEnabled && <>
-          <Field label="Frais de livraison (€)"><input type="number" value={s.deliveryFee} onChange={e => setS({ ...s, deliveryFee: parseFloat(e.target.value) || 0 })} style={inputStyle} /></Field>
-          <Field label="Commande minimum (€)"><input type="number" value={s.deliveryMinimum} onChange={e => setS({ ...s, deliveryMinimum: parseFloat(e.target.value) || 0 })} style={inputStyle} /></Field>
-        </>}
-        <Field label="Temps de préparation (min)"><input type="number" value={s.estimatedPrepTime} onChange={e => setS({ ...s, estimatedPrepTime: parseInt(e.target.value) || 20 })} style={inputStyle} /></Field>
-        <Field label="Paiement accepté"><input value={s.paymentMethods} onChange={e => setS({ ...s, paymentMethods: e.target.value })} style={inputStyle} /></Field>
-      </Section>
+      {!isArtisan && (
+        <Section title="🚗 Commandes & livraison">
+          <Toggle label="Livraison activée" checked={s.deliveryEnabled} onChange={v => setS({ ...s, deliveryEnabled: v })} />
+          {s.deliveryEnabled && <>
+            <Field label="Frais de livraison (€)"><input type="number" value={s.deliveryFee} onChange={e => setS({ ...s, deliveryFee: parseFloat(e.target.value) || 0 })} style={inputStyle} /></Field>
+            <Field label="Commande minimum (€)"><input type="number" value={s.deliveryMinimum} onChange={e => setS({ ...s, deliveryMinimum: parseFloat(e.target.value) || 0 })} style={inputStyle} /></Field>
+          </>}
+          <Field label="Temps de préparation (min)"><input type="number" value={s.estimatedPrepTime} onChange={e => setS({ ...s, estimatedPrepTime: parseInt(e.target.value) || 20 })} style={inputStyle} /></Field>
+          <Field label="Paiement accepté"><input value={s.paymentMethods} onChange={e => setS({ ...s, paymentMethods: e.target.value })} style={inputStyle} /></Field>
+        </Section>
+      )}
 
-      <Section title="🏖️ Mode vacances">
+      <Section title="🏖️ Mode vacances / indisponibilité">
         <Toggle label="Activer le mode vacances" checked={s.vacationMode} onChange={v => setS({ ...s, vacationMode: v })} />
         {s.vacationMode && <Field label="Message"><textarea value={s.vacationMessage} onChange={e => setS({ ...s, vacationMessage: e.target.value })} style={{ ...inputStyle, minHeight: 70 }} /></Field>}
       </Section>
 
-      <Section title="🕐 Horaires d'ouverture">
-        {DAYS.map(day => (
-          <div key={day} style={{ display: "grid", gridTemplateColumns: "100px 1fr", alignItems: "center", gap: 10 }}>
-            <label style={{ fontWeight: 700, fontSize: 13, textTransform: "capitalize", display: "flex", alignItems: "center", gap: 6 }}>
-              <input type="checkbox" checked={!s.openingHours[day]?.closed} onChange={e => setDay(day, "closed", !e.target.checked)} />{day}
-            </label>
-            {!s.openingHours[day]?.closed ? (
-              <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13, flexWrap: "wrap" }}>
-                <input type="time" value={s.openingHours[day]?.open} onChange={e => setDay(day, "open", e.target.value)} style={timeInput} />
-                <span>–</span>
-                <input type="time" value={s.openingHours[day]?.close} onChange={e => setDay(day, "close", e.target.value)} style={timeInput} />
-                <span style={{ color: "#bbb" }}>|</span>
-                <input type="time" value={s.openingHours[day]?.dinnerOpen} onChange={e => setDay(day, "dinnerOpen", e.target.value)} style={timeInput} />
-                <span>–</span>
-                <input type="time" value={s.openingHours[day]?.dinnerClose} onChange={e => setDay(day, "dinnerClose", e.target.value)} style={timeInput} />
-              </div>
-            ) : <span style={{ fontSize: 13, color: "#999" }}>Fermé</span>}
-          </div>
-        ))}
-      </Section>
+      {!isArtisan && (
+        <Section title="🕐 Horaires d'ouverture">
+          {DAYS.map(day => (
+            <div key={day} style={{ display: "grid", gridTemplateColumns: "100px 1fr", alignItems: "center", gap: 10 }}>
+              <label style={{ fontWeight: 700, fontSize: 13, textTransform: "capitalize", display: "flex", alignItems: "center", gap: 6 }}>
+                <input type="checkbox" checked={!s.openingHours[day]?.closed} onChange={e => setDay(day, "closed", !e.target.checked)} />{day}
+              </label>
+              {!s.openingHours[day]?.closed ? (
+                <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13, flexWrap: "wrap" }}>
+                  <input type="time" value={s.openingHours[day]?.open} onChange={e => setDay(day, "open", e.target.value)} style={timeInput} />
+                  <span>–</span>
+                  <input type="time" value={s.openingHours[day]?.close} onChange={e => setDay(day, "close", e.target.value)} style={timeInput} />
+                  <span style={{ color: "#bbb" }}>|</span>
+                  <input type="time" value={s.openingHours[day]?.dinnerOpen} onChange={e => setDay(day, "dinnerOpen", e.target.value)} style={timeInput} />
+                  <span>–</span>
+                  <input type="time" value={s.openingHours[day]?.dinnerClose} onChange={e => setDay(day, "dinnerClose", e.target.value)} style={timeInput} />
+                </div>
+              ) : <span style={{ fontSize: 13, color: "#999" }}>Fermé</span>}
+            </div>
+          ))}
+        </Section>
+      )}
 
       <Section title="🤖 Infos pour l'IA">
-        <Field label="Message d'accueil personnalisé"><input value={s.welcomeMessage} onChange={e => setS({ ...s, welcomeMessage: e.target.value })} style={inputStyle} placeholder="Ex: Bonjour, ici La Bella Pizza !" /></Field>
-        <Field label="Promotions en cours"><textarea value={s.currentPromos} onChange={e => setS({ ...s, currentPromos: e.target.value })} style={{ ...inputStyle, minHeight: 60 }} /></Field>
-        <Field label="Informations allergènes"><textarea value={s.allergensInfo} onChange={e => setS({ ...s, allergensInfo: e.target.value })} style={{ ...inputStyle, minHeight: 60 }} /></Field>
+        <Field label="Message d'accueil personnalisé"><input value={s.welcomeMessage} onChange={e => setS({ ...s, welcomeMessage: e.target.value })} style={inputStyle} placeholder={isArtisan ? "Ex: Bonjour, ici Provence Nature Services !" : "Ex: Bonjour, ici La Bella Pizza !"} /></Field>
+        {!isArtisan && <>
+          <Field label="Promotions en cours"><textarea value={s.currentPromos} onChange={e => setS({ ...s, currentPromos: e.target.value })} style={{ ...inputStyle, minHeight: 60 }} /></Field>
+          <Field label="Informations allergènes"><textarea value={s.allergensInfo} onChange={e => setS({ ...s, allergensInfo: e.target.value })} style={{ ...inputStyle, minHeight: 60 }} /></Field>
+        </>}
       </Section>
     </div>
   );

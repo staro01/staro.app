@@ -6,6 +6,8 @@ import { notifyCriticalError } from "../../../../../core/monitoring/notifyError"
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien"];
+
 async function findBusiness(to: string) {
   const normalized = normPhone(to);
   const raw = (to ?? "").trim().replace(/\s+/g, "");
@@ -45,9 +47,14 @@ export async function POST(req: Request) {
       return xml(hangupTwiml(baseUrl, business.vacationMessage ?? "L'établissement est actuellement fermé. Merci de rappeler."));
     }
 
-    const defaultGreet = business.vertical === "coiffeur"
-      ? `Bonjour, salon ${business.name}, que puis-je faire pour vous ?`
-      : `Bonjour, pizzeria ${business.name}, puis-je prendre votre commande ?`;
+    let defaultGreet: string;
+    if (business.vertical === "coiffeur") {
+      defaultGreet = `Bonjour, salon ${business.name}, que puis-je faire pour vous ?`;
+    } else if (ARTISAN_VERTICALS.includes(business.vertical)) {
+      defaultGreet = `Bonjour, ${business.name}, je vous écoute.`;
+    } else {
+      defaultGreet = `Bonjour, pizzeria ${business.name}, puis-je prendre votre commande ?`;
+    }
 
     const greet = business.welcomeMessage?.trim() ? business.welcomeMessage.trim() : defaultGreet;
 
