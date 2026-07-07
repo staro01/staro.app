@@ -122,12 +122,15 @@ export default function RequestsDashboard() {
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.data.address)}`
       : null;
 
+    const METIER_ICONS: Record<string, string> = { paysagiste: "🌿", electricien: "⚡", plombier: "🔧" };
+    const icon = METIER_ICONS[e.data?.metier as string] ?? "📨";
+
     return (
       <div style={{
         border: isStale ? "1px solid #d97706" : "1px solid #2a1a3e",
         borderRadius: 14, padding: 14, background: "#1a1a2e",
       }}>
-        <div style={{ fontWeight: 900, fontSize: 15, marginBottom: 6, color: "#fff" }}>🌿 {e.summary || "Demande client"}</div>
+        <div style={{ fontWeight: 900, fontSize: 15, marginBottom: 6, color: "#fff" }}>{icon} {e.summary || "Demande client"}</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
           <span style={badge}>⏱ {formatDateTime(e.createdAt)}</span>
           {e.data?.availability && <span style={{ ...badge, color: "#9b4fdd", borderColor: "#6b1fad" }}>📅 {e.data.availability}</span>}

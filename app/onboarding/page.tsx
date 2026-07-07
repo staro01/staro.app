@@ -10,7 +10,7 @@ const VERTICALS = [
   { value: "coiffeur", label: "✂️ Coiffeur / institut", disabled: false },
   { value: "paysagiste", label: "🌿 Paysagiste", disabled: false },
   { value: "plombier", label: "🔧 Plombier", disabled: true },
-  { value: "electricien", label: "⚡ Électricien", disabled: true },
+  { value: "electricien", label: "⚡ Électricien", disabled: false },
   { value: "autre", label: "⭐ Autre", disabled: true },
 ];
 

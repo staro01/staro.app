@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import type { Business } from "@prisma/client";
 import { prisma } from "../../../../../lib/prisma";
 import { xml, getBaseUrl, hangupTwiml, gatherSay, dialTwiml, normPhone } from "../../../../../core/twilio/incoming";
 import { verifyTwilioRequest } from "../../../../../core/twilio/verify";
@@ -10,14 +11,20 @@ import { extractOrderJson, stripOrderBlock, saveOrder } from "../../../../../ver
 import { buildCoiffeurPrompt } from "../../../../../verticals/coiffeur/prompt";
 import { extractAppointmentJson, stripAppointmentBlock, saveAppointment } from "../../../../../verticals/coiffeur/actions";
 import { buildPaysagistePrompt } from "../../../../../verticals/paysagiste/prompt";
+import { buildElectricienPrompt } from "../../../../../verticals/electricien/prompt";
 import { extractReportJson, stripReportBlock, saveArtisanRequestAndNotify, type ArtisanMetier } from "../../../../../core/artisanReport";
 import { notifyCriticalError } from "../../../../../core/monitoring/notifyError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Plombier et électricien seront ajoutés ici une fois testés individuellement.
-const ARTISAN_VERTICALS: ArtisanMetier[] = ["paysagiste"];
+// Plombier sera ajouté ici une fois testé individuellement.
+const ARTISAN_VERTICALS: ArtisanMetier[] = ["paysagiste", "electricien"];
+
+const ARTISAN_PROMPT_BUILDERS: Partial<Record<ArtisanMetier, (business: Business) => string>> = {
+  paysagiste: buildPaysagistePrompt,
+  electricien: buildElectricienPrompt,
+};
 
 async function findBusiness(to: string) {
   const normalized = normPhone(to);
@@ -99,7 +106,12 @@ export async function POST(req: NextRequest) {
     }
 
     if (ARTISAN_VERTICALS.includes(business.vertical as ArtisanMetier)) {
-      const system = buildPaysagistePrompt(business);
+      const buildPrompt = ARTISAN_PROMPT_BUILDERS[business.vertical as ArtisanMetier];
+      if (!buildPrompt) {
+        return xml(hangupTwiml(baseUrl, "Ce service n'est pas encore configuré pour votre secteur. Merci de nous contacter directement."));
+      }
+
+      const system = buildPrompt(business);
       const claudeText = await askClaude(system, history);
       history.push({ role: "assistant", content: claudeText });
       await saveHistory(callSid, history, business.id);
@@ -122,9 +134,6 @@ export async function POST(req: NextRequest) {
       return xml(gatherSay(baseUrl, claudeText, "/api/twilio/voice/handle-speech"));
     }
 
-    // Fix du bug de dispatch : seul "pizzeria" utilise la logique pizzeria ci-dessous.
-    // Tout vertical non reconnu (hotel, autre, plombier/electricien pas encore actifs) raccroche proprement
-    // plutôt que d'utiliser silencieusement le mauvais prompt.
     if (business.vertical !== "pizzeria") {
       return xml(hangupTwiml(baseUrl, "Ce service n'est pas encore configuré pour votre secteur. Merci de nous contacter directement."));
     }

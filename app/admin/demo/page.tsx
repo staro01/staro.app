@@ -17,7 +17,7 @@ export default function DemoAdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [vertical, setVertical] = useState<"pizzeria" | "coiffeur" | "paysagiste">("pizzeria");
+  const [vertical, setVertical] = useState<"pizzeria" | "coiffeur" | "paysagiste" | "electricien">("pizzeria");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -34,7 +34,7 @@ export default function DemoAdminPage() {
       .then((b) => {
         if (!b) return;
         setName(b.name ?? "");
-        setVertical(["pizzeria", "coiffeur", "paysagiste"].includes(b.vertical) ? b.vertical : "pizzeria");
+        setVertical(["pizzeria", "coiffeur", "paysagiste", "electricien"].includes(b.vertical) ? b.vertical : "pizzeria");
         setPhone(b.phone ?? "");
         setAddress(b.address ?? "");
         setCustomerEmail(b.customerEmail ?? "");
@@ -146,6 +146,7 @@ export default function DemoAdminPage() {
             <option value="pizzeria">Restauration à emporter</option>
             <option value="coiffeur">Coiffure & institut</option>
             <option value="paysagiste">Paysagiste</option>
+          <option value="electricien">Électricien</option>
           </select>
         </label>
         <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "#aaa" }}>
