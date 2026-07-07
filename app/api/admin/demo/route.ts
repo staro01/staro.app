@@ -55,6 +55,7 @@ export async function PATCH(req: NextRequest) {
         phone: body.phone,
         address: body.address,
         openingHours: body.openingHours,
+        customerEmail: body.customerEmail,
         status: "active",
         ...RESET_FIELDS,
       },
@@ -65,6 +66,7 @@ export async function PATCH(req: NextRequest) {
         phone: body.phone,
         address: body.address,
         openingHours: body.openingHours,
+        customerEmail: body.customerEmail,
         status: "active",
         ...RESET_FIELDS,
       },
@@ -86,7 +88,7 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    if (body.vertical !== "coiffeur" && Array.isArray(body.menuItems)) {
+    if (body.vertical === "pizzeria" && Array.isArray(body.menuItems)) {
       await prisma.menuItem.createMany({
         data: body.menuItems
           .filter((m: any) => m.name?.trim())

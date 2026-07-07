@@ -17,13 +17,16 @@ export default function DemoAdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [vertical, setVertical] = useState<"pizzeria" | "coiffeur">("pizzeria");
+  const [vertical, setVertical] = useState<"pizzeria" | "coiffeur" | "paysagiste">("pizzeria");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
   const [openingHours, setOpeningHours] = useState<string[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const hasCatalog = vertical !== "paysagiste";
 
   useEffect(() => {
     fetch("/api/admin/demo")
@@ -31,9 +34,10 @@ export default function DemoAdminPage() {
       .then((b) => {
         if (!b) return;
         setName(b.name ?? "");
-        setVertical(b.vertical === "coiffeur" ? "coiffeur" : "pizzeria");
+        setVertical(["pizzeria", "coiffeur", "paysagiste"].includes(b.vertical) ? b.vertical : "pizzeria");
         setPhone(b.phone ?? "");
         setAddress(b.address ?? "");
+        setCustomerEmail(b.customerEmail ?? "");
         setOpeningHours(Array.isArray(b.openingHours) ? b.openingHours : []);
         const source = b.vertical === "coiffeur" ? b.services : b.menuItems;
         setItems(
@@ -90,9 +94,9 @@ export default function DemoAdminPage() {
     setSaved(false);
     setError(null);
     try {
-      const payload: any = { name, vertical, phone, address, openingHours };
+      const payload: any = { name, vertical, phone, address, openingHours, customerEmail };
       if (vertical === "coiffeur") payload.services = items;
-      else payload.menuItems = items;
+      if (vertical === "pizzeria") payload.menuItems = items;
 
       const res = await fetch("/api/admin/demo", {
         method: "PATCH",
@@ -141,6 +145,7 @@ export default function DemoAdminPage() {
           <select value={vertical} onChange={(e) => setVertical(e.target.value as any)} style={inputStyle}>
             <option value="pizzeria">Restauration à emporter</option>
             <option value="coiffeur">Coiffure & institut</option>
+            <option value="paysagiste">Paysagiste</option>
           </select>
         </label>
         <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "#aaa" }}>
@@ -150,6 +155,10 @@ export default function DemoAdminPage() {
         <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "#aaa" }}>
           Adresse
           <input value={address} onChange={(e) => setAddress(e.target.value)} style={inputStyle} />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "#aaa", gridColumn: "1 / -1" }}>
+          Email pour recevoir les rapports/demandes
+          <input value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} style={inputStyle} placeholder="toi@exemple.fr" />
         </label>
       </div>
 
@@ -162,54 +171,62 @@ export default function DemoAdminPage() {
         </div>
       )}
 
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <div style={{ fontWeight: 700 }}>{vertical === "coiffeur" ? "Prestations" : "Carte"}</div>
-          <button
-            onClick={addItem}
-            style={{ background: "none", border: "1px solid #444", color: "#fff", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}
-          >
-            + Ajouter
-          </button>
-        </div>
-
-        {items.map((item, i) => (
-          <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
-            <input
-              value={item.name}
-              onChange={(e) => updateItem(i, { name: e.target.value })}
-              placeholder={vertical === "coiffeur" ? "Ex: Coupe homme" : "Ex: Pizza Reine"}
-              style={{ ...inputStyle, flex: 2 }}
-            />
-            {vertical === "coiffeur" ? (
-              <input
-                type="number"
-                value={item.duration ?? 30}
-                onChange={(e) => updateItem(i, { duration: Number(e.target.value) })}
-                placeholder="Durée (min)"
-                style={{ ...inputStyle, flex: 1 }}
-              />
-            ) : (
-              <input
-                value={item.category ?? ""}
-                onChange={(e) => updateItem(i, { category: e.target.value })}
-                placeholder="Catégorie"
-                style={{ ...inputStyle, flex: 1 }}
-              />
-            )}
-            <input
-              type="number"
-              value={item.price}
-              onChange={(e) => updateItem(i, { price: Number(e.target.value) })}
-              placeholder="Prix €"
-              style={{ ...inputStyle, flex: 1 }}
-            />
-            <button onClick={() => removeItem(i)} style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 16 }}>
-              ✕
+      {hasCatalog && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ fontWeight: 700 }}>{vertical === "coiffeur" ? "Prestations" : "Carte"}</div>
+            <button
+              onClick={addItem}
+              style={{ background: "none", border: "1px solid #444", color: "#fff", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}
+            >
+              + Ajouter
             </button>
           </div>
-        ))}
-      </div>
+
+          {items.map((item, i) => (
+            <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
+              <input
+                value={item.name}
+                onChange={(e) => updateItem(i, { name: e.target.value })}
+                placeholder={vertical === "coiffeur" ? "Ex: Coupe homme" : "Ex: Pizza Reine"}
+                style={{ ...inputStyle, flex: 2 }}
+              />
+              {vertical === "coiffeur" ? (
+                <input
+                  type="number"
+                  value={item.duration ?? 30}
+                  onChange={(e) => updateItem(i, { duration: Number(e.target.value) })}
+                  placeholder="Durée (min)"
+                  style={{ ...inputStyle, flex: 1 }}
+                />
+              ) : (
+                <input
+                  value={item.category ?? ""}
+                  onChange={(e) => updateItem(i, { category: e.target.value })}
+                  placeholder="Catégorie"
+                  style={{ ...inputStyle, flex: 1 }}
+                />
+              )}
+              <input
+                type="number"
+                value={item.price}
+                onChange={(e) => updateItem(i, { price: Number(e.target.value) })}
+                placeholder="Prix €"
+                style={{ ...inputStyle, flex: 1 }}
+              />
+              <button onClick={() => removeItem(i)} style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 16 }}>
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!hasCatalog && (
+        <div style={{ marginBottom: 16, fontSize: 13, color: "#888" }}>
+          Ce secteur n&apos;a pas de catalogue — l&apos;agent qualifie la demande en conversation libre.
+        </div>
+      )}
 
       <button
         onClick={handleSave}

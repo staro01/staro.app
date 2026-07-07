@@ -6,20 +6,20 @@ import { useRouter } from "next/navigation";
 const STEPS = ["Bienvenue", "Votre activité", "Votre établissement", "Vos articles", "C'est prêt !"];
 
 const VERTICALS = [
-  { value: "pizzeria", label: "🍕 Pizzeria / Restaurant" },
-  { value: "coiffeur", label: "✂️ Coiffeur / Barbier" },
-  { value: "artisan", label: "🔧 Artisan / Service" },
-  { value: "hotel", label: "🏨 Hôtel / Hébergement" },
-  { value: "autre", label: "⭐ Autre" },
+  { value: "pizzeria", label: "🍕 Pizzeria à emporter / livraison", disabled: false },
+  { value: "coiffeur", label: "✂️ Coiffeur / institut", disabled: false },
+  { value: "paysagiste", label: "🌿 Paysagiste", disabled: false },
+  { value: "plombier", label: "🔧 Plombier", disabled: true },
+  { value: "electricien", label: "⚡ Électricien", disabled: true },
+  { value: "autre", label: "⭐ Autre", disabled: true },
 ];
 
 const CATEGORIES_BY_VERTICAL: Record<string, string[]> = {
   pizzeria: ["pizza", "boisson", "dessert", "entrée", "autre"],
-  coiffeur: ["coupe", "couleur", "soin", "autre"],
-  artisan: ["service", "déplacement", "fourniture", "autre"],
-  hotel: ["chambre", "service", "restauration", "autre"],
-  autre: ["service", "produit", "autre"],
 };
+
+// Verticals sans catalogue à configurer à l'inscription (rapport par appel, pas de menu/prestations fixes)
+const NO_CATALOG_VERTICALS = ["paysagiste", "plombier", "electricien"];
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -29,9 +29,11 @@ export default function OnboardingPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [items, setItems] = useState([{ name: "", price: "", category: "" }]);
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [items, setItems] = useState([{ name: "", price: "", category: "", duration: "30" }]);
 
-  const categories = CATEGORIES_BY_VERTICAL[vertical] ?? ["service", "produit", "autre"];
+  const categories = CATEGORIES_BY_VERTICAL[vertical] ?? [];
+  const hasCatalog = !NO_CATALOG_VERTICALS.includes(vertical);
 
   async function saveSettings() {
     if (!name.trim()) return alert("Le nom est obligatoire.");
@@ -39,21 +41,29 @@ export default function OnboardingPage() {
     await fetch("/api/dashboard/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, address, vertical }),
+      body: JSON.stringify({ name, phone, address, vertical, customerEmail }),
     });
     setSaving(false);
-    setStep(3);
+    setStep(hasCatalog ? 3 : 4);
   }
 
   async function saveMenu() {
     const valid = items.filter(i => i.name.trim() && parseFloat(i.price) > 0);
     if (valid.length === 0) return alert("Ajoutez au moins un article.");
     setSaving(true);
+
+    const endpoint = vertical === "coiffeur" ? "/api/dashboard/services" : "/api/dashboard/menu";
+
     for (const item of valid) {
-      await fetch("/api/dashboard/menu", {
+      const body =
+        vertical === "coiffeur"
+          ? { name: item.name, price: parseFloat(item.price), duration: parseInt(item.duration) || 30, available: true }
+          : { name: item.name, price: parseFloat(item.price), category: item.category || categories[0], available: true };
+
+      await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: item.name, price: parseFloat(item.price), category: item.category || categories[0], available: true }),
+        body: JSON.stringify(body),
       });
     }
     setSaving(false);
@@ -64,7 +74,6 @@ export default function OnboardingPage() {
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ width: "100%", maxWidth: 520, background: "#111", border: "1px solid #2a1a3e", borderRadius: 24, padding: 36 }}>
 
-        {/* Progress */}
         <div style={{ display: "flex", gap: 6, marginBottom: 32 }}>
           {STEPS.map((_, i) => (
             <div key={i} style={{ flex: 1, height: 4, borderRadius: 99, background: i <= step ? "#6b1fad" : "#2a1a3e", transition: "background 0.3s" }} />
@@ -94,13 +103,26 @@ export default function OnboardingPage() {
             <p style={{ color: "#666", fontSize: 14, margin: "0 0 20px" }}>Cela permet à l'assistant de s'adapter à votre métier.</p>
             <div style={{ display: "grid", gap: 10, marginBottom: 24 }}>
               {VERTICALS.map(v => (
-                <button key={v.value} onClick={() => setVertical(v.value)} style={{
-                  padding: "14px 18px", borderRadius: 12, textAlign: "left",
-                  border: `1px solid ${vertical === v.value ? "#6b1fad" : "#2a1a3e"}`,
-                  background: vertical === v.value ? "#2a1a3e" : "#0a0a0a",
-                  color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 15,
-                }}>
+                <button
+                  key={v.value}
+                  onClick={() => !v.disabled && setVertical(v.value)}
+                  disabled={v.disabled}
+                  style={{
+                    padding: "14px 18px", borderRadius: 12, textAlign: "left",
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    border: `1px solid ${vertical === v.value ? "#6b1fad" : "#2a1a3e"}`,
+                    background: vertical === v.value ? "#2a1a3e" : "#0a0a0a",
+                    color: v.disabled ? "#555" : "#fff",
+                    fontWeight: 700, cursor: v.disabled ? "not-allowed" : "pointer", fontSize: 15,
+                    opacity: v.disabled ? 0.55 : 1,
+                  }}
+                >
                   {v.label}
+                  {v.disabled && (
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "#888", background: "rgba(255,255,255,0.06)", border: "1px solid #2a1a3e", borderRadius: 999, padding: "3px 9px" }}>
+                      Bientôt disponible
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -118,6 +140,12 @@ export default function OnboardingPage() {
               <label style={labelStyle}>Nom *<input value={name} onChange={e => setName(e.target.value)} style={inputStyle} placeholder="Ex: La Bella Pizza, Salon Marie..." /></label>
               <label style={labelStyle}>Téléphone<input value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} placeholder="04 90 XX XX XX" /></label>
               <label style={labelStyle}>Adresse<input value={address} onChange={e => setAddress(e.target.value)} style={inputStyle} /></label>
+              {!hasCatalog && (
+                <label style={labelStyle}>
+                  Email pour recevoir les demandes clients *
+                  <input value={customerEmail} onChange={e => setCustomerEmail(e.target.value)} style={inputStyle} placeholder="contact@monentreprise.fr" />
+                </label>
+              )}
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
               <button onClick={() => setStep(1)} style={btnSecondary}>← Retour</button>
@@ -126,23 +154,29 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 3 && hasCatalog && (
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 900, margin: "0 0 8px", color: "#fff" }}>Vos articles ou services</h2>
+            <h2 style={{ fontSize: 20, fontWeight: 900, margin: "0 0 8px", color: "#fff" }}>
+              {vertical === "coiffeur" ? "Vos prestations" : "Vos articles"}
+            </h2>
             <p style={{ color: "#666", fontSize: 14, margin: "0 0 20px" }}>Ajoutez ce que vous proposez — vous pourrez modifier ça plus tard.</p>
             <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
               {items.map((item, idx) => (
                 <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 80px 110px 32px", gap: 8 }}>
                   <input value={item.name} onChange={e => setItems(items.map((it, i) => i === idx ? { ...it, name: e.target.value } : it))} style={inputStyle} placeholder="Nom" />
                   <input type="number" value={item.price} onChange={e => setItems(items.map((it, i) => i === idx ? { ...it, price: e.target.value } : it))} style={inputStyle} placeholder="Prix €" />
-                  <select value={item.category} onChange={e => setItems(items.map((it, i) => i === idx ? { ...it, category: e.target.value } : it))} style={inputStyle}>
-                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                  {vertical === "coiffeur" ? (
+                    <input type="number" value={item.duration} onChange={e => setItems(items.map((it, i) => i === idx ? { ...it, duration: e.target.value } : it))} style={inputStyle} placeholder="Durée (min)" />
+                  ) : (
+                    <select value={item.category} onChange={e => setItems(items.map((it, i) => i === idx ? { ...it, category: e.target.value } : it))} style={inputStyle}>
+                      {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  )}
                   <button onClick={() => items.length > 1 && setItems(items.filter((_, i) => i !== idx))} style={{ background: "none", border: "none", cursor: "pointer", color: "#555", fontSize: 16 }}>✕</button>
                 </div>
               ))}
             </div>
-            <button onClick={() => setItems([...items, { name: "", price: "", category: "" }])} style={{ ...btnSecondary, fontSize: 13, padding: "7px 14px", marginBottom: 20 }}>+ Ajouter</button>
+            <button onClick={() => setItems([...items, { name: "", price: "", category: "", duration: "30" }])} style={{ ...btnSecondary, fontSize: 13, padding: "7px 14px", marginBottom: 20 }}>+ Ajouter</button>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setStep(2)} style={btnSecondary}>← Retour</button>
               <button onClick={saveMenu} disabled={saving} style={btnFull}>{saving ? "…" : "Terminer →"}</button>
@@ -154,7 +188,7 @@ export default function OnboardingPage() {
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
             <h2 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 12px", color: "#fff" }}>Votre assistant est prêt !</h2>
-            <p style={{ color: "#888", lineHeight: 1.6, margin: "0 0 28px" }}>Vos informations et vos articles sont configurés. Notre équipe va vous contacter pour finaliser l'installation.</p>
+            <p style={{ color: "#888", lineHeight: 1.6, margin: "0 0 28px" }}>Vos informations sont configurées. Notre équipe va vous contacter pour finaliser l'installation.</p>
             <button onClick={() => router.push("/dashboard")} style={btnFull}>Accéder à mon espace →</button>
           </div>
         )}

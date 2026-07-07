@@ -39,13 +39,15 @@ export async function PATCH(req: NextRequest) {
       currentPromos: body.currentPromos,
       welcomeMessage: body.welcomeMessage,
       openingHours: body.openingHours,
+      customerEmail: body.customerEmail,
     },
     create: {
       clerkUserId: user.id,
-      vertical: "pizzeria",
+      vertical: body.vertical || "pizzeria",
       name: body.name ?? "Mon établissement",
       phone: body.phone,
       address: body.address,
+      customerEmail: body.customerEmail,
     },
   });
 

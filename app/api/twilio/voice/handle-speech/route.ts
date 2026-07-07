@@ -9,10 +9,15 @@ import { buildPizzeriaPrompt } from "../../../../../verticals/pizzeria/prompt";
 import { extractOrderJson, stripOrderBlock, saveOrder } from "../../../../../verticals/pizzeria/actions";
 import { buildCoiffeurPrompt } from "../../../../../verticals/coiffeur/prompt";
 import { extractAppointmentJson, stripAppointmentBlock, saveAppointment } from "../../../../../verticals/coiffeur/actions";
+import { buildPaysagistePrompt } from "../../../../../verticals/paysagiste/prompt";
+import { extractReportJson, stripReportBlock, saveArtisanRequestAndNotify, type ArtisanMetier } from "../../../../../core/artisanReport";
 import { notifyCriticalError } from "../../../../../core/monitoring/notifyError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Plombier et électricien seront ajoutés ici une fois testés individuellement.
+const ARTISAN_VERTICALS: ArtisanMetier[] = ["paysagiste"];
 
 async function findBusiness(to: string) {
   const normalized = normPhone(to);
@@ -91,6 +96,37 @@ export async function POST(req: NextRequest) {
       }
 
       return xml(gatherSay(baseUrl, claudeText, "/api/twilio/voice/handle-speech"));
+    }
+
+    if (ARTISAN_VERTICALS.includes(business.vertical as ArtisanMetier)) {
+      const system = buildPaysagistePrompt(business);
+      const claudeText = await askClaude(system, history);
+      history.push({ role: "assistant", content: claudeText });
+      await saveHistory(callSid, history, business.id);
+
+      if (wantsHumanTransfer(claudeText)) {
+        const transferText = stripTransferMarker(claudeText) || "Je vous transfère tout de suite.";
+        if (business.phone) {
+          return xml(dialTwiml(baseUrl, transferText, business.phone));
+        }
+        return xml(hangupTwiml(baseUrl, "Nous ne pouvons pas vous transférer pour le moment. Merci de rappeler directement."));
+      }
+
+      const reportData = extractReportJson(claudeText);
+      if (reportData) {
+        await saveArtisanRequestAndNotify(callSid, business.id, business.vertical as ArtisanMetier, reportData);
+        const confirmText = stripReportBlock(claudeText) || "C'est noté, merci et à bientôt.";
+        return xml(hangupTwiml(baseUrl, confirmText));
+      }
+
+      return xml(gatherSay(baseUrl, claudeText, "/api/twilio/voice/handle-speech"));
+    }
+
+    // Fix du bug de dispatch : seul "pizzeria" utilise la logique pizzeria ci-dessous.
+    // Tout vertical non reconnu (hotel, autre, plombier/electricien pas encore actifs) raccroche proprement
+    // plutôt que d'utiliser silencieusement le mauvais prompt.
+    if (business.vertical !== "pizzeria") {
+      return xml(hangupTwiml(baseUrl, "Ce service n'est pas encore configuré pour votre secteur. Merci de nous contacter directement."));
     }
 
     const menuItems = await prisma.menuItem.findMany({ where: { businessId: business.id }, orderBy: { category: "asc" } });
