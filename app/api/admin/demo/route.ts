@@ -11,10 +11,17 @@ async function checkAdmin() {
   return isAdminEmail(user?.primaryEmailAddress?.emailAddress);
 }
 
-function getDemoNumber() {
-  const n = normPhone(process.env.DEMO_TWILIO_NUMBER);
-  if (!n) throw new Error("DEMO_TWILIO_NUMBER non configuré");
+type Slot = "commercial" | "interne";
+
+function getSlotNumber(slot: Slot) {
+  const envVar = slot === "commercial" ? process.env.DEMO_TWILIO_NUMBER : process.env.TEST_TWILIO_NUMBER;
+  const n = normPhone(envVar);
+  if (!n) throw new Error(`${slot === "commercial" ? "DEMO_TWILIO_NUMBER" : "TEST_TWILIO_NUMBER"} non configuré`);
   return n;
+}
+
+function parseSlot(value: string | null): Slot {
+  return value === "interne" ? "interne" : "commercial";
 }
 
 const RESET_FIELDS = {
@@ -25,13 +32,14 @@ const RESET_FIELDS = {
   allergensInfo: null,
 };
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   if (!(await checkAdmin())) return Response.json({ error: "Non autorisé" }, { status: 403 });
 
   try {
-    const demoNumber = getDemoNumber();
+    const slot = parseSlot(req.nextUrl.searchParams.get("slot"));
+    const number = getSlotNumber(slot);
     const business = await prisma.business.findFirst({
-      where: { twilioNumber: demoNumber },
+      where: { twilioNumber: number },
       include: { menuItems: true, services: true },
     });
     return Response.json(business);
@@ -44,11 +52,12 @@ export async function PATCH(req: NextRequest) {
   if (!(await checkAdmin())) return Response.json({ error: "Non autorisé" }, { status: 403 });
 
   try {
-    const demoNumber = getDemoNumber();
     const body = await req.json();
+    const slot = parseSlot(body.slot ?? null);
+    const number = getSlotNumber(slot);
 
     const business = await prisma.business.upsert({
-      where: { twilioNumber: demoNumber },
+      where: { twilioNumber: number },
       update: {
         name: body.name,
         vertical: body.vertical,
@@ -60,7 +69,7 @@ export async function PATCH(req: NextRequest) {
         ...RESET_FIELDS,
       },
       create: {
-        twilioNumber: demoNumber,
+        twilioNumber: number,
         name: body.name,
         vertical: body.vertical,
         phone: body.phone,

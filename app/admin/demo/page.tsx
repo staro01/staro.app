@@ -13,6 +13,7 @@ const inputStyle: CSSProperties = {
 };
 
 export default function DemoAdminPage() {
+  const [slot, setSlot] = useState<"commercial" | "interne">("interne");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +31,7 @@ export default function DemoAdminPage() {
   const hasCatalog = !NO_CATALOG_VERTICALS.includes(vertical);
 
   useEffect(() => {
-    fetch("/api/admin/demo")
+    fetch(`/api/admin/demo?slot=${slot}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((b) => {
         if (!b) return;
@@ -51,7 +52,7 @@ export default function DemoAdminPage() {
         );
       })
       .catch(() => {});
-  }, []);
+  }, [slot]);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -95,7 +96,7 @@ export default function DemoAdminPage() {
     setSaved(false);
     setError(null);
     try {
-      const payload: any = { name, vertical, phone, address, openingHours, customerEmail };
+      const payload: any = { slot, name, vertical, phone, address, openingHours, customerEmail };
       if (vertical === "coiffeur") payload.services = items;
       if (vertical === "pizzeria") payload.menuItems = items;
 
@@ -116,7 +117,34 @@ export default function DemoAdminPage() {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px", color: "#fff", background: "#0a0a0f", minHeight: "100vh" }}>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 24 }}>Configuration de la démo</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Configuration de la démo</h1>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+        <button
+          onClick={() => setSlot("interne")}
+          style={{
+            padding: "8px 16px", borderRadius: 8, border: `1px solid ${slot === "interne" ? "#7e22ce" : "#333"}`,
+            background: slot === "interne" ? "#2a1a3e" : "#111", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13,
+          }}
+        >
+          🧪 Interne (tests)
+        </button>
+        <button
+          onClick={() => setSlot("commercial")}
+          style={{
+            padding: "8px 16px", borderRadius: 8, border: `1px solid ${slot === "commercial" ? "#d97706" : "#333"}`,
+            background: slot === "commercial" ? "#3a2a10" : "#111", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13,
+          }}
+        >
+          🤝 Commercial (prospects)
+        </button>
+      </div>
+
+      {slot === "commercial" && (
+        <div style={{ background: "#3a2a10", border: "1px solid #d97706", borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: "#fbbf24" }}>
+          ⚠️ Numéro utilisé pour les démos prospects — vérifie qu'aucun appel commercial n'est en cours avant d'enregistrer.
+        </div>
+      )}
 
       <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
         <input
