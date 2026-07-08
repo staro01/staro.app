@@ -123,6 +123,10 @@ export default function SettingsPage() {
   }, []);
 
   async function save() {
+    if (!s.name.trim()) return alert("Le nom est obligatoire.");
+    if (ARTISAN_VERTICALS.includes(s.vertical) && !s.customerEmail.trim()) {
+      return alert("L'email pour recevoir les demandes clients est obligatoire pour ce secteur.");
+    }
     setSaving(true);
     await fetch("/api/dashboard/settings", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(s) });
     setSaving(false); setSaved(true);

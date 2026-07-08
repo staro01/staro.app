@@ -37,6 +37,9 @@ export default function OnboardingPage() {
 
   async function saveSettings() {
     if (!name.trim()) return alert("Le nom est obligatoire.");
+    if (!hasCatalog && !customerEmail.trim()) {
+      return alert("L'email pour recevoir les demandes clients est obligatoire pour ce secteur.");
+    }
     setSaving(true);
     await fetch("/api/dashboard/settings", {
       method: "PATCH",
