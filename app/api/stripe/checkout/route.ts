@@ -45,6 +45,11 @@ export async function POST(req: NextRequest) {
       },
       customer_email: prefillEmail,
       allow_promotion_codes: true,
+      custom_text: {
+        submit: {
+          message: "En plus de l'abonnement ci-dessus, des frais de mise en place de 499€ seront facturés une seule fois, en même temps que votre premier prélèvement à la fin de l'essai gratuit.",
+        },
+      },
     });
 
     return NextResponse.json({ url: session.url });

@@ -130,7 +130,8 @@ function SubscriptionSection() {
             ⚠️ Sans abonnement actif, votre assistant vocal ne répond pas aux appels.
           </p>
           <p style={{ color: "#888", fontSize: 13, margin: "0 0 14px" }}>
-            Essai gratuit de 7 jours inclus. Aucun prélèvement avant la fin de l&apos;essai.
+            Essai gratuit de 7 jours inclus. Aucun prélèvement avant la fin de l&apos;essai — à ce moment-là,
+            les 499€ de frais de mise en place seront facturés en une fois, avec votre premier mois d&apos;abonnement.
           </p>
           <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
             <button
