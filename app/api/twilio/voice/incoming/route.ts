@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien"];
+const ACTIVE_SUBSCRIPTION_STATUSES = ["active", "trialing"];
 
 async function findBusiness(to: string) {
   const normalized = normPhone(to);
@@ -20,6 +21,12 @@ async function findBusiness(to: string) {
     if (b) return b;
   }
   return null;
+}
+
+function isDemoOrTestNumber(twilioNumber: string | null) {
+  if (!twilioNumber) return false;
+  const demoNumbers = [normPhone(process.env.DEMO_TWILIO_NUMBER), normPhone(process.env.TEST_TWILIO_NUMBER)].filter(Boolean);
+  return demoNumbers.includes(twilioNumber);
 }
 
 export async function POST(req: Request) {
@@ -47,13 +54,21 @@ export async function POST(req: Request) {
       return xml(hangupTwiml(baseUrl, business.vacationMessage ?? "L'établissement est actuellement fermé. Merci de rappeler."));
     }
 
+    // Verrou abonnement — le numéro démo/test (utilisé par l'équipe commerciale et
+    // pour les tests internes) est explicitement exclu, il n'est jamais facturé.
+    if (!isDemoOrTestNumber(business.twilioNumber)) {
+      if (!ACTIVE_SUBSCRIPTION_STATUSES.includes(business.subscriptionStatus ?? "")) {
+        return xml(hangupTwiml(baseUrl, "Ce service est temporairement indisponible. Merci de contacter l'établissement directement."));
+      }
+    }
+
     let defaultGreet: string;
     if (business.vertical === "coiffeur") {
       defaultGreet = `Bonjour, salon ${business.name}, que puis-je faire pour vous ?`;
     } else if (ARTISAN_VERTICALS.includes(business.vertical)) {
       defaultGreet = `Bonjour, ${business.name}, je vous écoute.`;
     } else {
-      defaultGreet = `Bonjour, pizzeria ${business.name}, puis-je prendre votre commande ?`;
+      defaultGreet = `Bonjour, pizzerie ${business.name}, puis-je prendre votre commande ?`;
     }
 
     const greet = business.welcomeMessage?.trim() ? business.welcomeMessage.trim() : defaultGreet;

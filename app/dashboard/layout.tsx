@@ -4,6 +4,7 @@ import { ensureBusinessForCurrentUser } from "../../lib/business-bootstrap";
 import { prisma } from "../../lib/prisma";
 import { isAdminEmail } from "../../lib/admin";
 import Link from "next/link";
+import SubscribeModal from "../../components/dashboard/SubscribeModal";
 
 export const dynamic = "force-dynamic";
 
@@ -76,6 +77,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: 20 }}>
         {children}
       </main>
+      <SubscribeModal />
     </div>
   );
 }

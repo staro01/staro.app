@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { stripe } from "../../../../lib/stripe";
+import { stripe, STRIPE_PRICES } from "../../../../lib/stripe";
 import { prisma } from "../../../../lib/prisma";
 import { notifyCriticalError } from "../../../../core/monitoring/notifyError";
 
@@ -37,8 +37,37 @@ export async function POST(req: NextRequest) {
         const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
         const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id ?? null;
         const plan = session.metadata?.plan ?? null;
+        const businessId = session.metadata?.businessId ?? null;
 
-        if (customerEmail && customerId) {
+        if (!customerId || !subscriptionId) break;
+
+        // Ajoute le frais de mise en place en ligne d'attente rattachée à l'abonnement —
+        // Stripe l'intègre automatiquement à la toute première vraie facture,
+        // générée à la fin de l'essai gratuit. Rien n'est prélevé aujourd'hui.
+        try {
+          await stripe.invoiceItems.create({
+            customer: customerId,
+            subscription: subscriptionId,
+            pricing: { price: STRIPE_PRICES.setupFee },
+          });
+        } catch (err) {
+          await notifyCriticalError("Ajout frais de mise en place (invoice item)", err);
+        }
+
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const status = subscription.status;
+
+        if (businessId) {
+          await prisma.business.update({
+            where: { id: businessId },
+            data: {
+              stripeCustomerId: customerId,
+              stripeSubscriptionId: subscriptionId,
+              subscriptionPlan: plan,
+              subscriptionStatus: status,
+            },
+          });
+        } else if (customerEmail) {
           const existing = await prisma.business.findFirst({
             where: { customerEmail: { equals: customerEmail, mode: "insensitive" }, clerkUserId: null },
           });
@@ -50,7 +79,7 @@ export async function POST(req: NextRequest) {
                 stripeCustomerId: customerId,
                 stripeSubscriptionId: subscriptionId,
                 subscriptionPlan: plan,
-                subscriptionStatus: "active",
+                subscriptionStatus: status,
               },
             });
           } else {
@@ -63,7 +92,7 @@ export async function POST(req: NextRequest) {
                 stripeCustomerId: customerId,
                 stripeSubscriptionId: subscriptionId,
                 subscriptionPlan: plan,
-                subscriptionStatus: "active",
+                subscriptionStatus: status,
               },
             });
           }

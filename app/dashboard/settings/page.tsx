@@ -46,6 +46,8 @@ function SubscriptionSection() {
   const [sub, setSub] = useState<Subscription>(null);
   const [loading, setLoading] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [plan, setPlan] = useState<"monthly" | "annual">("annual");
 
   useEffect(() => {
     fetch("/api/dashboard/subscription")
@@ -71,14 +73,36 @@ function SubscriptionSection() {
     }
   }
 
+  async function startCheckout() {
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setCheckoutLoading(false);
+        alert(data.error ?? "Une erreur est survenue.");
+      }
+    } catch {
+      setCheckoutLoading(false);
+      alert("Une erreur est survenue.");
+    }
+  }
+
   if (loading) return null;
 
   const statusInfo = sub?.status ? STATUS_LABELS[sub.status] ?? { label: sub.status, color: "#888" } : null;
   const planLabel = sub?.plan ? PLAN_LABELS[sub.plan] ?? sub.plan : null;
+  const isActive = sub?.status === "active" || sub?.status === "trialing";
 
   return (
     <Section title="💳 Abonnement">
-      {sub?.hasStripeCustomer ? (
+      {isActive ? (
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
             <span style={{ color: "#ccc" }}>Statut :</span>
@@ -101,9 +125,31 @@ function SubscriptionSection() {
           </button>
         </>
       ) : (
-        <p style={{ color: "#888", fontSize: 13, margin: 0 }}>
-          Aucun abonnement Stripe associé à ce compte pour le moment.
-        </p>
+        <>
+          <p style={{ color: "#f0c674", fontSize: 14, fontWeight: 700, margin: "0 0 4px" }}>
+            ⚠️ Sans abonnement actif, votre assistant vocal ne répond pas aux appels.
+          </p>
+          <p style={{ color: "#888", fontSize: 13, margin: "0 0 14px" }}>
+            Essai gratuit de 7 jours inclus. Aucun prélèvement avant la fin de l&apos;essai.
+          </p>
+          <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+            <button
+              onClick={() => setPlan("monthly")}
+              style={{ ...btnSecondary, background: plan === "monthly" ? "#2a1a3e" : "transparent", width: "fit-content" }}
+            >
+              Mensuel — 60€/mois
+            </button>
+            <button
+              onClick={() => setPlan("annual")}
+              style={{ ...btnSecondary, background: plan === "annual" ? "#2a1a3e" : "transparent", width: "fit-content" }}
+            >
+              Annuel — 700€/an
+            </button>
+          </div>
+          <button onClick={startCheckout} disabled={checkoutLoading} style={btnPrimary}>
+            {checkoutLoading ? "Redirection..." : "Démarrer l'essai gratuit (7 jours)"}
+          </button>
+        </>
       )}
     </Section>
   );
