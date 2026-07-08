@@ -19,13 +19,23 @@ const VERTICALS: Availability[] = [
     available: true,
   },
   {
+    label: "Paysagistes",
+    detail: "Prise de contact, qualification de projet",
+    available: true,
+  },
+  {
+    label: "Électriciens",
+    detail: "Qualification de la demande, transfert immédiat en cas d'urgence",
+    available: true,
+  },
+  {
     label: "Restauration avec service à table",
     detail: "Réservation de table, gestion de salle",
     available: false,
   },
   {
-    label: "Autres commerces & artisans",
-    detail: "De nouveaux secteurs arrivent progressivement",
+    label: "Autres artisans",
+    detail: "Plombiers et autres corps de métier arrivent progressivement",
     available: false,
   },
 ];
