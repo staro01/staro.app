@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       if (wantsHumanTransfer(claudeText)) {
         const transferText = stripTransferMarker(claudeText) || "Je vous transfère tout de suite.";
         if (business.phone) {
-          return xml(dialTwiml(baseUrl, transferText, business.phone));
+          return xml(dialTwiml(baseUrl, transferText, normPhone(business.phone) || business.phone));
         }
         return xml(hangupTwiml(baseUrl, "Nous ne pouvons pas vous transférer pour le moment. Merci de rappeler directement l'établissement."));
       }
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
       if (wantsHumanTransfer(claudeText)) {
         const transferText = stripTransferMarker(claudeText) || "Je vous transfère tout de suite.";
         if (business.phone) {
-          return xml(dialTwiml(baseUrl, transferText, business.phone));
+          return xml(dialTwiml(baseUrl, transferText, normPhone(business.phone) || business.phone));
         }
         return xml(hangupTwiml(baseUrl, "Nous ne pouvons pas vous transférer pour le moment. Merci de rappeler directement."));
       }
@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
     if (wantsHumanTransfer(claudeText)) {
       const transferText = stripTransferMarker(claudeText) || "Je vous transfère tout de suite.";
       if (business.phone) {
-        return xml(dialTwiml(baseUrl, transferText, business.phone));
+        return xml(dialTwiml(baseUrl, transferText, normPhone(business.phone) || business.phone));
       }
       return xml(hangupTwiml(baseUrl, "Nous ne pouvons pas vous transférer pour le moment. Merci de rappeler directement l'établissement."));
     }

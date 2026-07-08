@@ -26,7 +26,8 @@ export default function DemoAdminPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const hasCatalog = vertical !== "paysagiste";
+  const NO_CATALOG_VERTICALS = ["paysagiste", "electricien", "plombier"];
+  const hasCatalog = !NO_CATALOG_VERTICALS.includes(vertical);
 
   useEffect(() => {
     fetch("/api/admin/demo")
