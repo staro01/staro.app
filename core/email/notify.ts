@@ -42,3 +42,25 @@ export async function sendClientReport(to: string, subject: string, html: string
     console.error("Échec envoi rapport client:", err);
   }
 }
+
+export async function sendWelcomeEmail(to: string, businessName: string) {
+  const setup = getTransporter();
+  if (!setup) { console.error("GMAIL_USER ou GMAIL_APP_PASSWORD manquant — email de bienvenue non envoyé."); return; }
+  const html = `
+    <p>Bonjour,</p>
+    <p>Votre compte Staro.app pour <strong>${businessName}</strong> est maintenant activé !</p>
+    <p>Vous pouvez dès à présent vous connecter à votre espace pour suivre vos commandes, rendez-vous ou demandes clients :</p>
+    <p><a href="https://www.staro.app/dashboard">Accéder à mon dashboard</a></p>
+    <p>À très vite,<br/>L'équipe Staro</p>
+  `;
+  try {
+    await setup.transporter.sendMail({
+      from: `Staro.app <${setup.user}>`,
+      to,
+      subject: `Votre compte Staro.app est activé — ${businessName}`,
+      html,
+    });
+  } catch (err) {
+    console.error("Échec envoi email de bienvenue:", err);
+  }
+}
