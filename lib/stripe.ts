@@ -10,7 +10,7 @@ export const stripe = new Stripe(secretKey ?? "", {
 });
 
 export const STRIPE_PRICES = {
-  setupFee: "price_1TqCc9Fsd9bZkP29GaGWH2Gh",
+  setupFee: "price_1TqwjUFsd9bZkP29eEKRwkqs",
   monthly: "price_1TqCcRFsd9bZkP293Y1iYmsN",
   annual: "price_1TqCceFsd9bZkP29CYQ7o4Zz",
 };
