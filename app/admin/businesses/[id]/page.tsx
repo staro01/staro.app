@@ -49,6 +49,7 @@ type BusinessDetail = {
   events: Event[];
   conversations: Conversation[];
   auditLogs: AuditLogEntry[];
+  abandonedCallsCount?: number;
 };
 
 const SUBSCRIPTION_LABELS: Record<string, { label: string; bg: string; color: string }> = {
@@ -165,6 +166,14 @@ export default function BusinessDetailPage() {
             )}
             <Row label="Dernier appel" value={formatDateTime(lastActivity)} />
             <Row label="Total appels" value={String(business._count.conversations)} />
+            <Row
+              label="Appels sans résultat"
+              value={
+                business._count.conversations > 0
+                  ? `${business.abandonedCallsCount ?? 0} (${Math.round(((business.abandonedCallsCount ?? 0) / business._count.conversations) * 100)}%)`
+                  : "—"
+              }
+            />
             {business.stripeCustomerId && (
               <div style={{ marginTop: 10 }}>
                 <a

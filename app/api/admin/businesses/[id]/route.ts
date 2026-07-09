@@ -24,14 +24,30 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     where: { id },
     include: {
       events: { orderBy: { createdAt: "desc" }, take: 30 },
-      conversations: { orderBy: { createdAt: "desc" }, take: 20 },
+      conversations: { orderBy: { createdAt: "desc" }, take: 50, select: { id: true, createdAt: true, externalId: true } },
+      appointments: { select: { externalRef: true } },
       auditLogs: { orderBy: { createdAt: "desc" }, take: 20 },
       _count: { select: { menuItems: true, events: true, conversations: true } },
     },
   });
 
   if (!business) return Response.json({ error: "Introuvable" }, { status: 404 });
-  return Response.json(business);
+
+  // Un appel est considéré "abouti" s'il a produit un Event (rapport/commande)
+  // ou un Appointment (RDV coiffeur). Sinon : raccroché en cours, IA en boucle, etc.
+  const eventRefs = new Set(business.events.map((e) => e.externalRef).filter(Boolean));
+  const appointmentRefs = new Set(business.appointments.map((a) => a.externalRef).filter(Boolean));
+
+  const abandonedCalls = business.conversations.filter(
+    (c) => c.externalId && !eventRefs.has(c.externalId) && !appointmentRefs.has(c.externalId)
+  );
+
+  return Response.json({
+    ...business,
+    conversations: business.conversations.slice(0, 20),
+    abandonedCallsCount: abandonedCalls.length,
+    abandonedCallIds: abandonedCalls.map((c) => c.id),
+  });
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
