@@ -42,6 +42,36 @@ const PLAN_LABELS: Record<string, string> = {
   annual: "Annuel",
 };
 
+function ValueStatsSection() {
+  const [stats, setStats] = useState<{ totalCallsThisMonth: number; outsideHoursCount: number } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/dashboard/stats").then((r) => r.json()).then((data) => {
+      if (data && !data.error) setStats(data);
+    });
+  }, []);
+
+  if (!stats || stats.totalCallsThisMonth === 0) return null;
+
+  return (
+    <Section title="📊 Ce mois-ci">
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: 160, textAlign: "center", padding: "16px 12px", background: "#0a0a0a", borderRadius: 12, border: "1px solid #2a1a3e" }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "#fff" }}>{stats.totalCallsThisMonth}</div>
+          <div style={{ fontSize: 13, color: "#888", marginTop: 4 }}>Appel{stats.totalCallsThisMonth > 1 ? "s" : ""} traité{stats.totalCallsThisMonth > 1 ? "s" : ""}</div>
+        </div>
+        <div style={{ flex: 1, minWidth: 160, textAlign: "center", padding: "16px 12px", background: "#0a0a0a", borderRadius: 12, border: "1px solid #2a1a3e" }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "#9b4fdd" }}>{stats.outsideHoursCount}</div>
+          <div style={{ fontSize: 13, color: "#888", marginTop: 4 }}>Reçu{stats.outsideHoursCount > 1 ? "s" : ""} en dehors de vos horaires</div>
+        </div>
+      </div>
+      <p style={{ fontSize: 12, color: "#666", marginTop: 12 }}>
+        Sans Staro, ces appels auraient probablement été manqués.
+      </p>
+    </Section>
+  );
+}
+
 function SubscriptionSection() {
   const [sub, setSub] = useState<Subscription>(null);
   const [loading, setLoading] = useState(true);
@@ -195,6 +225,7 @@ export default function SettingsPage() {
         <button onClick={save} disabled={saving} style={btnPrimary}>{saving ? "Sauvegarde…" : saved ? "✅ Sauvegardé !" : "Sauvegarder"}</button>
       </div>
 
+      <ValueStatsSection />
       <SubscriptionSection />
 
       {s.twilioNumber && (
