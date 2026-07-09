@@ -53,11 +53,16 @@ export default function PricingPage() {
         </div>
       </PageHero>
 
-      <Section>
+      <Section style={{ background: colors.bgDeep }}>
         <LossCalculator />
       </Section>
 
       <Section style={{ background: colors.bgDeep }}>
+        <div style={{ textAlign: "center", marginBottom: 8 }}>
+          <p style={{ color: colors.textMuted, fontSize: 15, fontWeight: 700, margin: 0 }}>
+            Voici comment Staro évite cette perte
+          </p>
+        </div>
         <PricingCard />
       </Section>
 
