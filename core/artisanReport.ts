@@ -1,5 +1,7 @@
 import { prisma } from "../lib/prisma";
 import { sendClientReport } from "./email/notify";
+import { sendSms } from "./twilio/sms";
+import { normPhone } from "./twilio/incoming";
 
 export type ArtisanMetier = "plombier" | "electricien" | "paysagiste" | "chauffagiste";
 
@@ -66,6 +68,23 @@ export async function saveArtisanRequestAndNotify(
   });
 
   const business = await prisma.business.findUnique({ where: { id: businessId } });
+
+  // SMS de récap au client final — le rassure que sa demande a bien été prise en compte.
+  if (phone && business?.twilioNumber) {
+    try {
+      const toNumber = normPhone(phone);
+      if (toNumber) {
+        await sendSms(
+          toNumber,
+          `Votre demande a bien été transmise à ${business.name}. Vous serez recontacté(e) sous peu.`,
+          business.twilioNumber
+        );
+      }
+    } catch (err) {
+      console.error(`Échec envoi SMS récap client pour ${externalRef}:`, err);
+    }
+  }
+
   if (business?.customerEmail) {
     const html = `
       <p>Un client a appelé concernant : <strong>${summary}</strong></p>
