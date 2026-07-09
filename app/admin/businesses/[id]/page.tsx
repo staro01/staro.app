@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
+type Message = { role: "user" | "assistant"; content: string };
+type ConversationDetail = { id: string; createdAt: string; messages: Message[] };
+
 type Event = {
   id: string;
   createdAt: string;
@@ -80,6 +83,17 @@ export default function BusinessDetailPage() {
 
   const [business, setBusiness] = useState<BusinessDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [transcripts, setTranscripts] = useState<ConversationDetail[] | null>(null);
+  const [loadingTranscripts, setLoadingTranscripts] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  async function loadTranscripts() {
+    setLoadingTranscripts(true);
+    const res = await fetch(`/api/admin/businesses/${id}/conversations`);
+    const data = await res.json();
+    setTranscripts(Array.isArray(data) ? data : []);
+    setLoadingTranscripts(false);
+  }
 
   useEffect(() => {
     if (!id) return;
@@ -189,6 +203,50 @@ export default function BusinessDetailPage() {
           )}
         </div>
 
+        <div style={{ ...panelStyle, marginTop: 16, marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: transcripts ? 12 : 0 }}>
+            <h3 style={{ ...panelTitle, margin: 0 }}>🎙️ Transcriptions d&apos;appels</h3>
+            {!transcripts && (
+              <button onClick={loadTranscripts} disabled={loadingTranscripts} style={smallBtn}>
+                {loadingTranscripts ? "Déchiffrement…" : "Afficher les transcriptions"}
+              </button>
+            )}
+          </div>
+          <p style={{ color: "#555", fontSize: 12, margin: transcripts ? "0 0 12px" : "8px 0 0" }}>
+            Données personnelles sensibles — chaque consultation est tracée dans les logs d&apos;audit.
+          </p>
+          {transcripts && (
+            transcripts.length === 0 ? (
+              <p style={{ color: "#666", fontSize: 14 }}>Aucun appel enregistré.</p>
+            ) : (
+              <div style={{ display: "grid", gap: 8 }}>
+                {transcripts.map((t) => (
+                  <div key={t.id} style={{ border: "1px solid #2a1a3e", borderRadius: 12, overflow: "hidden" }}>
+                    <button
+                      onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                      style={{ width: "100%", padding: "10px 14px", background: "#0a0a0a", border: "none", color: "#ccc", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left" }}
+                    >
+                      {formatDateTime(t.createdAt)} — {t.messages.length} message{t.messages.length > 1 ? "s" : ""} {expandedId === t.id ? "▲" : "▼"}
+                    </button>
+                    {expandedId === t.id && (
+                      <div style={{ padding: "12px 14px", display: "grid", gap: 8 }}>
+                        {t.messages.map((m, i) => (
+                          <div key={i} style={{ fontSize: 13 }}>
+                            <span style={{ fontWeight: 800, color: m.role === "assistant" ? "#9b4fdd" : "#4ade80" }}>
+                              {m.role === "assistant" ? "Agent : " : "Client : "}
+                            </span>
+                            <span style={{ color: "#ccc" }}>{m.content}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </div>
+
         <div style={{ ...panelStyle, marginTop: 16 }}>
           <h3 style={panelTitle}>📜 Historique des actions admin</h3>
           {business.auditLogs.length === 0 ? (
@@ -221,4 +279,5 @@ function Row({ label, value }: { label: string; value: string }) {
 
 const panelStyle: React.CSSProperties = { border: "1px solid #2a1a3e", borderRadius: 16, padding: 20, background: "#111" };
 const panelTitle: React.CSSProperties = { fontSize: 14, fontWeight: 800, color: "#fff", margin: "0 0 12px" };
+const smallBtn: React.CSSProperties = { padding: "6px 12px", borderRadius: 8, border: "1px solid #2a1a3e", background: "#1a1a2e", color: "#9b4fdd", fontWeight: 700, cursor: "pointer", fontSize: 12 };
 const backBtn: React.CSSProperties = { padding: "8px 14px", borderRadius: 10, border: "1px solid #2a1a3e", background: "transparent", color: "#ccc", fontWeight: 700, cursor: "pointer", fontSize: 13 };
