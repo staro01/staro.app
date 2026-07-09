@@ -16,6 +16,7 @@ model Business {
   clerkUserId       String?        @unique
   status            String         @default("pending")
   twilioNumber      String?        @unique
+  phoneVerified     Boolean        @default(false)
   phone             String?
   address           String?
   welcomeMessage    String?
@@ -44,6 +45,14 @@ model Business {
   auditLogs         AuditLog[]
 
   @@index([customerEmail])
+}
+
+model VerifiedPhone {
+  id         String   @id @default(cuid())
+  phone      String   @unique
+  createdAt  DateTime @default(now())
+  businessId String?
+  trialUsed  Boolean  @default(false)
 }
 
 model MenuItem {

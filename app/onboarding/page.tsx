@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-const STEPS = ["Bienvenue", "Votre activité", "Votre établissement", "Vos articles", "C'est prêt !"];
+const STEPS = ["Bienvenue", "Votre activité", "Votre établissement", "Vérification", "Vos articles", "C'est prêt !"];
 
 const VERTICALS = [
   { value: "pizzeria", label: "🍕 Pizzeria à emporter / livraison", disabled: false },
@@ -21,8 +21,11 @@ const CATEGORIES_BY_VERTICAL: Record<string, string[]> = {
 // Verticals sans catalogue à configurer à l'inscription (rapport par appel, pas de menu/prestations fixes)
 const NO_CATALOG_VERTICALS = ["paysagiste", "plombier", "electricien"];
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan");
+
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [vertical, setVertical] = useState("");
@@ -32,11 +35,22 @@ export default function OnboardingPage() {
   const [customerEmail, setCustomerEmail] = useState("");
   const [items, setItems] = useState([{ name: "", price: "", category: "", duration: "30" }]);
 
+  // Vérification téléphone
+  const [verifySent, setVerifySent] = useState(false);
+  const [verifyCode, setVerifyCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
+
+  // Paiement automatique en fin de parcours
+  const [redirecting, setRedirecting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
+
   const categories = CATEGORIES_BY_VERTICAL[vertical] ?? [];
   const hasCatalog = !NO_CATALOG_VERTICALS.includes(vertical);
 
   async function saveSettings() {
     if (!name.trim()) return alert("Le nom est obligatoire.");
+    if (!phone.trim()) return alert("Le numéro de téléphone est obligatoire.");
     if (!hasCatalog && !customerEmail.trim()) {
       return alert("L'email pour recevoir les demandes clients est obligatoire pour ce secteur.");
     }
@@ -47,7 +61,50 @@ export default function OnboardingPage() {
       body: JSON.stringify({ name, phone, address, vertical, customerEmail }),
     });
     setSaving(false);
-    setStep(hasCatalog ? 3 : 4);
+    setStep(3);
+  }
+
+  async function sendVerificationCode() {
+    setVerifying(true);
+    setVerifyError("");
+    try {
+      const res = await fetch("/api/verify/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setVerifySent(true);
+      } else {
+        setVerifyError(data.error || "Erreur lors de l'envoi du code.");
+      }
+    } catch {
+      setVerifyError("Erreur lors de l'envoi du code.");
+    }
+    setVerifying(false);
+  }
+
+  async function checkVerificationCode() {
+    if (!verifyCode.trim()) return;
+    setVerifying(true);
+    setVerifyError("");
+    try {
+      const res = await fetch("/api/verify/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, code: verifyCode }),
+      });
+      const data = await res.json();
+      if (res.ok && data.verified) {
+        setStep(hasCatalog ? 4 : 5);
+      } else {
+        setVerifyError(data.error || "Code incorrect ou expiré.");
+      }
+    } catch {
+      setVerifyError("Erreur lors de la vérification.");
+    }
+    setVerifying(false);
   }
 
   async function saveMenu() {
@@ -70,8 +127,34 @@ export default function OnboardingPage() {
       });
     }
     setSaving(false);
-    setStep(4);
+    setStep(5);
   }
+
+  // À l'arrivée sur l'étape finale : si un plan a été choisi (venant de /pricing),
+  // on déclenche automatiquement le paiement Stripe.
+  useEffect(() => {
+    if (step !== 5 || !plan) return;
+    setRedirecting(true);
+    setCheckoutError("");
+    fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          setRedirecting(false);
+          setCheckoutError(data.error || "Impossible de démarrer le paiement.");
+        }
+      })
+      .catch(() => {
+        setRedirecting(false);
+        setCheckoutError("Impossible de démarrer le paiement.");
+      });
+  }, [step, plan]);
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
@@ -141,7 +224,7 @@ export default function OnboardingPage() {
             <h2 style={{ fontSize: 20, fontWeight: 900, margin: "0 0 20px", color: "#fff" }}>Votre établissement</h2>
             <div style={{ display: "grid", gap: 14 }}>
               <label style={labelStyle}>Nom *<input value={name} onChange={e => setName(e.target.value)} style={inputStyle} placeholder="Ex: La Bella Pizza, Salon Marie..." /></label>
-              <label style={labelStyle}>Téléphone<input value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} placeholder="04 90 XX XX XX" /></label>
+              <label style={labelStyle}>Téléphone *<input value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} placeholder="04 90 XX XX XX" /></label>
               <label style={labelStyle}>Adresse<input value={address} onChange={e => setAddress(e.target.value)} style={inputStyle} /></label>
               {!hasCatalog && (
                 <label style={labelStyle}>
@@ -157,7 +240,47 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {step === 3 && hasCatalog && (
+        {step === 3 && (
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 900, margin: "0 0 8px", color: "#fff" }}>Vérifiez votre numéro</h2>
+            <p style={{ color: "#666", fontSize: 14, margin: "0 0 20px" }}>
+              Pour sécuriser votre compte, nous devons vérifier que <strong style={{ color: "#ccc" }}>{phone}</strong> est bien votre numéro professionnel.
+            </p>
+
+            {!verifySent ? (
+              <button onClick={sendVerificationCode} disabled={verifying} style={btnFull}>
+                {verifying ? "Envoi en cours…" : "Recevoir un code par SMS"}
+              </button>
+            ) : (
+              <div style={{ display: "grid", gap: 14 }}>
+                <label style={labelStyle}>
+                  Code reçu par SMS
+                  <input
+                    value={verifyCode}
+                    onChange={e => setVerifyCode(e.target.value)}
+                    style={inputStyle}
+                    placeholder="123456"
+                    inputMode="numeric"
+                  />
+                </label>
+                <button onClick={checkVerificationCode} disabled={verifying || !verifyCode.trim()} style={btnFull}>
+                  {verifying ? "Vérification…" : "Valider le code"}
+                </button>
+                <button onClick={sendVerificationCode} disabled={verifying} style={{ ...btnSecondary, fontSize: 13, padding: "7px 14px" }}>
+                  Renvoyer le code
+                </button>
+              </div>
+            )}
+
+            {verifyError && <p style={{ color: "#ef4444", fontSize: 13, marginTop: 14 }}>{verifyError}</p>}
+
+            <div style={{ marginTop: 20 }}>
+              <button onClick={() => setStep(2)} style={btnSecondary}>← Retour</button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && hasCatalog && (
           <div>
             <h2 style={{ fontSize: 20, fontWeight: 900, margin: "0 0 8px", color: "#fff" }}>
               {vertical === "coiffeur" ? "Vos prestations" : "Vos articles"}
@@ -181,22 +304,45 @@ export default function OnboardingPage() {
             </div>
             <button onClick={() => setItems([...items, { name: "", price: "", category: "", duration: "30" }])} style={{ ...btnSecondary, fontSize: 13, padding: "7px 14px", marginBottom: 20 }}>+ Ajouter</button>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setStep(2)} style={btnSecondary}>← Retour</button>
+              <button onClick={() => setStep(3)} style={btnSecondary}>← Retour</button>
               <button onClick={saveMenu} disabled={saving} style={btnFull}>{saving ? "…" : "Terminer →"}</button>
             </div>
           </div>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
-            <h2 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 12px", color: "#fff" }}>Votre assistant est prêt !</h2>
-            <p style={{ color: "#888", lineHeight: 1.6, margin: "0 0 28px" }}>Vos informations sont configurées. Notre équipe va vous contacter pour finaliser l'installation.</p>
-            <button onClick={() => router.push("/dashboard")} style={btnFull}>Accéder à mon espace →</button>
+            {plan ? (
+              <>
+                <div style={{ fontSize: 56, marginBottom: 16 }}>{redirecting ? "⏳" : "⚠️"}</div>
+                <h2 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 12px", color: "#fff" }}>
+                  {redirecting ? "Redirection vers le paiement…" : "Une erreur est survenue"}
+                </h2>
+                {checkoutError && <p style={{ color: "#ef4444", fontSize: 14, marginBottom: 20 }}>{checkoutError}</p>}
+                {!redirecting && (
+                  <button onClick={() => router.push("/dashboard/settings")} style={btnFull}>Aller aux réglages →</button>
+                )}
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
+                <h2 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 12px", color: "#fff" }}>Votre assistant est prêt !</h2>
+                <p style={{ color: "#888", lineHeight: 1.6, margin: "0 0 28px" }}>Vos informations sont configurées. Notre équipe va vous contacter pour finaliser l'installation.</p>
+                <button onClick={() => router.push("/dashboard")} style={btnFull}>Accéder à mon espace →</button>
+              </>
+            )}
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={null}>
+      <OnboardingContent />
+    </Suspense>
   );
 }
 

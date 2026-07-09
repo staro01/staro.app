@@ -34,11 +34,14 @@ const clerkAppearance = {
 function SignUpContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? undefined;
+  const plan = searchParams.get("plan");
+  const redirectUrl = plan ? `/onboarding?plan=${plan}` : "/onboarding";
 
   return (
     <SignUp
       appearance={clerkAppearance}
       initialValues={email ? { emailAddress: email } : undefined}
+      fallbackRedirectUrl={redirectUrl}
     />
   );
 }

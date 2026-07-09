@@ -3,6 +3,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { stripe, STRIPE_PRICES } from "../../../../lib/stripe";
 import { prisma } from "../../../../lib/prisma";
 import { notifyCriticalError } from "../../../../core/monitoring/notifyError";
+import { normPhone } from "../../../../core/twilio/incoming";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,23 @@ export async function POST(req: NextRequest) {
     prefillEmail = user.primaryEmailAddress?.emailAddress ?? undefined;
   }
 
+  if (!businessId) {
+    return NextResponse.json({ error: "Compte introuvable. Terminez d'abord votre inscription." }, { status: 400 });
+  }
+
+  const business = await prisma.business.findUnique({ where: { id: businessId } });
+  if (!business?.phoneVerified || !business.phone) {
+    return NextResponse.json(
+      { error: "Vérifiez votre numéro de téléphone avant de vous abonner." },
+      { status: 403 }
+    );
+  }
+
+  const normalizedPhone = normPhone(business.phone);
+  const verifiedPhone = await prisma.verifiedPhone.findUnique({ where: { phone: normalizedPhone } });
+  const trialAlreadyUsed = verifiedPhone?.trialUsed ?? false;
+  const effectiveTrialDays = trialAlreadyUsed ? 0 : TRIAL_DAYS;
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -40,7 +58,7 @@ export async function POST(req: NextRequest) {
       cancel_url: businessId ? `${origin}/dashboard/settings` : `${origin}/pricing`,
       metadata: { plan, ...(businessId ? { businessId } : {}) },
       subscription_data: {
-        trial_period_days: TRIAL_DAYS,
+        trial_period_days: effectiveTrialDays,
         metadata: { plan, ...(businessId ? { businessId } : {}) },
       },
       customer_email: prefillEmail,
@@ -51,6 +69,13 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+
+    if (!trialAlreadyUsed) {
+      await prisma.verifiedPhone.update({
+        where: { phone: normalizedPhone },
+        data: { trialUsed: true },
+      });
+    }
 
     return NextResponse.json({ url: session.url });
   } catch (err) {

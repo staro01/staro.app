@@ -16,25 +16,10 @@ export function PricingCard() {
   const [annual, setAnnual] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  async function handleCheckout() {
+  function handleCheckout() {
     setLoading(true);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: annual ? "annual" : "monthly" }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setLoading(false);
-        alert("Une erreur est survenue, réessayez plus tard.");
-      }
-    } catch {
-      setLoading(false);
-      alert("Une erreur est survenue, réessayez plus tard.");
-    }
+    const plan = annual ? "annual" : "monthly";
+    window.location.href = `/sign-up?plan=${plan}`;
   }
 
   return (

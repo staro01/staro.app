@@ -7,7 +7,7 @@ const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien"];
 
 type DaySchedule = { open: string; close: string; dinnerOpen: string; dinnerClose: string; closed: boolean };
 type Settings = {
-  name: string; phone: string; address: string; vertical: string; customerEmail: string;
+  name: string; phone: string; address: string; vertical: string; customerEmail: string; twilioNumber?: string | null;
   estimatedPrepTime: number;
   deliveryEnabled: boolean; deliveryFee: number; deliveryMinimum: number;
   paymentMethods: string;
@@ -196,6 +196,21 @@ export default function SettingsPage() {
       </div>
 
       <SubscriptionSection />
+
+      {s.twilioNumber && (
+        <Section title="📞 Votre agent vocal">
+          <p style={{ fontSize: 14, color: "#ccc", margin: "0 0 12px" }}>
+            Votre numéro d'agent vocal :{" "}
+            <strong style={{ fontSize: 16, color: "#fff" }}>{s.twilioNumber}</strong>
+          </p>
+          <p style={{ fontSize: 13, color: "#888", margin: "0 0 14px" }}>
+            Redirigez votre numéro professionnel actuel vers ce numéro pour que votre agent réponde à vos appels.
+          </p>
+          <p style={{ fontSize: 13, color: "#888" }}>
+            Méthode rapide : composez <code style={{ background: "#0a0a0a", padding: "2px 6px", borderRadius: 4 }}>**21*{s.twilioNumber}#</code> sur votre téléphone, puis appuyez sur la touche d'appel.
+          </p>
+        </Section>
+      )}
 
       <Section title="🏠 Informations générales">
         <Field label="Nom *"><input value={s.name} onChange={e => setS({ ...s, name: e.target.value })} style={inputStyle} /></Field>

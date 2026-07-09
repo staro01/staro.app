@@ -3,6 +3,8 @@ import Stripe from "stripe";
 import { stripe, STRIPE_PRICES } from "../../../../lib/stripe";
 import { prisma } from "../../../../lib/prisma";
 import { notifyCriticalError } from "../../../../core/monitoring/notifyError";
+import { provisionTwilioNumber, releaseTwilioNumber } from "../../../../core/twilio/provision";
+import { sendTwilioNumberEmail } from "../../../../core/email/notify";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -58,7 +60,7 @@ export async function POST(req: NextRequest) {
         const status = subscription.status;
 
         if (businessId) {
-          await prisma.business.update({
+          const updated = await prisma.business.update({
             where: { id: businessId },
             data: {
               stripeCustomerId: customerId,
@@ -67,6 +69,21 @@ export async function POST(req: NextRequest) {
               subscriptionStatus: status,
             },
           });
+
+          if (!updated.twilioNumber) {
+            try {
+              const twilioNumber = await provisionTwilioNumber();
+              await prisma.business.update({
+                where: { id: businessId },
+                data: { twilioNumber },
+              });
+              if (customerEmail) {
+                await sendTwilioNumberEmail(customerEmail, updated.name, twilioNumber).catch(() => {});
+              }
+            } catch (err) {
+              await notifyCriticalError("Provisioning automatique numéro Twilio", err);
+            }
+          }
         } else if (customerEmail) {
           const existing = await prisma.business.findFirst({
             where: { customerEmail: { equals: customerEmail, mode: "insensitive" }, clerkUserId: null },
@@ -111,10 +128,33 @@ export async function POST(req: NextRequest) {
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
+
+        const business = await prisma.business.findFirst({
+          where: { stripeSubscriptionId: subscription.id },
+        });
+
         await prisma.business.updateMany({
           where: { stripeSubscriptionId: subscription.id },
           data: { subscriptionStatus: "cancelled" },
         });
+
+        // Si l'abonnement est annulé sans qu'aucune facture n'ait jamais été payée
+        // (essai gratuit non converti), on libère le numéro Twilio pour ne pas
+        // continuer à le payer indéfiniment.
+        if (business?.twilioNumber) {
+          try {
+            const invoices = await stripe.invoices.list({ subscription: subscription.id, status: "paid", limit: 1 });
+            if (invoices.data.length === 0) {
+              await releaseTwilioNumber(business.twilioNumber);
+              await prisma.business.update({
+                where: { id: business.id },
+                data: { twilioNumber: null },
+              });
+            }
+          } catch (err) {
+            await notifyCriticalError("Libération numéro Twilio après annulation", err);
+          }
+        }
         break;
       }
 
