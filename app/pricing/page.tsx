@@ -7,6 +7,7 @@ import FinalCTA from "../../components/marketing/FinalCTA";
 import Footer from "../../components/marketing/Footer";
 import FaqJsonLd from "../../components/seo/FaqJsonLd";
 import { PricingCard } from "../../components/marketing/Pricing";
+import { LossCalculator } from "../../components/marketing/LossCalculator";
 import { Section, sectionTitle, sectionSubtitle, sectionHeader, card, colors } from "../../components/marketing/theme";
 
 const PRICING_QUESTIONS = [
@@ -53,6 +54,10 @@ export default function PricingPage() {
       </PageHero>
 
       <Section>
+        <LossCalculator />
+      </Section>
+
+      <Section style={{ background: colors.bgDeep }}>
         <PricingCard />
       </Section>
 
