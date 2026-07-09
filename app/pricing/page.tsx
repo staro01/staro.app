@@ -58,8 +58,8 @@ export default function PricingPage() {
       </Section>
 
       <Section style={{ background: colors.bgDeep }}>
-        <div style={{ textAlign: "center", marginBottom: 8 }}>
-          <p style={{ color: colors.textMuted, fontSize: 15, fontWeight: 700, margin: 0 }}>
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <p style={{ color: colors.text, fontSize: 24, fontWeight: 900, margin: 0 }}>
             Voici comment Staro évite cette perte
           </p>
         </div>
