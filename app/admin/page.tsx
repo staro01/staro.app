@@ -21,7 +21,7 @@ type Business = {
   _count: { menuItems: number; events: number };
 };
 
-const VERTICALS = ["pizzeria", "coiffeur", "paysagiste", "electricien", "plombier", "restaurant", "artisan", "hotel", "autre"];
+const VERTICALS = ["pizzeria", "coiffeur", "paysagiste", "electricien", "plombier", "chauffagiste", "restaurant", "artisan", "hotel", "autre"];
 
 const emptyBusiness = () => ({ name: "", vertical: "pizzeria", twilioNumber: "", phone: "", address: "" });
 
@@ -103,7 +103,7 @@ export default function AdminPage() {
   }
 
   const verticalEmoji: Record<string, string> = {
-    pizzeria: "🍕", coiffeur: "✂️", paysagiste: "🌿", electricien: "⚡", plombier: "🔧",
+    pizzeria: "🍕", coiffeur: "✂️", paysagiste: "🌿", electricien: "⚡", plombier: "🔧", chauffagiste: "🔥",
     restaurant: "🍽️", artisan: "🔧", hotel: "🏨", autre: "⭐"
   };
 

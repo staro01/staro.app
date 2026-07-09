@@ -13,18 +13,20 @@ import { extractAppointmentJson, stripAppointmentBlock, saveAppointment } from "
 import { buildPaysagistePrompt } from "../../../../../verticals/paysagiste/prompt";
 import { buildElectricienPrompt } from "../../../../../verticals/electricien/prompt";
 import { buildPlombierPrompt } from "../../../../../verticals/plombier/prompt";
+import { buildChauffagistePrompt } from "../../../../../verticals/chauffagiste/prompt";
 import { extractReportJson, stripReportBlock, saveArtisanRequestAndNotify, type ArtisanMetier } from "../../../../../core/artisanReport";
 import { notifyCriticalError } from "../../../../../core/monitoring/notifyError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ARTISAN_VERTICALS: ArtisanMetier[] = ["paysagiste", "electricien", "plombier"];
+const ARTISAN_VERTICALS: ArtisanMetier[] = ["paysagiste", "electricien", "plombier", "chauffagiste"];
 
 const ARTISAN_PROMPT_BUILDERS: Partial<Record<ArtisanMetier, (business: Business) => string>> = {
   paysagiste: buildPaysagistePrompt,
   electricien: buildElectricienPrompt,
   plombier: buildPlombierPrompt,
+  chauffagiste: buildChauffagistePrompt,
 };
 
 async function findBusiness(to: string) {

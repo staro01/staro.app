@@ -32,6 +32,7 @@ const GROUPS: Group[] = [
       { label: "Paysagistes", detail: "Prise de contact, qualification de projet", available: true },
       { label: "Électriciens", detail: "Qualification de la demande, transfert immédiat en cas d'urgence", available: true },
       { label: "Plombiers", detail: "Qualification de la demande, transfert immédiat en cas d'urgence", available: true },
+      { label: "Chauffagistes", detail: "Qualification de la demande, transfert immédiat en cas d'urgence", available: true },
     ],
   },
 ];

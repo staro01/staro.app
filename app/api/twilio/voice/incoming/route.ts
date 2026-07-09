@@ -6,7 +6,7 @@ import { notifyCriticalError } from "../../../../../core/monitoring/notifyError"
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien"];
+const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste"];
 const ACTIVE_SUBSCRIPTION_STATUSES = ["active", "trialing"];
 
 async function findBusiness(to: string) {

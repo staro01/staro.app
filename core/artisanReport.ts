@@ -1,12 +1,13 @@
 import { prisma } from "../lib/prisma";
 import { sendClientReport } from "./email/notify";
 
-export type ArtisanMetier = "plombier" | "electricien" | "paysagiste";
+export type ArtisanMetier = "plombier" | "electricien" | "paysagiste" | "chauffagiste";
 
 const METIER_LABELS: Record<ArtisanMetier, string> = {
   plombier: "Plombier",
   electricien: "Électricien",
   paysagiste: "Paysagiste",
+  chauffagiste: "Chauffagiste",
 };
 
 export function extractReportJson(text: string): Record<string, unknown> | null {

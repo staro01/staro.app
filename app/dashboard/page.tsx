@@ -5,7 +5,7 @@ import { prisma } from "../../lib/prisma";
 import { redirect } from "next/navigation";
 import OrdersDashboard from "./OrdersDashboard";
 
-const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien"];
+const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste"];
 
 export default async function DashboardPage() {
   const user = await currentUser();

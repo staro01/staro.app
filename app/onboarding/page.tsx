@@ -10,6 +10,7 @@ const VERTICALS = [
   { value: "coiffeur", label: "✂️ Coiffeur / institut", disabled: false },
   { value: "paysagiste", label: "🌿 Paysagiste", disabled: false },
   { value: "plombier", label: "🔧 Plombier", disabled: false },
+  { value: "chauffagiste", label: "🔥 Chauffagiste", disabled: false },
   { value: "electricien", label: "⚡ Électricien", disabled: false },
   { value: "autre", label: "⭐ Autre", disabled: true },
 ];
@@ -19,7 +20,7 @@ const CATEGORIES_BY_VERTICAL: Record<string, string[]> = {
 };
 
 // Verticals sans catalogue à configurer à l'inscription (rapport par appel, pas de menu/prestations fixes)
-const NO_CATALOG_VERTICALS = ["paysagiste", "plombier", "electricien"];
+const NO_CATALOG_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste"];
 
 function OnboardingContent() {
   const router = useRouter();
