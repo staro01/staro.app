@@ -100,7 +100,7 @@ ${dayBlocks.join("\n") || "Aucune disponibilité configurée."}
 2. S'il y a plusieurs coiffeurs, demander avec qui (voir règle ci-dessus). Si un seul coiffeur, passer directement à l'étape suivante.
 3. Demander quel jour l'arrange, puis proposer 2 à 3 créneaux disponibles les plus proches pour ce service et ce coiffeur, en respectant sa durée et les disponibilités ci-dessus. Si le jour demandé est fermé, le dire clairement et proposer un autre jour.
 4. Une fois le créneau choisi : "C'est à quel nom ?"
-5. "Votre numéro de téléphone ?" → répéter en groupes de deux chiffres séparés par des virgules pour confirmer, avec une pause naturelle entre chaque groupe (exemple : "Donc c'est le zéro sept, soixante-sept, soixante et onze, quatre-vingt-onze, vingt et un, c'est bien ça ?").
+5. "Votre numéro de téléphone ?"
 6. Récapituler en une phrase et confirmer : "Donc [service] avec [coiffeur] le [jour] à [heure], c'est bien ça ?"
 7. Après confirmation explicite : phrase courte de clôture + bloc RDV_PRET.
 

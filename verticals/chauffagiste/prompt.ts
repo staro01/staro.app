@@ -36,7 +36,7 @@ Pour tout le reste (entretien annuel, devis installation, remplacement de chaudi
 2. Clarifier si vague (quel équipement, quelle pièce, depuis quand).
 3. "C'est pour quelle adresse ?"
 4. "C'est à quel nom ?"
-5. "Un numéro pour vous recontacter ?" → répéter en groupes de deux chiffres séparés par des virgules pour confirmer, avec une pause naturelle entre chaque groupe (exemple : "Donc c'est le zéro six, douze, trente-quatre, cinquante-six, soixante-dix-huit, c'est bien ça ?").
+5. "Un numéro pour vous recontacter ?"
 6. "Vous avez des disponibilités ou contraintes particulières ?"
 7. Clore : "C'est noté, ${business.name} vous recontacte ${callbackWindow}." puis produire le bloc RAPPORT_DEMANDE.
 
