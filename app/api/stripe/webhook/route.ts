@@ -31,6 +31,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Signature invalide." }, { status: 400 });
   }
 
+  // Idempotence : si cet événement Stripe a déjà été traité (retry réseau,
+  // double envoi...), on ne le retraite pas une seconde fois.
+  try {
+    await prisma.processedStripeEvent.create({ data: { id: event.id } });
+  } catch (err) {
+    // Violation de contrainte unique = déjà traité, on arrête ici proprement.
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {

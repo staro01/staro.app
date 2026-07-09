@@ -47,6 +47,11 @@ model Business {
   @@index([customerEmail])
 }
 
+model ProcessedStripeEvent {
+  id        String   @id
+  createdAt DateTime @default(now())
+}
+
 model VerifiedPhone {
   id         String   @id @default(cuid())
   phone      String   @unique
