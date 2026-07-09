@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     body: JSON.stringify({
       text,
       model_id: "eleven_turbo_v2_5",
-      voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0.0, speaker_boost: false },
+      voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0.0, speaker_boost: false, speed: 0.85 },
     }),
   });
 
