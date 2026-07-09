@@ -35,6 +35,7 @@ model Business {
   subscriptionPlan     String?
   subscriptionStatus   String?     @default("inactive")
   trialEndsAt          DateTime?
+  onboardingReminderSentAt DateTime?
   customerEmail        String?
   menuItems         MenuItem[]
   supplements       Supplement[]
