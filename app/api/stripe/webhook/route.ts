@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
               stripeSubscriptionId: subscriptionId,
               subscriptionPlan: plan,
               subscriptionStatus: status,
+              trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
             },
           });
 
@@ -130,7 +131,10 @@ export async function POST(req: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription;
         await prisma.business.updateMany({
           where: { stripeSubscriptionId: subscription.id },
-          data: { subscriptionStatus: subscription.status },
+          data: {
+            subscriptionStatus: subscription.status,
+            trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+          },
         });
         break;
       }

@@ -34,6 +34,7 @@ model Business {
   stripeSubscriptionId String?     @unique
   subscriptionPlan     String?
   subscriptionStatus   String?     @default("inactive")
+  trialEndsAt          DateTime?
   customerEmail        String?
   menuItems         MenuItem[]
   supplements       Supplement[]

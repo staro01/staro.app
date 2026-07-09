@@ -16,9 +16,19 @@ export async function GET() {
   if (!await isAdmin()) return Response.json({ error: "Non autorisé" }, { status: 401 });
   const businesses = await prisma.business.findMany({
     orderBy: { createdAt: "desc" },
-    include: { _count: { select: { menuItems: true, events: true } } },
+    include: {
+      _count: { select: { menuItems: true, events: true } },
+      conversations: { orderBy: { createdAt: "desc" }, take: 1, select: { createdAt: true } },
+    },
   });
-  return Response.json(businesses);
+
+  const enriched = businesses.map((b) => ({
+    ...b,
+    lastActivityAt: b.conversations[0]?.createdAt ?? null,
+    conversations: undefined,
+  }));
+
+  return Response.json(enriched);
 }
 
 export async function POST(req: NextRequest) {

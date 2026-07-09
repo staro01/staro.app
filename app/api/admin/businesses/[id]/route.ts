@@ -16,6 +16,24 @@ async function isAdmin() {
   return isAdminEmail(email);
 }
 
+export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await isAdmin()) return Response.json({ error: "Non autorisé" }, { status: 401 });
+  const { id } = await params;
+
+  const business = await prisma.business.findUnique({
+    where: { id },
+    include: {
+      events: { orderBy: { createdAt: "desc" }, take: 30 },
+      conversations: { orderBy: { createdAt: "desc" }, take: 20 },
+      auditLogs: { orderBy: { createdAt: "desc" }, take: 20 },
+      _count: { select: { menuItems: true, events: true, conversations: true } },
+    },
+  });
+
+  if (!business) return Response.json({ error: "Introuvable" }, { status: 404 });
+  return Response.json(business);
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!await isAdmin()) return Response.json({ error: "Non autorisé" }, { status: 401 });
   const { id } = await params;

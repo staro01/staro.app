@@ -16,6 +16,8 @@ type Business = {
   subscriptionStatus?: string | null;
   subscriptionPlan?: string | null;
   stripeCustomerId?: string | null;
+  trialEndsAt?: string | null;
+  lastActivityAt?: string | null;
   _count: { menuItems: number; events: number };
 };
 
@@ -31,6 +33,24 @@ const SUBSCRIPTION_LABELS: Record<string, { label: string; bg: string; color: st
   canceled: { label: "✕ Abonnement annulé", bg: "#3e1a1a", color: "#ff6b6b" },
   inactive: { label: "— Sans abonnement", bg: "#1a1a2e", color: "#666" },
 };
+
+const PLAN_MRR: Record<string, number> = {
+  monthly: 60,
+  annual: 700 / 12,
+};
+
+function daysSince(dateStr?: string | null): number | null {
+  if (!dateStr) return null;
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+}
+
+function formatRelative(dateStr?: string | null): string {
+  const days = daysSince(dateStr);
+  if (days === null) return "Jamais";
+  if (days === 0) return "Aujourd'hui";
+  if (days === 1) return "Hier";
+  return `Il y a ${days} jours`;
+}
 
 const PLAN_LABELS: Record<string, string> = {
   monthly: "Mensuel",
@@ -107,6 +127,26 @@ export default function AdminPage() {
   const pendingCount = businesses.filter(b => b.status === "pending").length;
   const activeSubsCount = businesses.filter(b => b.subscriptionStatus === "active" || b.subscriptionStatus === "trialing").length;
 
+  const mrr = businesses
+    .filter(b => b.subscriptionStatus === "active")
+    .reduce((sum, b) => sum + (PLAN_MRR[b.subscriptionPlan ?? ""] ?? 0), 0);
+
+  const trialsEndingSoon = businesses.filter(b => {
+    if (b.subscriptionStatus !== "trialing" || !b.trialEndsAt) return false;
+    const daysLeft = (new Date(b.trialEndsAt).getTime() - Date.now()) / 86400000;
+    return daysLeft >= 0 && daysLeft <= 3;
+  });
+
+  const brokenProvisioning = businesses.filter(b =>
+    (b.subscriptionStatus === "active" || b.subscriptionStatus === "trialing") && !b.twilioNumber
+  );
+
+  const dormantActive = businesses.filter(b => {
+    if (b.subscriptionStatus !== "active") return false;
+    const days = daysSince(b.lastActivityAt);
+    return days === null || days > 7;
+  });
+
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", padding: 20 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
@@ -125,20 +165,44 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-          <div style={{ ...statCard, flex: 1 }}>
+        <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+          <div style={{ ...statCard, flex: 1, minWidth: 140 }}>
             <div style={{ fontSize: 24, fontWeight: 900, color: "#fff" }}>{businesses.length}</div>
             <div style={{ fontSize: 12, color: "#888" }}>Clients au total</div>
           </div>
-          <div style={{ ...statCard, flex: 1 }}>
+          <div style={{ ...statCard, flex: 1, minWidth: 140 }}>
             <div style={{ fontSize: 24, fontWeight: 900, color: "#4ade80" }}>{activeSubsCount}</div>
             <div style={{ fontSize: 12, color: "#888" }}>Abonnements actifs</div>
           </div>
-          <div style={{ ...statCard, flex: 1 }}>
+          <div style={{ ...statCard, flex: 1, minWidth: 140 }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "#9b4fdd" }}>{mrr.toFixed(0)}€</div>
+            <div style={{ fontSize: 12, color: "#888" }}>MRR estimé</div>
+          </div>
+          <div style={{ ...statCard, flex: 1, minWidth: 140 }}>
             <div style={{ fontSize: 24, fontWeight: 900, color: "#f0c674" }}>{pendingCount}</div>
             <div style={{ fontSize: 12, color: "#888" }}>En attente d&apos;approbation</div>
           </div>
         </div>
+
+        {(trialsEndingSoon.length > 0 || brokenProvisioning.length > 0 || dormantActive.length > 0) && (
+          <div style={{ display: "grid", gap: 8, marginBottom: 20 }}>
+            {brokenProvisioning.length > 0 && (
+              <div style={{ background: "#3e1a1a", border: "1px solid #8a2a2a", borderRadius: 14, padding: "12px 18px", color: "#ff8a8a", fontSize: 14, fontWeight: 700 }}>
+                🚨 {brokenProvisioning.length} client{brokenProvisioning.length > 1 ? "s" : ""} abonné{brokenProvisioning.length > 1 ? "s" : ""} sans numéro Twilio — {brokenProvisioning.map(b => b.name).join(", ")}
+              </div>
+            )}
+            {dormantActive.length > 0 && (
+              <div style={{ background: "#3e2e14", border: "1px solid #b8860b", borderRadius: 14, padding: "12px 18px", color: "#f0c674", fontSize: 14, fontWeight: 700 }}>
+                😴 {dormantActive.length} client{dormantActive.length > 1 ? "s" : ""} actif{dormantActive.length > 1 ? "s" : ""} sans appel depuis plus de 7 jours — {dormantActive.map(b => b.name).join(", ")}
+              </div>
+            )}
+            {trialsEndingSoon.length > 0 && (
+              <div style={{ background: "#1a2e3e", border: "1px solid #2a5a8a", borderRadius: 14, padding: "12px 18px", color: "#7ec8f0", fontSize: 14, fontWeight: 700 }}>
+                ⏰ {trialsEndingSoon.length} essai{trialsEndingSoon.length > 1 ? "s" : ""} se termine{trialsEndingSoon.length > 1 ? "nt" : ""} dans moins de 3 jours — {trialsEndingSoon.map(b => b.name).join(", ")}
+              </div>
+            )}
+          </div>
+        )}
 
         {pendingCount > 0 && (
           <div style={{ background: "#2e2414", border: "1px solid #b8860b", borderRadius: 14, padding: "12px 18px", marginBottom: 20, color: "#f0c674", fontSize: 14, fontWeight: 700 }}>
@@ -174,7 +238,9 @@ export default function AdminPage() {
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 20 }}>{verticalEmoji[b.vertical] ?? "⭐"}</span>
-                    <span style={{ fontWeight: 900, fontSize: 16, color: "#fff" }}>{b.name}</span>
+                    <Link href={`/admin/businesses/${b.id}`} style={{ fontWeight: 900, fontSize: 16, color: "#fff", textDecoration: "none" }}>
+                      {b.name} →
+                    </Link>
                     <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "#2a1a3e", color: "#9b4fdd", fontWeight: 700 }}>{b.vertical}</span>
                     {isPending ? (
                       <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "#b8860b", color: "#1a1608", fontWeight: 800 }}>⏳ EN ATTENTE</span>
@@ -194,6 +260,10 @@ export default function AdminPage() {
                     {b.address && <span>📍 {b.address}</span>}
                     <span>🍽️ {b._count.menuItems} articles</span>
                     <span>📋 {b._count.events} événements</span>
+                    <span>🕑 Dernier appel : {formatRelative(b.lastActivityAt)}</span>
+                    {b.subscriptionStatus === "trialing" && b.trialEndsAt && (
+                      <span>⏰ Essai jusqu'au {new Date(b.trialEndsAt).toLocaleDateString("fr-FR")}</span>
+                    )}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
