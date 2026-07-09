@@ -3,6 +3,8 @@ import { prisma } from "../../../../../lib/prisma";
 import { isAdminEmail } from "../../../../../lib/admin";
 import { logAudit } from "../../../../../core/audit/log";
 import { sendWelcomeEmail } from "../../../../../core/email/notify";
+import { releaseTwilioNumber } from "../../../../../core/twilio/provision";
+import { notifyCriticalError } from "../../../../../core/monitoring/notifyError";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -65,6 +67,18 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   if (!await isAdmin()) return Response.json({ error: "Non autorisé" }, { status: 401 });
   const { id } = await params;
 
+  const business = await prisma.business.findUnique({ where: { id } });
+
+  // Libère le numéro Twilio AVANT suppression pour ne pas continuer à le payer
+  // indéfiniment une fois le business supprimé de la base.
+  if (business?.twilioNumber) {
+    try {
+      await releaseTwilioNumber(business.twilioNumber);
+    } catch (err) {
+      await notifyCriticalError("Libération numéro Twilio lors d'une suppression admin", err);
+    }
+  }
+
   const user = await currentUser();
   await logAudit({
     actorId: user?.id,
@@ -72,6 +86,7 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
     action: "business.delete",
     targetType: "business",
     targetId: id,
+    metadata: { twilioNumberReleased: business?.twilioNumber ?? null },
   });
 
   await prisma.business.delete({ where: { id } });
