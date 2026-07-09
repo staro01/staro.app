@@ -9,7 +9,7 @@ const VERTICALS = [
   { value: "pizzeria", label: "🍕 Pizzeria à emporter / livraison", disabled: false },
   { value: "coiffeur", label: "✂️ Coiffeur / institut", disabled: false },
   { value: "paysagiste", label: "🌿 Paysagiste", disabled: false },
-  { value: "plombier", label: "🔧 Plombier", disabled: true },
+  { value: "plombier", label: "🔧 Plombier", disabled: false },
   { value: "electricien", label: "⚡ Électricien", disabled: false },
   { value: "autre", label: "⭐ Autre", disabled: true },
 ];

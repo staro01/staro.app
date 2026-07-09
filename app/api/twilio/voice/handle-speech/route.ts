@@ -12,18 +12,19 @@ import { buildCoiffeurPrompt } from "../../../../../verticals/coiffeur/prompt";
 import { extractAppointmentJson, stripAppointmentBlock, saveAppointment } from "../../../../../verticals/coiffeur/actions";
 import { buildPaysagistePrompt } from "../../../../../verticals/paysagiste/prompt";
 import { buildElectricienPrompt } from "../../../../../verticals/electricien/prompt";
+import { buildPlombierPrompt } from "../../../../../verticals/plombier/prompt";
 import { extractReportJson, stripReportBlock, saveArtisanRequestAndNotify, type ArtisanMetier } from "../../../../../core/artisanReport";
 import { notifyCriticalError } from "../../../../../core/monitoring/notifyError";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Plombier sera ajouté ici une fois testé individuellement.
-const ARTISAN_VERTICALS: ArtisanMetier[] = ["paysagiste", "electricien"];
+const ARTISAN_VERTICALS: ArtisanMetier[] = ["paysagiste", "electricien", "plombier"];
 
 const ARTISAN_PROMPT_BUILDERS: Partial<Record<ArtisanMetier, (business: Business) => string>> = {
   paysagiste: buildPaysagistePrompt,
   electricien: buildElectricienPrompt,
+  plombier: buildPlombierPrompt,
 };
 
 async function findBusiness(to: string) {
