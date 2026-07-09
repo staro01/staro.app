@@ -26,7 +26,7 @@ Raccroche poliment après.`;
 2. Clarifier si vague (tonte, taille de haie, élagage, création de jardin, entretien régulier...).
 3. "C'est pour quelle adresse ?"
 4. "C'est à quel nom ?"
-5. "Un numéro pour vous recontacter ?" → répéter en groupes pour confirmer.
+5. "Un numéro pour vous recontacter ?" → répéter en groupes de deux chiffres séparés par des virgules pour confirmer, avec une pause naturelle entre chaque groupe (exemple : "Donc c'est le zéro six, douze, trente-quatre, cinquante-six, soixante-dix-huit, c'est bien ça ?").
 6. "Vous avez des disponibilités ou contraintes particulières ?"
 7. Clore : "C'est noté, ${business.name} vous recontacte ${callbackWindow}." puis produire le bloc RAPPORT_DEMANDE.
 

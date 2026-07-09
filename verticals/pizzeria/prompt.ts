@@ -58,7 +58,7 @@ ${business.currentPromos ? `- Promo : ${business.currentPromos}` : ""}
 2. Une fois les pizzas prises : "Et avec ça ?" — une seule fois. Accepter la réponse sans répéter le menu.
 3. "C'est pour emporter ou en livraison ?"
 4. "C'est à quel nom ?"
-5. "Votre numéro de téléphone ?" → répéter en groupes pour confirmer.
+5. "Votre numéro de téléphone ?" → répéter en groupes de deux chiffres séparés par des virgules pour confirmer, avec une pause naturelle entre chaque groupe (exemple : "Donc c'est le zéro six, douze, trente-quatre, cinquante-six, soixante-dix-huit, c'est bien ça ?").
 6. Si livraison : "Quelle est votre adresse ?"
 7. Annoncer le total et confirmer : "Donc [résumé en 1 phrase], ça fait [total]€, c'est bon pour vous ?"
 8. Après confirmation : phrase courte de clôture + bloc COMMANDE_PRETE.
