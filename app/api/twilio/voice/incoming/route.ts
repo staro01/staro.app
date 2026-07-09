@@ -71,7 +71,10 @@ export async function POST(req: Request) {
       defaultGreet = `Bonjour, pizzerie ${business.name}, puis-je prendre votre commande ?`;
     }
 
-    const greet = business.welcomeMessage?.trim() ? business.welcomeMessage.trim() : defaultGreet;
+    const baseGreet = business.welcomeMessage?.trim() ? business.welcomeMessage.trim() : defaultGreet;
+    // Mention légale obligatoire : informe l'appelant qu'un assistant vocal IA
+    // traite l'appel, avant toute autre chose (art. 226-1 du Code pénal).
+    const greet = `${baseGreet} Sachez que cet appel est traité par un assistant vocal.`;
 
     if (callSid) {
       await prisma.conversation.upsert({
