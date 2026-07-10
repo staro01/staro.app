@@ -27,7 +27,7 @@ export default function DemoAdminPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const NO_CATALOG_VERTICALS = ["paysagiste", "electricien", "plombier"];
+  const NO_CATALOG_VERTICALS = ["paysagiste", "electricien", "plombier", "chauffagiste"];
   const hasCatalog = !NO_CATALOG_VERTICALS.includes(vertical);
 
   useEffect(() => {
