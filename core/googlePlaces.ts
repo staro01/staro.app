@@ -4,19 +4,22 @@ export type PlaceLookupResult = {
   phone: string | null;
   openingHours: string[] | null;
   primaryType: string | null;
-  suggestedVertical: "pizzeria" | "coiffeur" | "electricien" | "plombier";
+  suggestedVertical: "pizzeria" | "coiffeur" | "electricien" | "plombier" | "unknown";
 };
 
 const HAIR_TYPES = ["hair_salon", "beauty_salon", "hair_care"];
 const ELECTRICIAN_TYPES = ["electrician"];
 const PLUMBER_TYPES = ["plumber"];
 
+const FOOD_TYPES = ["restaurant", "pizza_restaurant", "meal_takeaway", "meal_delivery", "fast_food_restaurant", "food"];
+
 function guessVertical(primaryType: string | null): PlaceLookupResult["suggestedVertical"] {
   if (HAIR_TYPES.includes(primaryType ?? "")) return "coiffeur";
   if (ELECTRICIAN_TYPES.includes(primaryType ?? "")) return "electricien";
   if (PLUMBER_TYPES.includes(primaryType ?? "")) return "plombier";
-  // Pas de type Google dédié pour paysagiste/chauffagiste : impossible à déduire, fallback pizzeria à corriger à la main
-  return "pizzeria";
+  if (FOOD_TYPES.includes(primaryType ?? "")) return "pizzeria";
+  // Pas de type Google dédié pour paysagiste/chauffagiste : on ne devine pas, on laisse le champ tel quel côté UI
+  return "unknown";
 }
 
 export async function lookupPlace(query: string): Promise<PlaceLookupResult | null> {

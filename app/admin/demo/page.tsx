@@ -67,7 +67,9 @@ export default function DemoAdminPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erreur");
       setName(data.name);
-      setVertical(data.suggestedVertical);
+      if (data.suggestedVertical !== "unknown") {
+        setVertical(data.suggestedVertical);
+      }
       setPhone(data.phone ?? "");
       setAddress(data.address ?? "");
       setOpeningHours(data.openingHours ?? []);
