@@ -160,6 +160,7 @@ export default function AdminPage() {
             <p style={{ color: "#666", fontSize: 13, margin: 0 }}>Gestion des clients</p>
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <Link href="/admin/demo" style={{ ...btnSecondary, textDecoration: "none", display: "inline-flex", alignItems: "center" }}>🎬 Config démo</Link>
             <Link href="/admin/logs" style={{ ...btnSecondary, textDecoration: "none", display: "inline-flex", alignItems: "center" }}>📜 Logs d&apos;audit</Link>
             <button onClick={() => setEditing(emptyBusiness())} style={btnPrimary}>+ Nouveau client</button>
           </div>
