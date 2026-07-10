@@ -58,6 +58,9 @@ export async function POST(req: NextRequest) {
   if (!business) return Response.json({ error: "Non autorisé" }, { status: 401 });
   const body = await req.json();
 
+  if (!body.customerName || !body.customerName.trim()) {
+    return Response.json({ error: "Nom / titre obligatoire" }, { status: 400 });
+  }
   if (body.serviceId) {
     const service = await prisma.service.findFirst({ where: { id: body.serviceId, businessId: business.id } });
     if (!service) return Response.json({ error: "Service invalide" }, { status: 400 });
@@ -73,12 +76,13 @@ export async function POST(req: NextRequest) {
       serviceId: body.serviceId ?? null,
       staffId: body.staffId ?? null,
       customerName: body.customerName,
-      customerPhone: body.customerPhone,
+      customerPhone: body.customerPhone ?? "",
       startAt: new Date(body.startAt),
       endAt: new Date(body.endAt),
       status: "confirmed",
       notes: body.notes ?? null,
       externalRef: body.externalRef ?? null,
+      source: body.source === "manual" ? "manual" : "staro",
     },
     include: { service: true, staff: true },
   });

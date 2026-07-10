@@ -22,6 +22,7 @@ type Appointment = {
   startAt: string;
   endAt: string;
   status: string;
+  source?: string;
   notes?: string;
   service?: Service;
   staff?: Staff;
@@ -242,6 +243,38 @@ export default function AgendaPage() {
       showToast("Rendez-vous modifié");
     } catch {
       showToast("Erreur lors de la modification", "error");
+    }
+    setModal(null); setSaving(false); load(); loadWeek();
+  }
+
+  async function saveManualAppointment() {
+    if (!modal.customerName || !modal.customerName.trim()) {
+      showToast("Le titre / nom est obligatoire", "error");
+      return;
+    }
+    if (!modal.startAt) {
+      showToast("La date et l'heure sont obligatoires", "error");
+      return;
+    }
+    setSaving(true);
+    try {
+      const startAt = new Date(modal.startAt);
+      const endAt = new Date(startAt.getTime() + (modal.duration || 30) * 60000);
+      await fetch("/api/dashboard/appointments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: modal.customerName,
+          customerPhone: "",
+          staffId: modal.staffId || null,
+          startAt: startAt.toISOString(),
+          endAt: endAt.toISOString(),
+          source: "manual",
+        }),
+      });
+      showToast("Créneau bloqué");
+    } catch {
+      showToast("Erreur lors du blocage du créneau", "error");
     }
     setModal(null); setSaving(false); load(); loadWeek();
   }
@@ -575,6 +608,9 @@ export default function AgendaPage() {
                           <div style={{ color: isConflict ? "#fca5a5" : "#c084fc", fontSize: 12, marginTop: 2 }}>
                             ✂️ {a.service?.name ?? "RDV"}{a.staff ? `  ·  👤 ${a.staff.name}` : "  ·  👤 non assigné"}
                           </div>
+                          {a.source === "manual" && (
+                            <div style={{ color: "#666", fontSize: 11, marginTop: 2 }}>🔗 Créneau externe (bloqué manuellement)</div>
+                          )}
                           {a.customerPhone && (
                             <div style={{ color: "#666", fontSize: 11, marginTop: 2 }}>📞 {a.customerPhone}</div>
                           )}
@@ -603,17 +639,13 @@ export default function AgendaPage() {
           )}
 
           <div style={{ marginTop: 24, border: "1px solid #2a1a3e", borderRadius: 16, padding: 20 }}>
-            <p style={{ color: "#666", fontSize: 13, margin: "0 0 12px", fontWeight: 700 }}>🔗 Synchronisation</p>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {["Google Calendar", "Planity", "Treatwell", "Bookly", "Fresha"].map(name => (
-                <button key={name} disabled style={{
-                  padding: "8px 14px", borderRadius: 10, border: "1px solid #2a1a3e",
-                  background: "#1a1a2e", color: "#444", fontWeight: 600, cursor: "not-allowed", fontSize: 13,
-                }}>
-                  {name} — Bientôt
-                </button>
-              ))}
-            </div>
+            <p style={{ color: "#666", fontSize: 13, margin: "0 0 12px", fontWeight: 700 }}>🔗 RDV pris ailleurs (Planity, Fresha, Google Calendar...)</p>
+            <p style={{ color: "#555", fontSize: 12, margin: "0 0 12px" }}>
+              Bloquez ici les créneaux déjà pris sur un autre outil, pour que l'agent vocal ne les propose pas au téléphone.
+            </p>
+            <button onClick={() => setModal({ type: "manual", customerName: "", startAt: "", duration: 30, staffId: "" })} style={btnPrimary}>
+              + Bloquer un créneau
+            </button>
           </div>
         </div>
       )}
@@ -706,6 +738,47 @@ export default function AgendaPage() {
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <button onClick={() => setModal(null)} style={btnSecondary}>Annuler</button>
               <button onClick={saveAppointmentEdit} disabled={saving} style={btnPrimary}>{saving ? "…" : "Enregistrer"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal && modal.type === "manual" && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+          <div style={{ background: "#111", border: "1px solid #2a1a3e", borderRadius: 20, padding: 28, width: "100%", maxWidth: 420, display: "grid", gap: 14 }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#fff" }}>Bloquer un créneau externe</h2>
+            <p style={{ margin: 0, color: "#888", fontSize: 13 }}>
+              Pour un RDV déjà pris sur Planity, Fresha, Google Calendar, etc. — l'agent vocal ne proposera plus ce créneau.
+            </p>
+
+            <label style={labelStyle}>
+              Titre / nom du client
+              <input value={modal.customerName} onChange={e => setModal({ ...modal, customerName: e.target.value })} style={inputStyle} placeholder="Ex: RDV Planity - Sophie" />
+            </label>
+
+            <label style={labelStyle}>
+              Date et heure
+              <input type="datetime-local" value={modal.startAt} onChange={e => setModal({ ...modal, startAt: e.target.value })} style={inputStyle} />
+            </label>
+
+            <label style={labelStyle}>
+              Durée (minutes)
+              <input type="number" min={5} step={5} value={modal.duration} onChange={e => setModal({ ...modal, duration: parseInt(e.target.value) || 30 })} style={inputStyle} />
+            </label>
+
+            <label style={labelStyle}>
+              Coiffeur
+              <select value={modal.staffId} onChange={e => setModal({ ...modal, staffId: e.target.value })} style={{ ...inputStyle, cursor: "pointer" }}>
+                <option value="">Non assigné</option>
+                {staff.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </label>
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => setModal(null)} style={btnSecondary}>Annuler</button>
+              <button onClick={saveManualAppointment} disabled={saving} style={btnPrimary}>{saving ? "…" : "Bloquer ce créneau"}</button>
             </div>
           </div>
         </div>

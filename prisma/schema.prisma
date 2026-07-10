@@ -159,6 +159,7 @@ model Appointment {
   startAt       DateTime
   endAt         DateTime
   status        String    @default("confirmed")
+  source        String    @default("staro")
   notes         String?
   externalRef   String?   @unique
   reminderSentAt DateTime?
