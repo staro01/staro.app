@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste"];
-const ACTIVE_SUBSCRIPTION_STATUSES = ["active", "trialing"];
+const ACTIVE_SUBSCRIPTION_STATUSES = ["active", "trialing", "past_due"];
 
 async function findBusiness(to: string) {
   const normalized = normPhone(to);
