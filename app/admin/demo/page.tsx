@@ -26,6 +26,7 @@ export default function DemoAdminPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [detectedHint, setDetectedHint] = useState<string | null>(null);
 
   const NO_CATALOG_VERTICALS = ["paysagiste", "electricien", "plombier", "chauffagiste"];
   const hasCatalog = !NO_CATALOG_VERTICALS.includes(vertical);
@@ -67,9 +68,7 @@ export default function DemoAdminPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erreur");
       setName(data.name);
-      if (data.suggestedVertical !== "unknown") {
-        setVertical(data.suggestedVertical);
-      }
+      setDetectedHint(data.suggestedVertical !== "unknown" ? data.suggestedVertical : null);
       setPhone(data.phone ?? "");
       setAddress(data.address ?? "");
       setOpeningHours(data.openingHours ?? []);
@@ -181,6 +180,11 @@ export default function DemoAdminPage() {
           <option value="plombier">Plombier</option>
           <option value="chauffagiste">Chauffagiste</option>
           </select>
+          {detectedHint && (
+            <span style={{ fontSize: 11, color: "#888" }}>
+              ℹ️ Catégorie Google détectée : {detectedHint} — à vérifier, pas toujours fiable pour les artisans.
+            </span>
+          )}
         </label>
         <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13, color: "#aaa" }}>
           Téléphone
