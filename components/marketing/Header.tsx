@@ -11,8 +11,17 @@ const NAV_LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
+const METIERS = [
+  { href: "/paysagiste", label: "Paysagiste" },
+  { href: "/electricien", label: "Électricien" },
+  { href: "/plombier", label: "Plombier" },
+  { href: "/chauffagiste", label: "Chauffagiste" },
+  { href: "/coiffeur", label: "Coiffure & instituts" },
+];
+
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [metiersOpen, setMetiersOpen] = useState(false);
 
   return (
     <header
@@ -53,6 +62,48 @@ export default function Header() {
               {l.label}
             </Link>
           ))}
+
+          <div
+            style={{ position: "relative" }}
+            onMouseEnter={() => setMetiersOpen(true)}
+            onMouseLeave={() => setMetiersOpen(false)}
+          >
+            <button
+              style={{
+                display: "flex", alignItems: "center", gap: 4, background: "transparent", border: "none",
+                color: colors.textSecondary, fontSize: 14, fontWeight: 700, cursor: "pointer", padding: 0, fontFamily: "inherit",
+              }}
+            >
+              Métiers <span style={{ fontSize: 10 }}>▾</span>
+            </button>
+            {metiersOpen && (
+              <div
+                style={{
+                  position: "absolute", top: "100%", left: 0, paddingTop: 10, minWidth: 200,
+                }}
+              >
+                <div
+                  style={{
+                    background: colors.card, border: `1px solid ${colors.border}`, borderRadius: 12,
+                    padding: 8, boxShadow: "0 20px 50px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column", gap: 2,
+                  }}
+                >
+                  {METIERS.map(m => (
+                    <Link
+                      key={m.href}
+                      href={m.href}
+                      style={{
+                        color: colors.textSecondary, textDecoration: "none", fontSize: 13.5, fontWeight: 700,
+                        padding: "9px 12px", borderRadius: 8,
+                      }}
+                    >
+                      {m.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </nav>
 
         <div style={{ display: "flex", alignItems: "center", gap: 18 }} className="staro-marketing-cta-desktop">
@@ -106,6 +157,21 @@ export default function Header() {
               {l.label}
             </Link>
           ))}
+
+          <div style={{ borderTop: `1px solid ${colors.border}`, marginTop: 4, paddingTop: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: colors.textMuted, letterSpacing: 0.5 }}>MÉTIERS</span>
+            {METIERS.map(m => (
+              <Link
+                key={m.href}
+                href={m.href}
+                onClick={() => setOpen(false)}
+                style={{ color: colors.textSecondary, textDecoration: "none", fontSize: 15, fontWeight: 700 }}
+              >
+                {m.label}
+              </Link>
+            ))}
+          </div>
+
           <Link href="/sign-in" onClick={() => setOpen(false)} style={{ color: colors.textMuted, textDecoration: "none", fontSize: 15, fontWeight: 700 }}>
             Se connecter
           </Link>
