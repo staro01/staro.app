@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { frFR } from "@clerk/localizations";
+
+const clerkLocalization = {
+  ...frFR,
+  formFieldInputPlaceholder__password: "Créez un mot de passe",
+  formFieldInputPlaceholder__confirmPassword: "Confirmez le mot de passe",
+};
 import { ToastProvider } from "../components/Toast";
 import CookieConsent from "../components/CookieConsent";
 import OrganizationJsonLd from "../components/seo/OrganizationJsonLd";
@@ -46,7 +52,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider
-      localization={frFR}
+      localization={clerkLocalization}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
       signInFallbackRedirectUrl="/dashboard"

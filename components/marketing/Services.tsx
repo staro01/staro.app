@@ -206,7 +206,7 @@ export default function Services() {
         </p>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 64, position: "relative", zIndex: 1 }}>
+      <div className="staro-services-list" style={{ display: "flex", flexDirection: "column", gap: 64, position: "relative", zIndex: 1 }}>
         {BLOCKS.map((block, i) => (
           <div
             key={block.title}
@@ -219,16 +219,25 @@ export default function Services() {
             }}
             className="staro-service-row"
           >
-            <div style={{ flex: "1 1 320px", minWidth: 280 }}>
+            <div className="staro-service-text" style={{ flex: "1 1 320px", minWidth: 280 }}>
               <h3 style={{ fontSize: 24, fontWeight: 900, color: colors.text, margin: "0 0 14px" }}>{block.title}</h3>
               <p style={{ color: colors.textMuted, fontSize: 15, lineHeight: 1.7, margin: 0 }}>{block.description}</p>
             </div>
-            <div style={{ flex: "1 1 320px", minWidth: 280, display: "flex", justifyContent: "center" }}>
+            <div className="staro-service-mockup" style={{ flex: "1 1 320px", minWidth: 280, display: "flex", justifyContent: "center" }}>
               <block.Mockup />
             </div>
           </div>
         ))}
       </div>
+      <style>{`
+        @media (max-width: 640px) {
+          .staro-service-text, .staro-service-mockup {
+            min-width: 0 !important;
+            width: 100% !important;
+            flex-basis: 100% !important;
+          }
+        }
+      `}</style>
     </Section>
   );
 }

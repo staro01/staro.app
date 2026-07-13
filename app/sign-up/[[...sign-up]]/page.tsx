@@ -50,7 +50,8 @@ export default function SignUpPage() {
   return (
     <div style={{
       minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      background: "#05050a", gap: 28, position: "relative", overflow: "hidden",
+      background: "#05050a", gap: 28, position: "relative", overflowY: "auto", overflowX: "hidden",
+      paddingTop: 90, paddingBottom: 40, boxSizing: "border-box",
     }}>
       <StarryBackground />
 

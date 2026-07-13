@@ -92,6 +92,8 @@ export default function Header() {
             display: "flex",
             flexDirection: "column",
             gap: 14,
+            background: "rgba(10,10,10,0.98)",
+            backdropFilter: "blur(10px)",
           }}
         >
           {NAV_LINKS.map(l => (
