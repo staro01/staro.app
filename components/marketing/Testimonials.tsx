@@ -1,66 +1,43 @@
 import { Section, sectionTitle, sectionSubtitle, card, colors } from "./theme";
-import { InfoIcon, StarIcon } from "./icons";
+import { CheckBadgeIcon } from "./icons";
 
-const EXAMPLES = [
+const GUARANTEES = [
   {
-    quote: "Voici le type de retour que nous espérons obtenir : plus aucun appel manqué pendant le coup de feu du midi.",
-    name: "Exemple illustratif",
-    role: "Gérant, Pizzeria",
+    title: "7 jours d'essai gratuit",
+    description: "Testez Staro sans engagement. Aucune carte bancaire débitée avant la fin de l'essai.",
   },
   {
-    quote: "Un exemple de témoignage à venir : mes clientes sont prévenues automatiquement dès que leur créneau approche.",
-    name: "Exemple illustratif",
-    role: "Coiffeuse, Salon",
+    title: "Sans engagement",
+    description: "Résiliable à tout moment, en un clic depuis votre espace client. Pas de contrat caché.",
   },
   {
-    quote: "Ceci est un exemple de mise en page — les avis réels de nos premiers clients seront publiés ici prochainement.",
-    name: "Exemple illustratif",
-    role: "Artisan",
+    title: "Mise en place en 15 minutes",
+    description: "Votre agent vocal est configuré et opérationnel le jour même, sans compétence technique requise.",
   },
 ];
 
 export default function Testimonials() {
   return (
     <Section id="testimonials">
-      <div style={{ textAlign: "center", maxWidth: 700, margin: "0 auto 20px" }}>
-        <h2 style={sectionTitle}>Avis clients</h2>
-        <p style={sectionSubtitle}>Ce que nos clients pourraient dire de Staro.</p>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          textAlign: "center",
-          fontSize: 13,
-          color: colors.textMuted,
-          background: colors.card,
-          border: `1px solid ${colors.border}`,
-          borderRadius: 10,
-          padding: "10px 16px",
-          maxWidth: 560,
-          margin: "0 auto 40px",
-        }}
-      >
-        <InfoIcon size={15} color={colors.textMuted} />
-        Exemples illustratifs — les premiers avis clients réels seront publiés ici dès que disponibles.
+      <div style={{ textAlign: "center", maxWidth: 700, margin: "0 auto 40px" }}>
+        <h2 style={sectionTitle}>Pourquoi essayer Staro sans risque</h2>
+        <p style={sectionSubtitle}>Des garanties concrètes, pas des promesses.</p>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }} className="staro-testimonials-grid">
-        {EXAMPLES.map((t, i) => (
-          <div key={i} style={{ ...card, padding: 26, display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ display: "flex", gap: 3 }}>
-              {Array.from({ length: 5 }).map((_, s) => (
-                <StarIcon key={s} size={15} />
-              ))}
+        {GUARANTEES.map((g, i) => (
+          <div key={i} style={{ ...card, padding: 26, display: "flex", flexDirection: "column", gap: 14 }}>
+            <div
+              style={{
+                width: 40, height: 40, borderRadius: 10,
+                background: `${colors.purple2}22`, border: `1px solid ${colors.purple2}55`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              <CheckBadgeIcon size={20} color={colors.purple2} />
             </div>
-            <p style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>&ldquo;{t.quote}&rdquo;</p>
-            <div>
-              <div style={{ color: colors.text, fontWeight: 800, fontSize: 14 }}>{t.name}</div>
-              <div style={{ color: colors.textMuted, fontSize: 13 }}>{t.role}</div>
-            </div>
+            <div style={{ color: colors.text, fontWeight: 800, fontSize: 16 }}>{g.title}</div>
+            <p style={{ color: colors.textMuted, fontSize: 14, lineHeight: 1.7, margin: 0 }}>{g.description}</p>
           </div>
         ))}
       </div>

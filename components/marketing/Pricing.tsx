@@ -74,26 +74,6 @@ export function PricingCard() {
         <div style={{ position: "relative", maxWidth: 440, width: "100%" }}>
           <div
             style={{
-              position: "absolute",
-              top: -16,
-              left: "50%",
-              transform: "translateX(-50%)",
-              background: gradient,
-              borderRadius: 20,
-              padding: "7px 20px",
-              fontSize: 12,
-              fontWeight: 800,
-              color: "#fff",
-              boxShadow: "0 8px 24px rgba(155,79,221,0.5)",
-              zIndex: 2,
-              whiteSpace: "nowrap",
-            }}
-          >
-            ★ RECOMMANDÉ
-          </div>
-
-          <div
-            style={{
               background: gradient,
               borderRadius: 24,
               padding: 2,
