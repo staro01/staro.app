@@ -1,10 +1,16 @@
 import type { MetadataRoute } from "next";
+import { VERTICALS } from "../components/marketing/verticalContent";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://www.staro.app";
   const routes: { path: string; priority: number; changeFrequency: "weekly" | "monthly" | "yearly" }[] = [
     { path: "/", priority: 1, changeFrequency: "weekly" },
     { path: "/pricing", priority: 0.9, changeFrequency: "monthly" },
+    ...Object.keys(VERTICALS).map((slug) => ({
+      path: `/${slug}`,
+      priority: 0.85,
+      changeFrequency: "monthly" as const,
+    })),
     { path: "/reserver-un-appel", priority: 0.8, changeFrequency: "monthly" },
     { path: "/about", priority: 0.7, changeFrequency: "monthly" },
     { path: "/contact", priority: 0.6, changeFrequency: "monthly" },
