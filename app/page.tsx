@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { currentUser } from "@clerk/nextjs/server";
+import { isAdminEmail, isCommercialEmail } from "../lib/admin";
 import { colors } from "../components/marketing/theme";
 import FloatingHeader from "../components/FloatingHeader";
 import Hero from "../components/marketing/Hero";
@@ -12,6 +15,8 @@ import FAQ from "../components/marketing/FAQ";
 import FinalCTA from "../components/marketing/FinalCTA";
 import Footer from "../components/marketing/Footer";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Staro.app — L'agent vocal IA pour les commerces locaux",
   description:
@@ -19,7 +24,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-export default function Home() {
+export default async function Home() {
+  const user = await currentUser();
+
+  if (user) {
+    const email = user.primaryEmailAddress?.emailAddress ?? "";
+    if (isAdminEmail(email)) redirect("/admin");
+    if (isCommercialEmail(email)) redirect("/admin/demo");
+    redirect("/dashboard");
+  }
+
   return (
     <div style={{ background: colors.bg }}>
       <FloatingHeader />
