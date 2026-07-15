@@ -85,10 +85,7 @@ export function PricingCard() {
         </div>
       </div>
 
-      <div
-        style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, alignItems: "start", position: "relative" }}
-        className="staro-pricing-grid"
-      >
+      <div className="staro-pricing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, alignItems: "start", position: "relative" }}>
         {TIER_ORDER.map(tier => {
           const info = PLAN_TIERS[tier];
           const isRecommended = tier === "pro";
@@ -96,7 +93,7 @@ export function PricingCard() {
           const monthlyEquivalent = annual ? Math.round(info.annual / 12) : null;
 
           return (
-            <div key={tier} style={{ position: "relative" }}>
+            <div key={tier} className="staro-pricing-card" style={{ position: "relative" }}>
               {isRecommended && (
                 <div
                   style={{
@@ -183,6 +180,10 @@ export function PricingCard() {
         })}
       </div>
 
+      <div className="staro-pricing-hint" style={{ textAlign: "center", marginTop: 12, position: "relative", display: "none" }}>
+        <p style={{ color: colors.textMuted, fontSize: 12, margin: 0 }}>← Glissez pour voir les 3 formules →</p>
+      </div>
+
       <div style={{ textAlign: "center", marginTop: 28, position: "relative" }}>
         <p style={{ color: colors.textMuted, fontSize: 13.5, margin: 0 }}>
           499€ de mise en place, facturés une seule fois — identiques sur les 3 formules. 7 jours d'essai gratuit avant tout prélèvement.
@@ -191,7 +192,22 @@ export function PricingCard() {
 
       <style>{`
         @media (max-width: 860px) {
-          .staro-pricing-grid { grid-template-columns: 1fr !important; max-width: 380px; margin: 0 auto; }
+          .staro-pricing-grid {
+            display: flex !important;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            gap: 16px !important;
+            padding: 8px 24px 20px;
+            margin: 0 -24px;
+            scrollbar-width: none;
+          }
+          .staro-pricing-grid::-webkit-scrollbar { display: none; }
+          .staro-pricing-card {
+            flex: 0 0 84%;
+            scroll-snap-align: center;
+          }
+          .staro-pricing-hint { display: block !important; }
         }
       `}</style>
     </div>
