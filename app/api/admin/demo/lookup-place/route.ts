@@ -1,12 +1,12 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { isAdminEmail } from "../../../../../lib/admin";
+import { isAdminOrCommercialEmail } from "../../../../../lib/admin";
 import { lookupPlace } from "../../../../../core/googlePlaces";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   const user = await currentUser();
-  if (!isAdminEmail(user?.primaryEmailAddress?.emailAddress)) {
+  if (!isAdminOrCommercialEmail(user?.primaryEmailAddress?.emailAddress)) {
     return Response.json({ error: "Non autorisé" }, { status: 403 });
   }
 

@@ -72,6 +72,17 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
 
+  useEffect(() => {
+    fetch("/api/admin/whoami")
+      .then(r => r.json())
+      .then(data => {
+        if (data.role !== "admin") {
+          window.location.href = "/admin/demo";
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   async function load() {
     setLoading(true);
     const res = await fetch("/api/admin/businesses");

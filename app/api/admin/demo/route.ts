@@ -1,14 +1,14 @@
 import { NextRequest } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../../../lib/prisma";
-import { isAdminEmail } from "../../../../lib/admin";
+import { isAdminOrCommercialEmail } from "../../../../lib/admin";
 import { normPhone } from "../../../../core/twilio/incoming";
 
 export const dynamic = "force-dynamic";
 
 async function checkAdmin() {
   const user = await currentUser();
-  return isAdminEmail(user?.primaryEmailAddress?.emailAddress);
+  return isAdminOrCommercialEmail(user?.primaryEmailAddress?.emailAddress);
 }
 
 type Slot = "commercial" | "interne";
