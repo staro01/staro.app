@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Section, sectionTitle, sectionSubtitle, colors, gradient, btnPrimary, btnSecondary } from "./theme";
 import { CheckBadgeIcon } from "./icons";
-import { PLAN_TIERS, PlanTier } from "../../lib/stripe";
+import { PLAN_TIERS, PlanTier } from "../../lib/pricingTiers";
 
 const FEATURES: Record<PlanTier, string[]> = {
   essentiel: [
