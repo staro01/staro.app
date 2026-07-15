@@ -35,8 +35,12 @@ const SUBSCRIPTION_LABELS: Record<string, { label: string; bg: string; color: st
 };
 
 const PLAN_MRR: Record<string, number> = {
-  monthly: 60,
-  annual: 700 / 12,
+  essentiel_monthly: 60,
+  essentiel_annual: 660 / 12,
+  pro_monthly: 90,
+  pro_annual: 990 / 12,
+  premium_monthly: 120,
+  premium_annual: 1320 / 12,
 };
 
 function daysSince(dateStr?: string | null): number | null {
@@ -53,8 +57,12 @@ function formatRelative(dateStr?: string | null): string {
 }
 
 const PLAN_LABELS: Record<string, string> = {
-  monthly: "Mensuel",
-  annual: "Annuel",
+  essentiel_monthly: "Essentiel · Mensuel",
+  essentiel_annual: "Essentiel · Annuel",
+  pro_monthly: "Pro · Mensuel",
+  pro_annual: "Pro · Annuel",
+  premium_monthly: "Premium · Mensuel",
+  premium_annual: "Premium · Annuel",
 };
 
 export default function AdminPage() {

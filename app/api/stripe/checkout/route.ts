@@ -12,12 +12,13 @@ const TRIAL_DAYS = 7;
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const plan = body?.plan;
+  const VALID_PLANS = ["essentiel_monthly", "essentiel_annual", "pro_monthly", "pro_annual", "premium_monthly", "premium_annual"];
 
-  if (plan !== "monthly" && plan !== "annual") {
+  if (!VALID_PLANS.includes(plan)) {
     return NextResponse.json({ error: "Plan invalide." }, { status: 400 });
   }
 
-  const subscriptionPriceId = plan === "monthly" ? STRIPE_PRICES.monthly : STRIPE_PRICES.annual;
+  const subscriptionPriceId = STRIPE_PRICES[plan as keyof typeof STRIPE_PRICES];
   const origin = req.headers.get("origin") ?? "https://www.staro.app";
 
   // Si la personne est déjà connectée (paiement depuis le dashboard), on rattache
