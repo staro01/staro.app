@@ -55,8 +55,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       localization={clerkLocalization}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
-      signInFallbackRedirectUrl="/dashboard"
-      signUpFallbackRedirectUrl="/dashboard"
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/"
     >
       <html lang="fr">
         <body>
