@@ -144,13 +144,13 @@ export function PricingCard() {
 
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
                     <span style={{ fontSize: 38, fontWeight: 900, color: colors.text }}>
-                      {annual ? monthlyEquivalent : price}€
+                      {price}€
                     </span>
-                    <span style={{ fontSize: 14, color: colors.textMuted }}>/ mois</span>
+                    <span style={{ fontSize: 14, color: colors.textMuted }}>{annual ? "/ an" : "/ mois"}</span>
                   </div>
                   {annual ? (
                     <div style={{ fontSize: 12.5, color: colors.textMuted, marginBottom: 20 }}>
-                      Facturé {price}€/an — soit un mois offert
+                      Soit {monthlyEquivalent}€/mois — un mois offert
                     </div>
                   ) : (
                     <div style={{ fontSize: 12.5, color: colors.textMuted, marginBottom: 20 }}>Sans engagement</div>
