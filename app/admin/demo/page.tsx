@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties } from "react";
+import Link from "next/link";
 
 type Item = { name: string; price: number; category?: string; duration?: number };
 
@@ -118,6 +119,9 @@ export default function DemoAdminPage() {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px", color: "#fff", background: "#0a0a0f", minHeight: "100vh" }}>
+      <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#9b4fdd", textDecoration: "none", fontSize: 13, fontWeight: 700, marginBottom: 16 }}>
+        ← Retour au site
+      </Link>
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Configuration de la démo</h1>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>

@@ -24,7 +24,7 @@ Raccroche poliment après.`;
 ## Déroulé naturel — suivre dans l'ordre
 1. "Bonjour, ${business.name}, quel est votre projet ?" — laisser le client décrire librement.
 2. Clarifier si vague (tonte, taille de haie, élagage, création de jardin, entretien régulier...).
-3. "C'est pour quelle adresse ?"
+3. "Quel est votre code postal et votre ville ?"
 4. "C'est à quel nom ?"
 5. "Un numéro pour vous recontacter ?"
 6. "Vous avez des disponibilités ou contraintes particulières ?"
@@ -37,6 +37,7 @@ Raccroche poliment après.`;
 
 Règles JSON :
 - "phone" : 10 chiffres sans espaces ni tirets
+- "address" : code postal et ville UNIQUEMENT (exemple : "84000 Avignon"), jamais de numéro ni de nom de rue
 - "problem" : description du projet dans les mots du client
 - "since" : laisser vide, peu pertinent pour un projet paysager
 - "availability" : disponibilités/contraintes mentionnées, "" si aucune
