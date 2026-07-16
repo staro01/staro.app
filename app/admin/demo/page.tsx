@@ -13,6 +13,11 @@ const inputStyle: CSSProperties = {
   color: "#fff",
 };
 
+const TEST_NUMBERS: Record<"interne" | "commercial", string> = {
+  interne: "09 48 35 38 53",
+  commercial: "01 76 63 58 47",
+};
+
 export default function DemoAdminPage() {
   const [slot, setSlot] = useState<"commercial" | "interne">("interne");
   const [query, setQuery] = useState("");
@@ -124,7 +129,7 @@ export default function DemoAdminPage() {
       </Link>
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Configuration de la démo</h1>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <button
           onClick={() => setSlot("interne")}
           style={{
@@ -143,6 +148,10 @@ export default function DemoAdminPage() {
         >
           🤝 Commercial (prospects)
         </button>
+      </div>
+
+      <div style={{ background: "#0f2a1e", border: "1px solid #16a34a", borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: "#4ade80" }}>
+        📞 Numéro à appeler ({slot === "interne" ? "test" : "démo prospect"}) : <strong>{TEST_NUMBERS[slot]}</strong>
       </div>
 
       {slot === "commercial" && (
