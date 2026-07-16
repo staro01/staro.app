@@ -3,6 +3,16 @@ import { sendClientReport } from "./email/notify";
 import { sendSms } from "./twilio/sms";
 import { normPhone } from "./twilio/incoming";
 
+// Le champ subscriptionPlan est stocké au format "tier_frequence" (ex: "pro_monthly").
+// À partir du palier Pro, l'artisan reçoit le récap par SMS plutôt que par email —
+// plus pratique pour quelqu'un sur un chantier qui consulte son téléphone, pas ses mails.
+function getPlanTier(subscriptionPlan?: string | null): "essentiel" | "pro" | "premium" | null {
+  if (!subscriptionPlan) return null;
+  const tier = subscriptionPlan.split("_")[0];
+  if (tier === "essentiel" || tier === "pro" || tier === "premium") return tier;
+  return null;
+}
+
 export type ArtisanMetier = "plombier" | "electricien" | "paysagiste" | "chauffagiste";
 
 const METIER_LABELS: Record<ArtisanMetier, string> = {
@@ -85,7 +95,33 @@ export async function saveArtisanRequestAndNotify(
     }
   }
 
-  if (business?.customerEmail) {
+  const tier = getPlanTier(business?.subscriptionPlan);
+  const artisanPhone = business?.phone ? normPhone(business.phone) : null;
+  const notifyByArtisanSms = (tier === "pro" || tier === "premium") && artisanPhone && business?.twilioNumber;
+
+  if (notifyByArtisanSms) {
+    try {
+      const smsText = `Nouvelle demande (${METIER_LABELS[metier]}) : ${customerName || "Client"} — ${phone}. ${summary}${address ? ` — ${address}` : ""}`;
+      await sendSms(artisanPhone!, smsText, business!.twilioNumber!);
+    } catch (err) {
+      console.error(`Échec envoi SMS récap artisan pour ${externalRef}:`, err);
+      // Filet de sécurité : si le SMS échoue, on retombe sur l'email pour ne pas perdre la demande.
+      if (business?.customerEmail) {
+        await sendClientReport(
+          business.customerEmail,
+          `Nouvelle demande — ${customerName || "client"} — ${METIER_LABELS[metier]}`,
+          `<p>Un client a appelé concernant : <strong>${summary}</strong></p>
+           <ul>
+             <li><strong>Client</strong> : ${customerName} — ${phone}</li>
+             <li><strong>Adresse d'intervention</strong> : ${address || "non précisée"}</li>
+             <li><strong>Problème</strong> : ${problem}</li>
+             <li><strong>Depuis quand</strong> : ${since || "non précisé"}</li>
+             <li><strong>Disponibilités indiquées</strong> : ${availability || "non précisées"}</li>
+           </ul>`
+        );
+      }
+    }
+  } else if (business?.customerEmail) {
     const html = `
       <p>Un client a appelé concernant : <strong>${summary}</strong></p>
       <ul>
