@@ -10,10 +10,12 @@ const FEATURES: Record<PlanTier, string[]> = {
     "Prise d'appel automatique 7j/7",
     "Personnalisation du ton et des réponses",
     "Suivi visible sur la plateforme Staro",
-    "SMS automatiques au client",
+    "SMS de confirmation automatique envoyé à votre client",
+    "Notification de chaque demande par email",
   ],
   pro: [
     "Tout ce qui est inclus dans Essentiel",
+    "Notification par SMS ou email, au choix",
     "Support prioritaire — réponse sous 4h",
     "Point mensuel de 15 min pour ajuster votre config",
   ],

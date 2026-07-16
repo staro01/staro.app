@@ -22,6 +22,7 @@ model Business {
   welcomeMessage    String?
   vacationMode      Boolean        @default(false)
   ringFirst         Boolean        @default(false)
+  reportChannel     String         @default("email") // "email" ou "sms" — choix du prospect, actif à partir du palier Pro
   vacationMessage   String?
   openingHours      Json?
   allergensInfo     String?

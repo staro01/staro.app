@@ -97,7 +97,10 @@ export async function saveArtisanRequestAndNotify(
 
   const tier = getPlanTier(business?.subscriptionPlan);
   const artisanPhone = business?.phone ? normPhone(business.phone) : null;
-  const notifyByArtisanSms = (tier === "pro" || tier === "premium") && artisanPhone && business?.twilioNumber;
+  // Le choix SMS/email n'est disponible qu'à partir du palier Pro — un compte Essentiel
+  // reste forcé sur email, quelle que soit la valeur stockée en base (garde-fou).
+  const wantsSms = (tier === "pro" || tier === "premium") && business?.reportChannel === "sms";
+  const notifyByArtisanSms = wantsSms && artisanPhone && business?.twilioNumber;
 
   if (notifyByArtisanSms) {
     try {

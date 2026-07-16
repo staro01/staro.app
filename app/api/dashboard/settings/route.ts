@@ -36,6 +36,7 @@ export async function PATCH(req: NextRequest) {
       vacationMode: body.vacationMode,
       vacationMessage: body.vacationMessage,
       ringFirst: body.ringFirst,
+      reportChannel: body.reportChannel,
       allergensInfo: body.allergensInfo,
       currentPromos: body.currentPromos,
       welcomeMessage: body.welcomeMessage,

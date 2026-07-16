@@ -11,7 +11,7 @@ type Settings = {
   estimatedPrepTime: number;
   deliveryEnabled: boolean; deliveryFee: number; deliveryMinimum: number;
   paymentMethods: string;
-  vacationMode: boolean; vacationMessage: string; ringFirst: boolean;
+  vacationMode: boolean; vacationMessage: string; ringFirst: boolean; reportChannel: string; subscriptionPlan?: string | null;
   allergensInfo: string; currentPromos: string; welcomeMessage: string;
   openingHours: Record<string, DaySchedule>;
 };
@@ -23,7 +23,7 @@ const defaultSettings = (): Settings => ({
   estimatedPrepTime: 20,
   deliveryEnabled: true, deliveryFee: 0, deliveryMinimum: 0,
   paymentMethods: "CB, espèces",
-  vacationMode: false, vacationMessage: "Nous sommes actuellement fermés. Merci de rappeler.", ringFirst: false,
+  vacationMode: false, vacationMessage: "Nous sommes actuellement fermés. Merci de rappeler.", ringFirst: false, reportChannel: "email", subscriptionPlan: null,
   allergensInfo: "", currentPromos: "", welcomeMessage: "",
   openingHours: Object.fromEntries(DAYS.map(d => [d, defaultDay()])),
 });
@@ -281,6 +281,28 @@ export default function SettingsPage() {
           </p>
         )}
       </Section>
+
+      {isArtisan && (s.subscriptionPlan?.startsWith("pro_") || s.subscriptionPlan?.startsWith("premium_")) && (
+        <Section title="📩 Notification de nouvelle demande">
+          <p style={{ fontSize: 13, color: "#888", margin: "0 0 4px" }}>
+            Comment souhaitez-vous être prévenu quand un client vous contacte ?
+          </p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setS({ ...s, reportChannel: "email" })}
+              style={{ ...btnSecondary, background: s.reportChannel === "email" ? "#2a1a3e" : "transparent" }}
+            >
+              ✉️ Par email
+            </button>
+            <button
+              onClick={() => setS({ ...s, reportChannel: "sms" })}
+              style={{ ...btnSecondary, background: s.reportChannel === "sms" ? "#2a1a3e" : "transparent" }}
+            >
+              📱 Par SMS
+            </button>
+          </div>
+        </Section>
+      )}
 
       <Section title="🏖️ Mode vacances / indisponibilité">
         <Toggle label="Activer le mode vacances" checked={s.vacationMode} onChange={v => setS({ ...s, vacationMode: v })} />
