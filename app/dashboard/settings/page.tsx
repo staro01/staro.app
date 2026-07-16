@@ -11,7 +11,7 @@ type Settings = {
   estimatedPrepTime: number;
   deliveryEnabled: boolean; deliveryFee: number; deliveryMinimum: number;
   paymentMethods: string;
-  vacationMode: boolean; vacationMessage: string;
+  vacationMode: boolean; vacationMessage: string; ringFirst: boolean;
   allergensInfo: string; currentPromos: string; welcomeMessage: string;
   openingHours: Record<string, DaySchedule>;
 };
@@ -23,7 +23,7 @@ const defaultSettings = (): Settings => ({
   estimatedPrepTime: 20,
   deliveryEnabled: true, deliveryFee: 0, deliveryMinimum: 0,
   paymentMethods: "CB, espèces",
-  vacationMode: false, vacationMessage: "Nous sommes actuellement fermés. Merci de rappeler.",
+  vacationMode: false, vacationMessage: "Nous sommes actuellement fermés. Merci de rappeler.", ringFirst: false,
   allergensInfo: "", currentPromos: "", welcomeMessage: "",
   openingHours: Object.fromEntries(DAYS.map(d => [d, defaultDay()])),
 });
@@ -263,6 +263,24 @@ export default function SettingsPage() {
           <Field label="Paiement accepté"><input value={s.paymentMethods} onChange={e => setS({ ...s, paymentMethods: e.target.value })} style={inputStyle} /></Field>
         </Section>
       )}
+
+      <Section title="📞 Comportement de l'agent">
+        <Toggle
+          label="Faire sonner mon téléphone d'abord (l'agent prend le relais si je ne réponds pas)"
+          checked={s.ringFirst}
+          onChange={v => setS({ ...s, ringFirst: v })}
+        />
+        {s.ringFirst && !s.phone.trim() && (
+          <p style={{ color: "#f0c674", fontSize: 13, margin: 0 }}>
+            ⚠️ Renseignez votre numéro de téléphone ci-dessus (section Informations générales) pour que ce mode fonctionne — sinon l&apos;agent répondra directement.
+          </p>
+        )}
+        {s.ringFirst && s.phone.trim() && (
+          <p style={{ color: "#888", fontSize: 13, margin: 0 }}>
+            Votre téléphone sonnera environ 18 secondes avant que l&apos;agent ne prenne le relais.
+          </p>
+        )}
+      </Section>
 
       <Section title="🏖️ Mode vacances / indisponibilité">
         <Toggle label="Activer le mode vacances" checked={s.vacationMode} onChange={v => setS({ ...s, vacationMode: v })} />

@@ -21,6 +21,7 @@ model Business {
   address           String?
   welcomeMessage    String?
   vacationMode      Boolean        @default(false)
+  ringFirst         Boolean        @default(false)
   vacationMessage   String?
   openingHours      Json?
   allergensInfo     String?

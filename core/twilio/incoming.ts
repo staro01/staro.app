@@ -54,6 +54,16 @@ export function hangupTwiml(baseUrl: string, text: string) {
 </Response>`;
 }
 
+// Fait sonner le vrai téléphone de l'artisan en silence (pas de message vocal),
+// et bascule sur le fallback (l'agent Staro) si personne ne répond dans le délai imparti.
+export function ringThenFallbackTwiml(baseUrl: string, phoneNumber: string, fallbackActionPath: string) {
+  const action = `${baseUrl}${fallbackActionPath}`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial timeout="18" action="${action}" method="POST">${escapeXml(phoneNumber)}</Dial>
+</Response>`;
+}
+
 export function dialTwiml(baseUrl: string, text: string, phoneNumber: string) {
   const hasElevenLabs = !!(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID);
   return `<?xml version="1.0" encoding="UTF-8"?>

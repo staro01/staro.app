@@ -1,7 +1,8 @@
 import { prisma } from "../../../../../lib/prisma";
-import { xml, getBaseUrl, hangupTwiml, gatherSay, normPhone } from "../../../../../core/twilio/incoming";
+import { xml, getBaseUrl, hangupTwiml, normPhone, ringThenFallbackTwiml } from "../../../../../core/twilio/incoming";
 import { verifyTwilioRequest } from "../../../../../core/twilio/verify";
 import { notifyCriticalError } from "../../../../../core/monitoring/notifyError";
+import { buildAgentGreetingResponse } from "../../../../../core/twilio/agentGreeting";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,29 +63,18 @@ export async function POST(req: Request) {
       }
     }
 
-    let defaultGreet: string;
-    if (business.vertical === "coiffeur") {
-      defaultGreet = `Bonjour, salon ${business.name}, que puis-je faire pour vous ?`;
-    } else if (ARTISAN_VERTICALS.includes(business.vertical)) {
-      defaultGreet = `Bonjour, ${business.name}, je vous écoute.`;
-    } else {
-      defaultGreet = `Bonjour, pizzerie ${business.name}, puis-je prendre votre commande ?`;
+    // Mode "sonnerie d'abord" : on essaie de joindre le vrai téléphone de l'artisan
+    // en silence, l'agent Staro ne prend le relais que si personne ne répond.
+    if (business.ringFirst) {
+      const artisanPhone = normPhone(business.phone);
+      if (artisanPhone) {
+        return xml(ringThenFallbackTwiml(baseUrl, artisanPhone, "/api/twilio/voice/dial-fallback"));
+      }
+      // ringFirst activé mais pas de téléphone valide renseigné : on retombe sur l'agent direct
+      // plutôt que de faire échouer l'appel silencieusement.
     }
 
-    const baseGreet = business.welcomeMessage?.trim() ? business.welcomeMessage.trim() : defaultGreet;
-    // Mention légale obligatoire : informe l'appelant qu'un assistant vocal IA
-    // traite l'appel, avant toute autre chose (art. 226-1 du Code pénal).
-    const greet = `${baseGreet} Cet appel est traité par un assistant vocal.`;
-
-    if (callSid) {
-      await prisma.conversation.upsert({
-        where: { externalId: callSid },
-        update: {},
-        create: { externalId: callSid, businessId: business.id, messages: [{ role: "assistant", content: greet }] },
-      });
-    }
-
-    return xml(gatherSay(baseUrl, greet, "/api/twilio/voice/handle-speech"));
+    return xml(await buildAgentGreetingResponse(business, baseUrl, callSid));
   } catch (err) {
     await notifyCriticalError("Twilio voice/incoming", err);
     return xml(hangupTwiml(baseUrl, "Une erreur est survenue. Merci de rappeler."));
