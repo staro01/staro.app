@@ -23,8 +23,12 @@ const FEATURES: Record<PlanTier, string[]> = {
     "Tout ce qui est inclus dans Pro",
     "Rapport de performance mensuel personnalisé",
     "Révision trimestrielle approfondie avec Hugo",
-    "Accompagnement prioritaire sur toute demande",
+    "Support prioritaire — réponse sous 1h",
   ],
+};
+
+const TAGLINES: Partial<Record<PlanTier, string>> = {
+  premium: "Accompagnement personnalisé — capacité limitée",
 };
 
 const TIER_ORDER: PlanTier[] = ["essentiel", "pro", "premium"];
@@ -137,9 +141,14 @@ export function PricingCard() {
                     boxShadow: isRecommended ? "0 25px 70px rgba(0,0,0,0.45)" : undefined,
                   }}
                 >
-                  <div style={{ fontSize: 13, fontWeight: 800, color: colors.purple2Text, letterSpacing: 1, marginBottom: 18, marginTop: isRecommended ? 6 : 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: colors.purple2Text, letterSpacing: 1, marginBottom: TAGLINES[tier] ? 6 : 18, marginTop: isRecommended ? 6 : 0 }}>
                     {info.label.toUpperCase()}
                   </div>
+                  {TAGLINES[tier] && (
+                    <div style={{ fontSize: 12, color: colors.textMuted, fontStyle: "italic", marginBottom: 16 }}>
+                      {TAGLINES[tier]}
+                    </div>
+                  )}
 
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
                     <span style={{ fontSize: 38, fontWeight: 900, color: colors.text }}>
@@ -200,8 +209,8 @@ export function PricingCard() {
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
             gap: 16px !important;
-            padding: 8px 24px 20px;
-            margin: 0 -24px;
+            padding: 56px 24px 20px;
+            margin: -48px -24px 0;
             scrollbar-width: none;
           }
           .staro-pricing-grid::-webkit-scrollbar { display: none; }
