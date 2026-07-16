@@ -37,7 +37,7 @@ export function gatherSay(baseUrl: string, text: string, actionPath: string) {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" language="fr-FR" speechTimeout="auto" actionOnEmptyResult="true" action="${action}" method="POST">
+  <Gather input="speech" language="fr-FR" speechModel="phone_call" hints="oui, non, exact, c'est ça, correct, tout à fait, exactement, d'accord" speechTimeout="auto" actionOnEmptyResult="true" action="${action}" method="POST">
     ${audioElement}
   </Gather>
   ${hasElevenLabs ? `<Play>${ttsUrl(baseUrl, "Je n'ai pas entendu. Répétez s'il vous plaît.")}</Play>` : say("Je n'ai pas entendu. Répétez s'il vous plaît.")}
