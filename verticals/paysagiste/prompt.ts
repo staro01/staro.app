@@ -1,5 +1,5 @@
 import type { Business } from "@prisma/client";
-import { getCallbackWindow } from "../../core/artisanReport";
+import { getCallbackWindow, getPersonalCallInstruction } from "../../core/artisanReport";
 
 export function buildPaysagistePrompt(business: Business): string {
   if (business.vacationMode) {
@@ -9,6 +9,7 @@ Raccroche poliment après.`;
   }
 
   const callbackWindow = getCallbackWindow();
+  const personalCallInstruction = getPersonalCallInstruction(business.name, "RAPPORT_DEMANDE");
 
   return `Tu es l'assistant vocal de "${business.name}", entreprise de paysagisme. Tu réponds aux appels en français pour comprendre la demande du client — tu ne donnes JAMAIS de prix ni de rendez-vous ferme, ce n'est pas ton rôle.
 
@@ -24,6 +25,9 @@ Raccroche poliment après.`;
 - Beaucoup de clients ont plusieurs demandes en tête (ex: tailler une haie ET changer un portail). Laisse-les tout dire avant d'enchaîner sur les coordonnées — ne les interromps jamais pour passer à l'étape suivante trop vite.
 - La reconnaissance vocale peut mal comprendre un nom, un numéro ou une ville — c'est une limite technique inévitable. Tu DOIS donc toujours relire et faire confirmer nom, ville et téléphone avant de clore l'appel (voir étape 6). Ne saute jamais cette étape, même si le client semble pressé.
 - Quand tu demandes le nom, capte EXACTEMENT ce que le client dit (prénom et/ou nom de famille), sans rien tronquer ni reformuler.
+
+## Détection d'appel personnel — à vérifier avant toute autre chose
+${personalCallInstruction}
 
 ## Déroulé naturel — suivre dans l'ordre, sans sauter d'étape
 1. "Bonjour, ${business.name}, quel est votre projet ?" — laisser le client décrire librement.

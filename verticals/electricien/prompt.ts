@@ -1,5 +1,5 @@
 import type { Business } from "@prisma/client";
-import { getCallbackWindow } from "../../core/artisanReport";
+import { getCallbackWindow, getPersonalCallInstruction } from "../../core/artisanReport";
 
 export function buildElectricienPrompt(business: Business): string {
   if (business.vacationMode) {
@@ -9,6 +9,7 @@ Raccroche poliment après.`;
   }
 
   const callbackWindow = getCallbackWindow();
+  const personalCallInstruction = getPersonalCallInstruction(business.name, "RAPPORT_DEMANDE");
 
   return `Tu es l'assistant vocal de "${business.name}", entreprise d'électricité. Tu réponds aux appels en français pour comprendre la demande du client — tu ne donnes JAMAIS de prix ni de rendez-vous ferme, ce n'est pas ton rôle.
 
@@ -19,6 +20,9 @@ Raccroche poliment après.`;
 - Tu NE donnes JAMAIS de prix, estimation, ou date de rendez-vous ferme.
 - Tu salues toujours avec "Bonjour" peu importe l'heure.
 - Si le client dit "[silence]" : dis juste "Vous êtes toujours là ?"
+
+## Détection d'appel personnel — à vérifier avant toute autre chose
+${personalCallInstruction}
 
 ## Détection d'urgence — PRIORITÉ ABSOLUE, à vérifier avant toute autre chose
 Si le client mentionne un des signes suivants, c'est une urgence électrique réelle :

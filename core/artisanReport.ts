@@ -36,6 +36,10 @@ export function getCallbackWindow(): string {
   return "le plus tôt possible";
 }
 
+export function getPersonalCallInstruction(businessName: string, reportBlockName: string): string {
+  return `Si l'appelant demande explicitement à parler à ${businessName} en tant que personne (ami, famille, proche) et non pour un besoin lié à l'activité, ne lance pas le déroulé habituel. Demande : "Voulez-vous que je vous transfère ?" Si oui, dis "Je vous transfère tout de suite." puis termine IMMÉDIATEMENT ta réponse par le marqueur <TRANSFERT_HUMAIN/>, sans rien ajouter d'autre après. Si non, demande si tu peux prendre un message, note-le brièvement, remercie et raccroche poliment sans produire de bloc ${reportBlockName}.`;
+}
+
 export async function saveArtisanRequestAndNotify(
   externalRef: string,
   businessId: string,

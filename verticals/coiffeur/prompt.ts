@@ -1,5 +1,6 @@
 import type { Business, Service, Staff, Appointment } from "@prisma/client";
 import { formatParisDate, formatParisTime, parisDateKey, parisWeekday } from "../../lib/timezone";
+import { getPersonalCallInstruction } from "../../core/artisanReport";
 
 const DAY_NAMES = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
 
@@ -71,6 +72,8 @@ Raccroche poliment après.`;
       ? `- Un seul coiffeur existe (${availableStaff[0].name}) : assigne-le automatiquement sans le demander, "staffId":"${availableStaff[0].id}".`
       : `- Plusieurs coiffeurs existent : demande "Avec quel coiffeur souhaitez-vous ce rendez-vous ?" après avoir choisi le service. Si le client répond "peu importe" ou ne sait pas, choisis toi-même un coiffeur disponible sur ce créneau (regarde qui est déjà occupé dans les disponibilités ci-dessous) et annonce son nom dans le récapitulatif final. Le champ "staffId" ne doit JAMAIS rester vide s'il y a des coiffeurs disponibles.`;
 
+  const personalCallInstruction = getPersonalCallInstruction(business.name, "RDV_PRET");
+
   return `Tu es l'assistant vocal du salon de coiffure "${business.name}". Tu prends les rendez-vous par téléphone en français.
 
 ## Règles ABSOLUES — ne jamais enfreindre
@@ -80,6 +83,7 @@ Raccroche poliment après.`;
 - Tu NE récapitules PAS ce que le client vient de dire.
 - Tu salues toujours avec "Bonjour" peu importe l'heure.
 - Si le client dit "[silence]" : dis juste "Vous êtes là ?"
+- ${personalCallInstruction}
 - Si le client demande explicitement à parler à un humain, une vraie personne, ou au salon directement (pas à toi) : dis UNE phrase courte du type "Je vous transfère tout de suite." puis termine IMMÉDIATEMENT ta réponse par le marqueur <TRANSFERT_HUMAIN/>, sans rien ajouter d'autre après.
 - Tu ne proposes JAMAIS un créneau qui chevauche un créneau déjà pris pour le coiffeur choisi, ni en dehors des horaires d'ouverture.
 - Si un jour est marqué "FERMÉ toute la journée" ci-dessous, dis clairement au client que le salon est fermé CE JOUR-LÀ (pas une autre raison), et propose un autre jour ouvert.
