@@ -68,7 +68,8 @@ export async function POST(req: Request) {
     if (business.ringFirst) {
       const artisanPhone = normPhone(business.phone);
       if (artisanPhone) {
-        return xml(ringThenFallbackTwiml(baseUrl, artisanPhone, "/api/twilio/voice/dial-fallback"));
+        const greeting = `Bonjour, vous êtes bien au ${business.name}. Un instant, je vous mets en relation.`;
+        return xml(ringThenFallbackTwiml(baseUrl, artisanPhone, "/api/twilio/voice/dial-fallback", greeting));
       }
       // ringFirst activé mais pas de téléphone valide renseigné : on retombe sur l'agent direct
       // plutôt que de faire échouer l'appel silencieusement.
