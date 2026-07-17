@@ -32,13 +32,8 @@ export function stripReportBlock(text: string) {
   return text.replace(/<RAPPORT_DEMANDE>[\s\S]*?<\/RAPPORT_DEMANDE>/g, "").trim();
 }
 
-// Heuristique simple : avant 17h (Paris) → "avant la fin de journée", sinon → "dans la matinée".
-// Ne dépend pas des horaires d'ouverture du commerce (pas structurées de façon fiable pour l'instant).
 export function getCallbackWindow(): string {
-  const hourParis = Number(
-    new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", hour12: false, timeZone: "Europe/Paris" }).format(new Date())
-  );
-  return hourParis < 17 ? "avant la fin de journée" : "dans la matinée";
+  return "le plus tôt possible";
 }
 
 export async function saveArtisanRequestAndNotify(
