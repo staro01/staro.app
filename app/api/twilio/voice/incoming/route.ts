@@ -3,6 +3,7 @@ import { xml, getBaseUrl, hangupTwiml, gatherSay, normPhone, ringThenFallbackTwi
 import { verifyTwilioRequest } from "../../../../../core/twilio/verify";
 import { notifyCriticalError } from "../../../../../core/monitoring/notifyError";
 import { buildAgentGreetingResponse } from "../../../../../core/twilio/agentGreeting";
+import { isOutsideHours, DaySchedule } from "../../../../../core/openingHours";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -63,9 +64,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // Mode "sonnerie d'abord" : on essaie de joindre le vrai téléphone de l'artisan
-    // en silence, l'agent Staro ne prend le relais que si personne ne répond.
-    if (business.ringFirst) {
+    // Mode "sonnerie d'abord" : uniquement pendant les horaires d'ouverture — en dehors,
+    // l'agent répond directement pour ne pas déranger l'artisan sur son vrai téléphone.
+    const openingHours = (business.openingHours as Record<string, DaySchedule> | null) ?? null;
+    if (business.ringFirst && !isOutsideHours(new Date(), openingHours)) {
       const artisanPhone = normPhone(business.phone);
       if (artisanPhone) {
         const greeting = `Bonjour, vous êtes bien au ${business.name}. Un instant, je vous mets en relation.`;

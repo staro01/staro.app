@@ -277,7 +277,7 @@ export default function SettingsPage() {
         )}
         {s.ringFirst && s.phone.trim() && (
           <p style={{ color: "#888", fontSize: 13, margin: 0 }}>
-            Votre téléphone sonnera environ 18 secondes avant que l&apos;agent ne prenne le relais.
+            Votre téléphone sonnera environ 18 secondes avant que l&apos;agent ne prenne le relais, uniquement pendant vos horaires d&apos;ouverture (ci-dessous). En dehors de ces horaires, l&apos;agent répond directement pour ne pas vous déranger.
           </p>
         )}
       </Section>
@@ -309,28 +309,31 @@ export default function SettingsPage() {
         {s.vacationMode && <Field label="Message"><textarea value={s.vacationMessage} onChange={e => setS({ ...s, vacationMessage: e.target.value })} style={{ ...inputStyle, minHeight: 70 }} /></Field>}
       </Section>
 
-      {!isArtisan && (
-        <Section title="🕐 Horaires d'ouverture">
-          {DAYS.map(day => (
-            <div key={day} style={{ display: "grid", gridTemplateColumns: "100px 1fr", alignItems: "center", gap: 10 }}>
-              <label style={{ fontWeight: 700, fontSize: 13, textTransform: "capitalize", display: "flex", alignItems: "center", gap: 6 }}>
-                <input type="checkbox" checked={!s.openingHours[day]?.closed} onChange={e => setDay(day, "closed", !e.target.checked)} />{day}
-              </label>
-              {!s.openingHours[day]?.closed ? (
-                <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13, flexWrap: "wrap" }}>
-                  <input type="time" value={s.openingHours[day]?.open} onChange={e => setDay(day, "open", e.target.value)} style={timeInput} />
-                  <span>–</span>
-                  <input type="time" value={s.openingHours[day]?.close} onChange={e => setDay(day, "close", e.target.value)} style={timeInput} />
+      <Section title="🕐 Horaires d'ouverture">
+        <p style={{ fontSize: 12, color: "#888", margin: "-6px 0 4px" }}>
+          Utilisés pour vos statistiques d&apos;appels et pour le mode "sonnerie d&apos;abord" ci-dessus.
+        </p>
+        {DAYS.map(day => (
+          <div key={day} style={{ display: "grid", gridTemplateColumns: "100px 1fr", alignItems: "center", gap: 10 }}>
+            <label style={{ fontWeight: 700, fontSize: 13, textTransform: "capitalize", display: "flex", alignItems: "center", gap: 6 }}>
+              <input type="checkbox" checked={!s.openingHours[day]?.closed} onChange={e => setDay(day, "closed", !e.target.checked)} />{day}
+            </label>
+            {!s.openingHours[day]?.closed ? (
+              <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13, flexWrap: "wrap" }}>
+                <input type="time" value={s.openingHours[day]?.open} onChange={e => setDay(day, "open", e.target.value)} style={timeInput} />
+                <span>–</span>
+                <input type="time" value={s.openingHours[day]?.close} onChange={e => setDay(day, "close", e.target.value)} style={timeInput} />
+                {!isArtisan && <>
                   <span style={{ color: "#bbb" }}>|</span>
                   <input type="time" value={s.openingHours[day]?.dinnerOpen} onChange={e => setDay(day, "dinnerOpen", e.target.value)} style={timeInput} />
                   <span>–</span>
                   <input type="time" value={s.openingHours[day]?.dinnerClose} onChange={e => setDay(day, "dinnerClose", e.target.value)} style={timeInput} />
-                </div>
-              ) : <span style={{ fontSize: 13, color: "#999" }}>Fermé</span>}
-            </div>
-          ))}
-        </Section>
-      )}
+                </>}
+              </div>
+            ) : <span style={{ fontSize: 13, color: "#999" }}>Fermé</span>}
+          </div>
+        ))}
+      </Section>
 
       <Section title="🤖 Infos pour l'IA">
         <Field label="Message d'accueil personnalisé"><input value={s.welcomeMessage} onChange={e => setS({ ...s, welcomeMessage: e.target.value })} style={inputStyle} placeholder={isArtisan ? "Ex: Bonjour, ici Provence Nature Services !" : "Ex: Bonjour, ici La Bella Pizza !"} /></Field>
