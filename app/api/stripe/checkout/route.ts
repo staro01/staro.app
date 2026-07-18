@@ -49,7 +49,6 @@ export async function POST(req: NextRequest) {
   const normalizedPhone = normPhone(business.phone);
   const verifiedPhone = await prisma.verifiedPhone.findUnique({ where: { phone: normalizedPhone } });
   const trialAlreadyUsed = verifiedPhone?.trialUsed ?? false;
-  const effectiveTrialDays = trialAlreadyUsed ? 0 : TRIAL_DAYS;
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -59,7 +58,7 @@ export async function POST(req: NextRequest) {
       cancel_url: businessId ? `${origin}/dashboard/settings` : `${origin}/pricing`,
       metadata: { plan, ...(businessId ? { businessId } : {}) },
       subscription_data: {
-        trial_period_days: effectiveTrialDays,
+        ...(trialAlreadyUsed ? {} : { trial_period_days: TRIAL_DAYS }),
         metadata: { plan, ...(businessId ? { businessId } : {}) },
       },
       customer_email: prefillEmail,
