@@ -38,11 +38,17 @@ export async function provisionTwilioNumber(): Promise<string> {
     throw new Error("TWILIO_ADDRESS_SID manquant — requis par Twilio pour l'achat de numéros français.");
   }
 
+  const bundleSid = process.env.TWILIO_BUNDLE_SID;
+  if (!bundleSid) {
+    throw new Error("TWILIO_BUNDLE_SID manquant — requis par Twilio pour l'achat de numéros français (bundle réglementaire).");
+  }
+
   const purchased = await client.incomingPhoneNumbers.create({
     phoneNumber: numberToBuy,
     voiceUrl: `${baseUrl}/api/twilio/voice/incoming`,
     voiceMethod: "POST",
     addressSid,
+    bundleSid,
   });
 
   return purchased.phoneNumber;
