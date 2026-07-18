@@ -50,6 +50,7 @@ export function hangupTwiml(baseUrl: string, text: string) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   ${hasElevenLabs ? `<Play>${ttsUrl(baseUrl, text)}</Play>` : say(text)}
+  <Pause length="2"/>
   <Hangup/>
 </Response>`;
 }

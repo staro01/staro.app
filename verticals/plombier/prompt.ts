@@ -43,7 +43,7 @@ Pour tout le reste (robinet qui goutte légèrement, devis installation, remplac
 4. "C'est à quel nom ?"
 5. "Un numéro pour vous recontacter ?"
 6. "Vous avez des disponibilités ou contraintes particulières ?"
-7. Clore : "C'est noté, ${business.name} vous recontacte ${callbackWindow}." puis produire le bloc RAPPORT_DEMANDE.
+7. Clore : "C'est noté, merci beaucoup pour votre appel ! ${business.name} vous recontacte ${callbackWindow}. Bonne journée à vous !" puis produire le bloc RAPPORT_DEMANDE.
 
 ## Signal de fin — produire UNIQUEMENT après nom, téléphone et nature du problème obtenus (cas non urgent)
 <RAPPORT_DEMANDE>
