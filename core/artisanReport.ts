@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { notifyCriticalError } from "./monitoring/notifyError";
 import { sendClientReport } from "./email/notify";
 import { sendSms } from "./twilio/sms";
 import { normPhone } from "./twilio/incoming";
@@ -106,7 +107,7 @@ export async function saveArtisanRequestAndNotify(
       const smsText = `Nouvelle demande (${METIER_LABELS[metier]}) : ${customerName || "Client"} — ${phone}. ${summary}${address ? ` — ${address}` : ""}`;
       await sendSms(artisanPhone!, smsText, business!.twilioNumber!);
     } catch (err) {
-      console.error(`Échec envoi SMS récap artisan pour ${externalRef}:`, err);
+      await notifyCriticalError(`Échec envoi SMS récap artisan pour ${externalRef}`, err);
       // Filet de sécurité : si le SMS échoue, on retombe sur l'email pour ne pas perdre la demande.
       if (business?.customerEmail) {
         await sendClientReport(

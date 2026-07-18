@@ -25,7 +25,7 @@ export async function provisionTwilioNumber(): Promise<string> {
 
   const available = await client
     .availablePhoneNumbers("FR")
-    .local.list({ limit: 5 });
+    .local.list({ limit: 5, smsEnabled: true, voiceEnabled: true });
 
   if (available.length === 0) {
     throw new Error("Aucun numéro français disponible chez Twilio en ce moment.");
