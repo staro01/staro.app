@@ -29,23 +29,6 @@ export default function CguCgvPage() {
 
       <section style={{ padding: "0 20px 90px" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
-          <div
-            style={{
-              background: "rgba(245,166,35,0.08)",
-              border: "1px solid rgba(245,166,35,0.4)",
-              borderRadius: 12,
-              padding: "16px 20px",
-              marginBottom: 40,
-              color: "#f5a623",
-              fontSize: 13.5,
-              lineHeight: 1.6,
-            }}
-          >
-            ⚠️ Ce contenu est un modèle indicatif fourni à titre de base de travail. Il doit être relu et validé
-            par un professionnel du droit avant d&apos;être considéré comme définitif, notamment sur les clauses
-            de responsabilité, de rétractation et de résiliation.
-          </div>
-
           <h2 style={{ ...h2, marginTop: 0 }}>Objet</h2>
           <p style={p}>
             Les présentes conditions générales régissent l&apos;utilisation du service Staro, un agent vocal
@@ -68,10 +51,11 @@ export default function CguCgvPage() {
 
           <h2 style={h2}>Tarifs et paiement</h2>
           <p style={p}>
-            Le service est proposé moyennant des frais de mise en place uniques de 499€, puis un abonnement de
-            60€ par mois ou 700€ par an, selon la formule choisie par le client. Les tarifs en vigueur sont
-            précisés sur la page /pricing du site. Le paiement s&apos;effectue selon les modalités communiquées
-            lors de la souscription.
+            Staro propose trois formules d&apos;abonnement : Essentiel (60€ par mois ou 660€ par an), Pro (90€
+            par mois ou 990€ par an) et Premium (120€ par mois ou 1320€ par an). Chaque formule est soumise à
+            des frais de mise en place uniques de 499€, facturés une seule fois, identiques quelle que soit la
+            formule choisie. Les tarifs en vigueur sont précisés sur la page /pricing du site. Le paiement
+            s&apos;effectue selon les modalités communiquées lors de la souscription.
           </p>
 
           <h2 style={h2}>Durée et résiliation</h2>
