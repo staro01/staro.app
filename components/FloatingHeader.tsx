@@ -17,6 +17,7 @@ const METIERS = [
   { href: "/electricien", label: "Électricien" },
   { href: "/plombier", label: "Plombier" },
   { href: "/chauffagiste", label: "Chauffagiste" },
+  { href: "/garagiste", label: "Garagiste" },
   { href: "/coiffeur", label: "Coiffure & instituts" },
 ];
 

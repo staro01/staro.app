@@ -7,6 +7,7 @@ import {
   CoinIcon,
   MessageIcon,
   CalendarIcon,
+  CarIcon,
 } from "./icons";
 
 export type VerticalContent = {
@@ -223,6 +224,80 @@ export const VERTICALS: Record<string, VerticalContent> = {
       {
         q: "Est-ce que Staro peut gérer les demandes d'entretien annuel ?",
         a: "Oui, Staro qualifie la demande (dépannage, entretien, installation) et prend toutes les informations utiles pour que vous puissiez planifier l'intervention.",
+      },
+      {
+        q: "Combien de temps pour mettre en place l'agent vocal ?",
+        a: "La configuration prend environ 15 minutes. Votre numéro est opérationnel le jour même.",
+      },
+      {
+        q: "Est-ce que je peux tester avant de payer ?",
+        a: "Oui, 7 jours d'essai gratuit, sans carte bancaire débitée avant la fin de l'essai, et sans engagement ensuite.",
+      },
+    ],
+  },
+
+  garagiste: {
+    slug: "garagiste",
+    metier: "garagiste",
+    metierPluriel: "garages automobiles",
+    title: "Agent vocal IA pour garages automobiles — Staro.app",
+    metaDescription:
+      "Standard téléphonique intelligent pour garages et réparateurs automobiles en Vaucluse et dans le Gard. Staro répond à chaque appel, qualifie la demande et transfère immédiatement en cas de véhicule immobilisé.",
+    heroTitle: "L'agent vocal IA pour les garages automobiles",
+    heroDescription:
+      "Sous un véhicule ou en plein diagnostic, impossible de décrocher à chaque sonnerie. Staro répond à votre place, qualifie chaque demande — entretien, panne, contrôle technique — et vous transfère immédiatement si un client est immobilisé sur la route.",
+    urgency: true,
+    painPoints: [
+      {
+        title: "Un appel raté, c'est un client chez le garage d'à côté",
+        description:
+          "En Vaucluse et dans le Gard, la concurrence est forte. Un client qui tombe sur une messagerie appelle souvent le garage suivant sur Google dans la foulée.",
+      },
+      {
+        title: "Impossible de décrocher les mains dans le moteur",
+        description:
+          "Sur un diagnostic ou une réparation en cours, répondre au téléphone n'est ni pratique ni toujours possible.",
+      },
+      {
+        title: "Un véhicule immobilisé ne peut pas attendre",
+        description:
+          "Un client en panne sur la route a besoin d'une réponse rapide, pas d'un rappel en fin de journée.",
+      },
+    ],
+    features: [
+      {
+        Icon: BoltIcon,
+        title: "Détection d'urgence intégrée",
+        description:
+          "Véhicule immobilisé sur la route, accident, situation dangereuse : Staro identifie la situation et vous transfère l'appel immédiatement.",
+      },
+      {
+        Icon: MessageIcon,
+        title: "Qualification complète de la demande",
+        description:
+          "Marque, modèle, symptôme, depuis quand : toutes les infos utiles sont prises avant même que vous rappeliez le client.",
+      },
+      {
+        Icon: CarIcon,
+        title: "Pensé pour le métier",
+        description:
+          "Staro comprend le vocabulaire du métier — voyant moteur, contrôle technique, embrayage, révision — et pose les bonnes questions.",
+      },
+      {
+        Icon: ClockIcon,
+        title: "Disponible 24/7",
+        description:
+          "Le soir, le week-end, en plein diagnostic : Staro répond toujours, même quand vous ne pouvez pas.",
+      },
+    ],
+    faq: [
+      {
+        q: "Staro peut-il identifier un client en panne sur la route et me transférer directement ?",
+        a: "Oui. L'agent est configuré pour détecter les situations d'urgence (véhicule immobilisé, danger) et vous transfère l'appel immédiatement au lieu de simplement prendre un message.",
+      },
+      {
+        q: "Est-ce que Staro peut donner un diagnostic ou un devis à ma place ?",
+        a: "Non, Staro qualifie la demande (véhicule, symptôme, depuis quand) et prend toutes les informations utiles, mais c'est vous qui posez le diagnostic et donnez le devis.",
       },
       {
         q: "Combien de temps pour mettre en place l'agent vocal ?",

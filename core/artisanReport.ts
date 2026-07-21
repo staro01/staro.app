@@ -14,13 +14,14 @@ function getPlanTier(subscriptionPlan?: string | null): "essentiel" | "pro" | "p
   return null;
 }
 
-export type ArtisanMetier = "plombier" | "electricien" | "paysagiste" | "chauffagiste";
+export type ArtisanMetier = "plombier" | "electricien" | "paysagiste" | "chauffagiste" | "garagiste";
 
 const METIER_LABELS: Record<ArtisanMetier, string> = {
   plombier: "Plombier",
   electricien: "Électricien",
   paysagiste: "Paysagiste",
   chauffagiste: "Chauffagiste",
+  garagiste: "Garage automobile",
 };
 
 export function extractReportJson(text: string): Record<string, unknown> | null {

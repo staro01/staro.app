@@ -140,6 +140,17 @@ export function InfoIcon({ size = 16, color = "#fff", strokeWidth = 1.8 }: IconP
   );
 }
 
+export function CarIcon({ size = 24, color = "#fff", strokeWidth = 1.8 }: IconProps) {
+  return (
+    <svg {...base(size, color, strokeWidth)}>
+      <path d="M5 16V12l1.8-4.5A2 2 0 0 1 8.65 6h6.7a2 2 0 0 1 1.85 1.5L19 12v4" />
+      <path d="M4 16h16v2.5a1 1 0 0 1-1 1h-1.5a1 1 0 0 1-1-1V17H7.5v1.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V16Z" />
+      <circle cx="7.5" cy="16" r="1.4" fill={color} stroke="none" />
+      <circle cx="16.5" cy="16" r="1.4" fill={color} stroke="none" />
+    </svg>
+  );
+}
+
 export function StarIcon({ size = 16, color = "#f5a623" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>

@@ -4,12 +4,13 @@ export type PlaceLookupResult = {
   phone: string | null;
   openingHours: string[] | null;
   primaryType: string | null;
-  suggestedVertical: "pizzeria" | "coiffeur" | "electricien" | "plombier" | "unknown";
+  suggestedVertical: "pizzeria" | "coiffeur" | "electricien" | "plombier" | "garagiste" | "unknown";
 };
 
 const HAIR_TYPES = ["hair_salon", "beauty_salon", "hair_care"];
 const ELECTRICIAN_TYPES = ["electrician"];
 const PLUMBER_TYPES = ["plumber"];
+const CAR_REPAIR_TYPES = ["car_repair"];
 
 const FOOD_TYPES = ["restaurant", "pizza_restaurant", "meal_takeaway", "meal_delivery", "fast_food_restaurant", "food"];
 
@@ -17,6 +18,7 @@ function guessVertical(primaryType: string | null): PlaceLookupResult["suggested
   if (HAIR_TYPES.includes(primaryType ?? "")) return "coiffeur";
   if (ELECTRICIAN_TYPES.includes(primaryType ?? "")) return "electricien";
   if (PLUMBER_TYPES.includes(primaryType ?? "")) return "plombier";
+  if (CAR_REPAIR_TYPES.includes(primaryType ?? "")) return "garagiste";
   if (FOOD_TYPES.includes(primaryType ?? "")) return "pizzeria";
   // Pas de type Google dédié pour paysagiste/chauffagiste : on ne devine pas, on laisse le champ tel quel côté UI
   return "unknown";

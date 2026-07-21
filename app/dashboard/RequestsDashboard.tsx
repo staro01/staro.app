@@ -122,7 +122,7 @@ export default function RequestsDashboard() {
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.data.address)}`
       : null;
 
-    const METIER_ICONS: Record<string, string> = { paysagiste: "🌿", electricien: "⚡", plombier: "🔧" };
+    const METIER_ICONS: Record<string, string> = { paysagiste: "🌿", electricien: "⚡", plombier: "🔧", chauffagiste: "🔥", garagiste: "🚗" };
     const icon = METIER_ICONS[e.data?.metier as string] ?? "📨";
 
     return (

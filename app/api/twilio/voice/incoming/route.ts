@@ -8,7 +8,7 @@ import { isOutsideHours, DaySchedule } from "../../../../../core/openingHours";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste"];
+const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste", "garagiste"];
 const ACTIVE_SUBSCRIPTION_STATUSES = ["active", "trialing", "past_due"];
 
 async function findBusiness(to: string) {

@@ -8,7 +8,7 @@ import SubscribeModal from "../../components/dashboard/SubscribeModal";
 
 export const dynamic = "force-dynamic";
 
-const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien"];
+const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste", "garagiste"];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();

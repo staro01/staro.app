@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
-const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste"];
+const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste", "garagiste"];
 
 type DaySchedule = { open: string; close: string; dinnerOpen: string; dinnerClose: string; closed: boolean };
 type Settings = {

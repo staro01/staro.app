@@ -2,7 +2,7 @@ import type { Business } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { gatherSay } from "./incoming";
 
-const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste"];
+const ARTISAN_VERTICALS = ["paysagiste", "plombier", "electricien", "chauffagiste", "garagiste"];
 
 export async function buildAgentGreetingResponse(business: Business, baseUrl: string, callSid: string) {
   let defaultGreet: string;

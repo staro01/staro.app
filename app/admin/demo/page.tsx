@@ -24,7 +24,7 @@ export default function DemoAdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [vertical, setVertical] = useState<"pizzeria" | "coiffeur" | "paysagiste" | "electricien" | "plombier" | "chauffagiste">("pizzeria");
+  const [vertical, setVertical] = useState<"pizzeria" | "coiffeur" | "paysagiste" | "electricien" | "plombier" | "chauffagiste" | "garagiste">("pizzeria");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -34,7 +34,7 @@ export default function DemoAdminPage() {
   const [saved, setSaved] = useState(false);
   const [detectedHint, setDetectedHint] = useState<string | null>(null);
 
-  const NO_CATALOG_VERTICALS = ["paysagiste", "electricien", "plombier", "chauffagiste"];
+  const NO_CATALOG_VERTICALS = ["paysagiste", "electricien", "plombier", "chauffagiste", "garagiste"];
   const hasCatalog = !NO_CATALOG_VERTICALS.includes(vertical);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function DemoAdminPage() {
       .then((b) => {
         if (!b) return;
         setName(b.name ?? "");
-        setVertical(["pizzeria", "coiffeur", "paysagiste", "electricien", "plombier", "chauffagiste"].includes(b.vertical) ? b.vertical : "pizzeria");
+        setVertical(["pizzeria", "coiffeur", "paysagiste", "electricien", "plombier", "chauffagiste", "garagiste"].includes(b.vertical) ? b.vertical : "pizzeria");
         setPhone(b.phone ?? "");
         setAddress(b.address ?? "");
         setCustomerEmail(b.customerEmail ?? "");
@@ -192,6 +192,7 @@ export default function DemoAdminPage() {
           <option value="electricien">Électricien</option>
           <option value="plombier">Plombier</option>
           <option value="chauffagiste">Chauffagiste</option>
+          <option value="garagiste">Garage automobile</option>
           </select>
           {detectedHint && (
             <span style={{ fontSize: 11, color: "#888" }}>
