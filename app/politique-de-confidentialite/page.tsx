@@ -30,23 +30,6 @@ export default function PolitiqueConfidentialitePage() {
 
       <section style={{ padding: "0 20px 90px" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
-          <div
-            style={{
-              background: "rgba(245,166,35,0.08)",
-              border: "1px solid rgba(245,166,35,0.4)",
-              borderRadius: 12,
-              padding: "16px 20px",
-              marginBottom: 40,
-              color: "#f5a623",
-              fontSize: 13.5,
-              lineHeight: 1.6,
-            }}
-          >
-            ⚠️ Ce contenu est un modèle indicatif fourni à titre de base de travail. Il doit être relu et validé
-            par un professionnel du droit avant d&apos;être considéré comme définitif, en particulier concernant
-            le traitement des données vocales de vos clients.
-          </div>
-
           <h2 style={{ ...h2, marginTop: 0 }}>Responsable du traitement</h2>
           <p style={p}>
             Hugo Muller, entrepreneur individuel (SIRET 932 350 994 00012), 229 rue Saint-Honoré, 75001 Paris,

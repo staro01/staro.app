@@ -34,7 +34,7 @@ const LEGAL_LINKS = [
 
 const SOCIALS = [
   { label: "Instagram", href: "#" },
-  { label: "LinkedIn", href: "#" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/hugo-muller-a08447338" },
   { label: "Facebook", href: "#" },
 ];
 
